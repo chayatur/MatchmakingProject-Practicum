@@ -1,6 +1,5 @@
 
 export type FileData = {
-    isOwner: boolean;
     id: number;
     fileName: string;
     userId: number;

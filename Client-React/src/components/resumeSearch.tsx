@@ -4,28 +4,10 @@ import type React from "react"
 import { useState } from "react"
 import { useSelector } from "react-redux"
 import type { RootState } from "../store"
-import {
-  Box,
-  TextField,
-  Button,
-  Grid,
-  Typography,
-  Paper,
-  InputAdornment,
-  Chip,
-  Slider,
-  Divider,
-  Drawer,
-  IconButton,
-  Tooltip,
-  Fade,
-} from "@mui/material"
-import {
-  Search as SearchIcon,
-  FilterList as FilterListIcon,
-  Clear as ClearIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material"
+import { Box, TextField, Button, Grid, Typography, Paper, InputAdornment, Chip, Slider, Divider } from "@mui/material"
+import SearchIcon from "@mui/icons-material/Search"
+import FilterListIcon from "@mui/icons-material/FilterList"
+import ClearIcon from "@mui/icons-material/Clear"
 
 interface SearchFilters {
   firstName: string
@@ -64,7 +46,6 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
   const [filters, setFilters] = useState<SearchFilters>(initialFilters)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([])
-  const [drawerOpen, setDrawerOpen] = useState(false)
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn)
 
   const handleFilterChange = (field: keyof SearchFilters, value: string | number) => {
@@ -72,7 +53,6 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
   }
 
   const handleSearch = () => {
-    // Update active filters list
     const newActiveFilters = Object.entries(filters)
       .filter(([key, value]) => {
         if (typeof value === "string") return value.trim() !== ""
@@ -86,7 +66,6 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
 
     setActiveFilters(newActiveFilters)
     onSearch(filters)
-    setDrawerOpen(false)
   }
 
   const handleClearFilters = () => {
@@ -122,16 +101,6 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
     return labels[key] || key
   }
 
-  const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-    if (
-      event.type === "keydown" &&
-      ((event as React.KeyboardEvent).key === "Tab" || (event as React.KeyboardEvent).key === "Shift")
-    ) {
-      return
-    }
-    setDrawerOpen(open)
-  }
-
   if (!isLoggedIn) {
     return (
       <Paper
@@ -141,40 +110,43 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
           textAlign: "center",
           backgroundColor: "#f9f5f5",
           border: "1px solid #e5d6d6",
-          mb: 4,
         }}
       >
         <Typography variant="h6" color="#8B0000">
-          יש להתחבר למערכת כדי לחפש רזומות
+         <div> יש להתחבר למערכת כדי לחפש רזומות</div>
         </Typography>
       </Paper>
     )
   }
 
-  const searchDrawer = (
-    <Box
+  return (
+    <Paper
+      elevation={3}
       sx={{
-        width: { xs: "100%", sm: 400 },
         p: 3,
-        height: "100%",
-        overflow: "auto",
+        mb: 4,
+        borderRadius: 2,
         backgroundColor: "#fff",
+        border: "1px solid #e5d6d6",
       }}
-      role="presentation"
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, color: "#8B0000" }}>
-          חיפוש מתקדם
-        </Typography>
-        <IconButton onClick={toggleDrawer(false)} sx={{ color: "#8B0000" }}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
-
-      <Divider sx={{ mb: 3 }} />
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          color: "#8B0000",
+          fontWeight: "bold",
+          textAlign: "center",
+          mb: 3,
+        }}
+      >
+        <div>
+        חיפוש רזומות
+        </div>
+      </Typography>
 
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
           <TextField
             fullWidth
             label="שם פרטי"
@@ -201,7 +173,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
           <TextField
             fullWidth
             label="שם משפחה"
@@ -221,7 +193,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
           <TextField
             fullWidth
             label="כתובת"
@@ -241,31 +213,29 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
             }}
           />
         </Grid>
+      </Grid>
 
-        <Grid item xs={12}>
-          <Box sx={{ mt: 2, mb: 2 }}>
-            <Button
-              variant="text"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              startIcon={<FilterListIcon />}
-              sx={{
-                color: "#8B0000",
-                "&:hover": {
-                  backgroundColor: "rgba(139, 0, 0, 0.04)",
-                },
-              }}
-            >
-              {showAdvanced ? "הסתר חיפוש מתקדם" : "הצג חיפוש מתקדם"}
-            </Button>
-          </Box>
-        </Grid>
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Button
+          variant="text"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          startIcon={<FilterListIcon />}
+          sx={{
+            color: "#8B0000",
+            "&:hover": {
+              backgroundColor: "rgba(139, 0, 0, 0.04)",
+            },
+          }}
+        >
+          {showAdvanced ? "הסתר חיפוש מתקדם" : "הצג חיפוש מתקדם"}
+        </Button>
+      </Box>
 
-        {showAdvanced && (
-          <>
-            <Grid item xs={12}>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
-            <Grid item xs={12}>
+      {showAdvanced && (
+        <Box sx={{ mt: 2, mb: 3 }}>
+          <Divider sx={{ mb: 3 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="שם האב"
@@ -285,7 +255,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="שם האם"
@@ -305,7 +275,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="מקום לימודים"
@@ -325,7 +295,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="עיסוק"
@@ -345,9 +315,11 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <Typography gutterBottom dir="rtl">
+                <div>
                 טווח גילאים: {filters.minAge} - {filters.maxAge}
+                </div>
               </Typography>
               <Slider
                 value={[filters.minAge, filters.maxAge]}
@@ -369,9 +341,11 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <Typography gutterBottom dir="rtl">
+                <div>
                 טווח גבהים (ס"מ): {filters.minHeight} - {filters.maxHeight}
+                </div>
               </Typography>
               <Slider
                 value={[filters.minHeight, filters.maxHeight]}
@@ -393,14 +367,16 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
                 }}
               />
             </Grid>
-          </>
-        )}
-      </Grid>
+          </Grid>
+        </Box>
+      )}
 
       {activeFilters.length > 0 && (
-        <Box sx={{ mt: 3, mb: 2 }}>
+        <Box sx={{ mt: 2, mb: 2 }}>
           <Typography variant="subtitle2" gutterBottom dir="rtl">
+            <div>
             סינון פעיל:
+            </div>
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {activeFilters.map((filter) => (
@@ -435,23 +411,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
         </Box>
       )}
 
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between", gap: 2 }}>
-        <Button
-          variant="outlined"
-          onClick={handleClearFilters}
-          startIcon={<ClearIcon />}
-          sx={{
-            borderColor: "#8B0000",
-            color: "#8B0000",
-            "&:hover": {
-              borderColor: "#5c0000",
-              backgroundColor: "rgba(139, 0, 0, 0.04)",
-            },
-            flex: 1,
-          }}
-        >
-          נקה סינון
-        </Button>
+      <Box sx={{ mt: 3, display: "flex", justifyContent: "center", gap: 2 }}>
         <Button
           variant="contained"
           onClick={handleSearch}
@@ -463,74 +423,30 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
             "&:hover": {
               backgroundColor: "#5c0000",
             },
-            flex: 2,
+            minWidth: 120,
           }}
         >
           {isLoading ? "מחפש..." : "חפש"}
         </Button>
-      </Box>
-    </Box>
-  )
-
-  return (
-    <Box sx={{ mb: 4, display: "flex", justifyContent: "flex-end" }}>
-      <Tooltip title="פתח חיפוש מתקדם">
         <Button
-          variant="contained"
-          onClick={toggleDrawer(true)}
-          startIcon={<FilterListIcon />}
+          variant="outlined"
+          onClick={handleClearFilters}
+          startIcon={<ClearIcon />}
           sx={{
-            backgroundColor: "#8B0000",
-            color: "white",
+            borderColor: "#8B0000",
+            color: "#8B0000",
             "&:hover": {
-              backgroundColor: "#5c0000",
+              borderColor: "#5c0000",
+              backgroundColor: "rgba(139, 0, 0, 0.04)",
             },
           }}
         >
-          סינון 
+          <div>
+          נקה סינון
+          </div>
         </Button>
-      </Tooltip>
-
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
-        {searchDrawer}
-      </Drawer>
-
-      {activeFilters.length > 0 && (
-        <Fade in={true}>
-          <Box sx={{ mr: 2 }}>
-            <Paper
-              elevation={1}
-              sx={{
-                p: 1,
-                px: 2,
-                display: "flex",
-                alignItems: "center",
-                borderRadius: 4,
-                backgroundColor: "rgba(139, 0, 0, 0.05)",
-              }}
-            >
-              <Typography variant="body2" sx={{ mr: 1, color: "#8B0000" }}>
-                סינון פעיל: {activeFilters.length}
-              </Typography>
-              <Chip
-                label="נקה"
-                size="small"
-                onClick={handleClearFilters}
-                deleteIcon={<ClearIcon />}
-                onDelete={handleClearFilters}
-                sx={{
-                  backgroundColor: "rgba(139, 0, 0, 0.1)",
-                  color: "#8B0000",
-                  "& .MuiChip-deleteIcon": {
-                    color: "#8B0000",
-                  },
-                }}
-              />
-            </Paper>
-          </Box>
-        </Fade>
-      )}
-    </Box>
+      </Box>
+    </Paper>
   )
 }
 

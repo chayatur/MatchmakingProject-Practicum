@@ -21,7 +21,7 @@ const AppLogo: React.FC<AppLogoProps> = ({ size = "medium", showText = true }) =
       <Box
         component="img"
         src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%D7%9C%D7%97%D7%99%D7%99%D7%9D.jpg-8mdWJd0R4S44AnIERwdrPPybeckoC8.jpeg"
-        alt="לחיים - מערכת שידוכים"
+        alt="לחיים - מחכים לשבירה שלך"
         sx={{
           height: logoHeight,
           objectFit: "contain",
