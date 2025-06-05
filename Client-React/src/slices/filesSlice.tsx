@@ -41,9 +41,9 @@ export const fetchFileById = createAsyncThunk("files/fetchFileById", async (id: 
 // Download file
 export const downloadFile = createAsyncThunk(
   "files/downloadFile",
-  async ({ id, fileName }: { id: number; fileName: string }, { rejectWithValue }) => {
+  async ( fileName: string , { rejectWithValue }) => {
     try {
-      const response = await axios.get(`http://localhost:5138/api/AIResponse/download/${id}`, {
+      const response = await axios.get(`http://localhost:5138/api/AIResponse/download/${fileName}`, {
         responseType: "blob",
       })
 
@@ -61,7 +61,7 @@ export const downloadFile = createAsyncThunk(
       link.parentNode?.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      return { id, success: true }
+      return {  success: true }
     } catch (e: any) {
       return rejectWithValue(e.message || "Failed to download file")
     }

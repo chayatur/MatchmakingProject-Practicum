@@ -1,11 +1,13 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Container, Box, Typography, Paper } from "@mui/material"
-import ResumeSearch from "./resumeSearch"
-import ResumeList from "./resumesList"
+import { Container, Box, Typography, Paper, Button, Collapse } from "@mui/material"
+import { Search as SearchIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from "@mui/icons-material"
+
 import { fetchFiles, downloadFile, filterFiles } from "../slices/fileSlice"
 import type { AppDispatch, RootState } from "../store"
+import ResumeList from "./resumesList"
+import ResumeSearch from "./resumeSearch"
 
 interface SearchFilters {
   firstName: string
@@ -26,6 +28,7 @@ const ResumesPage: React.FC = () => {
   const { filteredFiles, loading, error } = useSelector((state: RootState) => state.files)
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn)
   const [searchPerformed, setSearchPerformed] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -53,8 +56,8 @@ const ResumesPage: React.FC = () => {
     }
   }
 
-  const handleDownload = (fileId: number, fileName: string) => {
-    dispatch(downloadFile({ id: fileId, fileName }))
+  const handleDownload = (fileName: string) => {
+    dispatch(downloadFile({ fileName }))
   }
 
   return (
@@ -81,14 +84,42 @@ const ResumesPage: React.FC = () => {
             },
           }}
         >
-      management resumes
+          ניהול רזומות
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
           חיפוש, צפייה והורדת רזומות במערכת השידוכים
         </Typography>
       </Box>
 
-      <ResumeSearch onSearch={handleSearch} isLoading={loading} />
+      {/* Search Toggle Button */}
+      {isLoggedIn && (
+        <Box sx={{ mb: 3, textAlign: "center" }}>
+          <Button
+            variant="contained"
+            onClick={() => setShowSearch(!showSearch)}
+            startIcon={<SearchIcon />}
+            endIcon={showSearch ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            sx={{
+              backgroundColor: "#8B0000",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "#5c0000",
+              },
+              px: 4,
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: 600,
+            }}
+          >
+            {showSearch ? "הסתר חיפוש" : "הצג חיפוש"}
+          </Button>
+        </Box>
+      )}
+
+      {/* Search Component */}
+      <Collapse in={showSearch}>
+        <ResumeSearch onSearch={handleSearch} isLoading={loading} />
+      </Collapse>
 
       {isLoggedIn ? (
         <ResumeList

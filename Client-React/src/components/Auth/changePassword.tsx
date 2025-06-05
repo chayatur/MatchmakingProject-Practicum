@@ -2,7 +2,7 @@
 
 // import type React from "react"
 // import { Container, Box } from "@mui/material"
-// import ChangePasswordForm from "../../components/auth/change-password-form"
+// // import ChangePasswordForm from "../../components/auth/change-password-form"
 // import ProtectedRoute from  '../protecterRoute'
 
 // const ChangePasswordPage: React.FC = () => {

@@ -3,7 +3,7 @@ import { AppDispatch, RootState } from '../../store';
 import { Box, Button, Dialog, DialogContent, DialogTitle, Typography, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useForm, Controller, FieldErrors } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { User } from '../../types/user';
 import { registerUser } from '../../slices/userSlice';
 

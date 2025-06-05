@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react"
+"use client"
+
+import type React from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -9,207 +12,211 @@ import {
   Typography,
   IconButton,
   Box,
-  Snackbar,
-  Alert,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
   Avatar,
+  CircularProgress,
+  Fade,
+  InputAdornment,
 } from "@mui/material"
 import { Close as CloseIcon, Share as ShareIcon, Person as PersonIcon, Search as SearchIcon } from "@mui/icons-material"
-import { useDispatch } from "react-redux"
-import axios from "axios"
-import type { AppDispatch } from "../store"
-import { shareFile } from "../slices/fileSlice"
-import "../styles/share.css"
-import { FileData } from "../types/file"
-import { User } from "../types/user"
+import { useDispatch, useSelector } from "react-redux"
+import type { AppDispatch, RootState } from "../store"
+import { shareFile, fetchUsers } from "../slices/fileSlice"
+import type { FileData } from "../types/file"
 
 interface ShareDialogProps {
   open: boolean
   onClose: () => void
-  resume: FileData | null
+  resume: FileData
+  onSuccess?: () => void
 }
 
-const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume }) => {
+const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>()
+  const { users, loading } = useSelector((state: RootState) => state.files)
 
-  const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
-    open: false,
-    message: "",
-    severity: "success",
-  })
+  const [sharingUserId, setSharingUserId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (open && users.length === 0) {
+      dispatch(fetchUsers())
+    }
+  }, [open, users.length, dispatch])
 
   useEffect(() => {
     if (open) {
-      fetchUsers()
+      setSearchTerm("")
+      setSharingUserId(null)
     }
   }, [open])
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get<User[]>("http://localhost:5138/api/User")
-      // Filter out current user
-      const filteredUsers = response.data.filter((user) => resume && user.id !== resume.userId)
-      setUsers(filteredUsers)
-    } catch (error) {
-      console.error("Error fetching users:", error)
-      setSnackbar({
-        open: true,
-        message: "שגיאה בטעינת רשימת המשתמשים",
-        severity: "error",
-      })
-    }
-  }
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users.filter((user) => user.id !== resume.userId)
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    return users.filter(
+      (user) =>
+        user.id !== resume.userId &&
+        (user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())),
+    )
+  }, [users, searchTerm, resume.userId])
+
+  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value)
+  }, [])
+
+  const handleShare = useCallback(
+    async (userId: number) => {
+      setSharingUserId(userId)
+
+      try {
+        await dispatch(
+          shareFile({
+            resumeFileId: resume.id,
+            sharedWithUserId: userId,
+          }),
+        ).unwrap()
+
+        onSuccess?.()
+        onClose()
+      } catch (error) {
+        console.error("Failed to share file:", error)
+      } finally {
+        setSharingUserId(null)
+      }
+    },
+    [dispatch, resume.id, onSuccess, onClose],
   )
 
-  const handleShare = async (userId: number) => {
-    if (!resume) return
-
-    setLoading(true)
-    try {
-      await dispatch(
-        shareFile({
-          resumeFileId: resume.id,
-          sharedWithUserId: userId,
-        })
-      ).unwrap()
-
-      setSnackbar({
-        open: true,
-        message: "הרזומה שותפה בהצלחה",
-        severity: "success",
-      })
-
-      setTimeout(() => {
-        onClose()
-      }, 1500)
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "שגיאה בשיתוף הרזומה",
-        severity: "error",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (!resume) {
-    return null
-  }
+  const handleClose = useCallback(() => {
+    setSearchTerm("")
+    setSharingUserId(null)
+    onClose()
+  }, [onClose])
 
   return (
-    <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        fullWidth
-        maxWidth="sm"
-        className="share-dialog"
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <DialogTitle className="share-header">
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              שיתוף רזומה: {resume.firstName} {resume.lastName}
-            </Typography>
-            <IconButton onClick={onClose} sx={{ color: "white" }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          overflow: "hidden",
+        },
+      }}
+    >
+      <DialogTitle className="header-gradient" sx={{ color: "white", p: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            שיתוף רזומה: {resume.firstName} {resume.lastName}
+          </Typography>
+          <IconButton onClick={handleClose} sx={{ color: "white" }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
 
-        <DialogContent className="share-content">
+      <Fade in={open}>
+        <DialogContent sx={{ p: 3 }}>
           <TextField
             fullWidth
             label="חיפוש משתמשים"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             variant="outlined"
-            className="search-field"
+            placeholder="הקלד שם משתמש או אימייל..."
             InputProps={{
-              startAdornment: <SearchIcon sx={{ color: "#8B0000", mr: 1 }} />,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "#8B0000" }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              mb: 3,
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#8B0000",
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#8B0000",
+              },
             }}
           />
 
-          <Typography variant="subtitle1" gutterBottom sx={{ color: "#8B0000", fontWeight: 600, mb: 2 }}>
-            בחר משתמש לשיתוף:
+          <Typography variant="subtitle1" gutterBottom sx={{ color: "#8B0000", fontWeight: 600 }}>
+            בחר משתמש לשיתוף ({filteredUsers.length} משתמשים):
           </Typography>
 
-          <List className="users-list">
-            {filteredUsers.map((user) => (
-              <ListItem key={user.id} className="user-item">
-                <ListItemAvatar>
-                  <Avatar className="user-avatar">
-                    <PersonIcon />
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={user.username || "משתמש"}
-                  secondary={user.email}
-                  sx={{ flex: 1, mr: 2 }}
-                />
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleShare(user.id)}
-                  disabled={loading}
-                  className="share-button"
-                  startIcon={<ShareIcon />}
-                >
-                  שתף
-                </Button>
-              </ListItem>
-            ))}
-          </List>
-
-          {filteredUsers.length === 0 && (
-            <Box className="empty-state">
-              <PersonIcon className="empty-state-icon" />
-              <Typography variant="body2" color="text.secondary">
-                {searchTerm ? "לא נמצאו משתמשים התואמים לחיפוש" : "לא נמצאו משתמשים"}
-              </Typography>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress sx={{ color: "#8B0000" }} />
             </Box>
+          ) : (
+            <List sx={{ maxHeight: 300, overflow: "auto" }}>
+              {filteredUsers.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {searchTerm ? "לא נמצאו משתמשים התואמים לחיפוש" : "לא נמצאו משתמשים"}
+                  </Typography>
+                </Box>
+              ) : (
+                filteredUsers.map((user) => (
+                  <Fade in={true} timeout={300} key={user.id}>
+                    <ListItem
+                      sx={{
+                        borderRadius: 2,
+                        mb: 1,
+                        border: "1px solid #e5d6d6",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          backgroundColor: "rgba(139, 0, 0, 0.04)",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 4px 12px rgba(139, 0, 0, 0.1)",
+                        },
+                      }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: "#8B0000" }}>
+                          <PersonIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText primary={user.username || "משתמש"} secondary={user.email} sx={{ flex: 1 }} />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleShare(user.id)}
+                        disabled={sharingUserId === user.id}
+                        className="btn-primary"
+                        startIcon={
+                          sharingUserId === user.id ? <CircularProgress size={16} color="inherit" /> : <ShareIcon />
+                        }
+                        sx={{ minWidth: 100 }}
+                      >
+                        {sharingUserId === user.id ? "משתף..." : "שתף"}
+                      </Button>
+                    </ListItem>
+                  </Fade>
+                ))
+              )}
+            </List>
           )}
         </DialogContent>
+      </Fade>
 
-        <DialogActions className="dialog-actions">
-          <Button onClick={onClose} className="close-button">
-            סגור
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: "100%", borderRadius: 2 }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </>
+      <DialogActions sx={{ p: 3 }}>
+        <Button onClick={handleClose} className="btn-secondary">
+          סגור
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 

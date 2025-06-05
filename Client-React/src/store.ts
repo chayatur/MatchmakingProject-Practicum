@@ -1,15 +1,15 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 import userReducer from './slices/userSlice';
-import fileReducer from './slices/fileSlice'; 
+import filesReducer from './slices/fileSlice';
+
 const store = configureStore({
-    reducer: {
-        user: userReducer,
-        files: fileReducer, 
-    },
+  reducer: {
+    user: userReducer,
+    files: filesReducer,
+  },
 });
 
-// הגדרת RootState
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-export default store;
+export default store; 
