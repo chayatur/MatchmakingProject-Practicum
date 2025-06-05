@@ -29,10 +29,10 @@ namespace Resume.API.Controllers
             {
                 var request = new GetPreSignedUrlRequest
                 {
-                    BucketName = "filesresume.testpnoren",
+                    BucketName = "resumesbucket.testpnoren",
                     Key = fileName,
                     Verb = HttpVerb.GET,
-                    Expires = DateTime.UtcNow.AddMinutes(5)
+                    Expires = DateTime.UtcNow.AddMinutes(60)
                 };
                 string url = _s3Client.GetPreSignedURL(request);
                 return Ok(new { url });

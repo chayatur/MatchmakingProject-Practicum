@@ -30,7 +30,7 @@ namespace Resume.Service.Services
         public AIService(IConfiguration config, OpenAIClient openAI, IAIRepository aIRepository, IMapper mapper)
         {
             _httpClient = new HttpClient();
-            _myApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            _myApiKey = config["OpenAI:ApiKey"];
             _IaIRepository = aIRepository;
             _mapper = mapper;
         }
@@ -91,31 +91,21 @@ namespace Resume.Service.Services
 
             var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
 
-            // Add this logging to inspect the OpenAI API response
             var responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("OpenAI API Response:");
-            Console.WriteLine(responseBody);  // This will log the raw response body
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"AI request failed with status code {response.StatusCode}: {responseBody}");
 
-            // Parse response to extract JSON content
             using var document = JsonDocument.Parse(responseBody);
             var messageContent = document.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
                 .GetProperty("content")
                 .GetString();
-            Console.WriteLine(document.RootElement);
+
             if (string.IsNullOrEmpty(messageContent))
                 throw new Exception("AI response is empty.");
 
-            Console.WriteLine("************** JSON Response **************");
-            Console.WriteLine(messageContent);
-            Console.WriteLine("*******************************************");
-            messageContent = messageContent.Replace("```json", "");
-            messageContent = messageContent.Replace("```", "");
-            // Deserialize the JSON response into the AIResponse object
             AIResponse aiResponse = JsonSerializer.Deserialize<AIResponse>(messageContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -166,6 +156,21 @@ namespace Resume.Service.Services
         {
             return _IaIRepository.GetFilesByUserIdAsync(userId);
         }
+
+        public async Task UpdateAIResponseAsync(int id, AIResponse aiResponse) // עדכון עם שני פרמטרים
+        {
+            if (aiResponse == null)
+            {
+                throw new ArgumentException("AIResponse cannot be null.", nameof(aiResponse));
+            }
+
+            await _IaIRepository.UpdateAIResponseAsync(id, aiResponse); // קריאה למתודה בממשק ה-Rrepository
+        }
+
+        //public async Task DeleteAIResponseAsync(int id) 
+        //{
+        //    await _IaIRepository.DeleteAIResponseAsync(id);
+        //}
 
         public async Task DeleteAllAIResponsesAsync()
         {

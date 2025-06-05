@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Resume.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Resume.Core.IRepository
@@ -14,6 +11,7 @@ namespace Resume.Core.IRepository
         Task AddAiResponseAsync(AIResponse aiResponse, int userId, string fileName);
         Task<IEnumerable<AIResponse>> GetAllAIResponsesAsync();
         Task<IEnumerable<AIResponse>> GetFilesByUserIdAsync(int userId);
+        Task UpdateAIResponseAsync(int id, AIResponse aiResponse); // עדכון המתודה עם שני פרמטרים
         Task DeleteAllAIResponsesAsync();
     }
 }

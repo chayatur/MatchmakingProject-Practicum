@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Resume.Core.Models;
+using Resume.Core.IServices;
+using System.Threading.Tasks;
+using Resume.Core.DTOs;
 
 namespace Resume.API.Controllers
 {
@@ -8,36 +10,43 @@ namespace Resume.API.Controllers
     [ApiController]
     public class SharingController : ControllerBase
     {
-        // GET: api/<SharingController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly ISharingService _sharingService;
+
+        public SharingController(ISharingService sharingService)
         {
-            return new string[] { "value1", "value2" };
+            _sharingService = sharingService;
         }
 
-        // GET api/<SharingController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<SharingController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> ShareFile([FromBody] SharingDTO model)
         {
+            var result = await _sharingService.ShareResumeAsync(model.ResumefileID, model.SharedByUserID, model.SharedWithUserID);
+
+            if (result == null)
+            {
+                return BadRequest("Failed to share the resume.");
+            }
+
+            return Ok(result);
         }
 
-        // PUT api/<SharingController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetSharedWithUser(int userId)
         {
+            var sharedResumes = await _sharingService.GetSharedWithUserAsync(userId);
+            return Ok(sharedResumes);
         }
 
-        // DELETE api/<SharingController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("{sharingId}")]
+        public async Task<IActionResult> RemoveShare(int sharingId)
         {
+            var success = await _sharingService.RemoveShareAsync(sharingId);
+            if (!success)
+            {
+                return NotFound("Sharing not found.");
+            }
+
+            return NoContent();
         }
     }
 }

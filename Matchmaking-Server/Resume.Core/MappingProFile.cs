@@ -13,7 +13,7 @@ namespace Resume.Core
     {
         public MappingProFile()
         {
-            CreateMap<User,UserDTO>().ReverseMap();
+            CreateMap<User, UserDTO>().ReverseMap();
         }
     }
 }

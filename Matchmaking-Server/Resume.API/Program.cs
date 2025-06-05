@@ -11,13 +11,15 @@ using Resume.Data;
 using Resume.Core;
 using OpenAI;
 using Resume.Data.Repositories;
-using Microsoft.Extensions.Options;
-using Amazon.Extensions.NETCore.Setup;
+using Resume.Core.Services;
+using Microsoft.EntityFrameworkCore;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Load environment variables from .env file
-DotNetEnv.Env.Load();
+// ✅ Load appsettings.json (required)
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 // ✅ Add services
 builder.Services.AddControllers()
@@ -51,19 +53,29 @@ builder.Services.AddScoped<IResumeFileService, ResumeFileService>();
 builder.Services.AddScoped<IResumefileRepository, ResumeFileRepository>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<IAIRepository, AIRepository>();
+builder.Services.AddScoped<ISharingService, SharingService>(); // הוסף שורה זו
+builder.Services.AddScoped<ISharingRepository, SharingRepository>(); // הוסף שורה זו
 builder.Services.AddDbContext<ResumeContext>();
 builder.Services.AddAutoMapper(typeof(MappingProFile));
 
-// Amazon S3 configuration from environment variables
+
+
+var connectionString = builder.Configuration["ConnectionStrings:Resume"];
+Console.WriteLine(connectionString);
+builder.Services.AddDbContext<ResumeContext>(options =>
+options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
+
+// Amazon S3 configuration
 builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 {
-    var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
-    var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
-    var regionValue = Environment.GetEnvironmentVariable("AWS_REGION");
+    var config = builder.Configuration.GetSection("AWS");
+    var accessKey = config["AccessKey"];
+    var secretKey = config["SecretKey"];
+    var regionValue = config["Region"];
 
     if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(regionValue))
     {
-        throw new InvalidOperationException("AWS credentials or region are not configured properly in environment variables.");
+        throw new InvalidOperationException("AWS credentials or region are not configured properly in appsettings.json.");
     }
 
     var credentials = new Amazon.Runtime.BasicAWSCredentials(accessKey, secretKey);
@@ -72,13 +84,13 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
     return new AmazonS3Client(credentials, region);
 });
 
-// OpenAI client from environment variable
+// OpenAI client from appsettings.json
 builder.Services.AddScoped<OpenAIClient>(provider =>
 {
-    var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+    var apiKey = builder.Configuration["OpenAI:ApiKey"];
     if (string.IsNullOrEmpty(apiKey))
     {
-        throw new InvalidOperationException("OpenAI API key is not set in environment variables.");
+        throw new Exception("OpenAI API key is not configured in appsettings.json.");
     }
     return new OpenAIClient(apiKey);
 });

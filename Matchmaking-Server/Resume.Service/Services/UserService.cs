@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Resume.Core.DTOs;
+
 using Resume.Core.IRepository;
 using Resume.Core.IServices;
 using Resume.Core.Models;
@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Resume.Service.Services
 {
@@ -22,7 +23,7 @@ namespace Resume.Service.Services
             _mapper = mapper;
         }
 
-        public async Task<User> CreateUser(User dto)
+        public async Task<Core.Models.User> CreateUser(User dto)
         {
             await _userRepository.AddUser(dto);
             return dto;
@@ -33,19 +34,19 @@ namespace Resume.Service.Services
             await _userRepository.DeleteUser(id);
         }
 
-        public async Task<IEnumerable<User>> GetAllUsers()
+        public async Task<IEnumerable<Core.Models.User>> GetAllUsers()
         {
             return await _userRepository.GetAllUsers();
         }
 
-        public async Task<User> GetByIdUser(int id)
+        public async Task<Core.Models.User> GetByIdUser(int id)
         {
             return await _userRepository.GetUserById(id);
         }
 
-        public async Task UpdateUser(int id, User dto)
+        public async Task UpdateUser(int id, User user)
         {
-            await _userRepository.UpdateUser(id, dto);
+            await _userRepository.UpdateUser(id, user);
         }
 
        
