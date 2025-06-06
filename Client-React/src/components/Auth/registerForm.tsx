@@ -52,7 +52,7 @@ const RegisterForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const dispatch = useDispatch<AppDispatch>()
-  const navigate = useNavigate() // שיניתי כאן
+  const navigate = useNavigate()
   const { loading, msg: errorMessage, isLoggedIn } = useSelector((state: RootState) => state.user)
 
   // Redirect if already logged in
@@ -506,3 +506,382 @@ const RegisterForm: React.FC = () => {
 }
 
 export default RegisterForm
+// "use client"
+
+// import React, { useState, useEffect } from "react"
+// import { useDispatch, useSelector } from "react-redux"
+// import { useNavigate } from "react-router-dom"
+// import {
+//   Box,
+//   TextField,
+//   Button,
+//   Typography,
+//   Paper,
+//   InputAdornment,
+//   IconButton,
+//   Alert,
+//   CircularProgress,
+//   Link as MuiLink,
+// } from "@mui/material"
+// import {
+//   Visibility,
+//   VisibilityOff,
+//   Email,
+//   Lock,
+//   Person,
+//   Phone,
+//   Home,
+// } from "@mui/icons-material"
+// import { registerUser } from "../../slices/userSlice"
+// import type { AppDispatch, RootState } from "../../store"
+// import AppLogo from "../logo"
+
+// interface RegisterFormData {
+//   username: string
+//   email: string
+//   passwordHash: string
+//   address: string
+//   phone: string
+// }
+
+// const RegisterForm: React.FC = () => {
+//   const [formData, setFormData] = useState<RegisterFormData>({
+//     username: "",
+//     email: "",
+//     passwordHash: "",
+//     address: "",
+//     phone: "",
+//   })
+//   const [showPassword, setShowPassword] = useState(false)
+//   const [errors, setErrors] = useState<Partial<RegisterFormData>>({})
+
+//   const dispatch = useDispatch<AppDispatch>()
+//   const navigate = useNavigate()
+//   const { loading, msg: errorMessage, isLoggedIn } = useSelector(
+//     (state: RootState) => state.user
+//   )
+
+//   // Redirect if already logged in
+//   useEffect(() => {
+//     if (isLoggedIn) {
+//       navigate("/resumes")
+//     }
+//   }, [isLoggedIn, navigate])
+
+//   const validateForm = (): boolean => {
+//     const newErrors: Partial<RegisterFormData> = {}
+
+//     // Username validation
+//     if (!formData.username.trim()) {
+//       newErrors.username = "נדרש להזין שם משתמש"
+//     } else if (formData.username.length < 2) {
+//       newErrors.username = "שם המשתמש חייב להכיל לפחות 2 תווים"
+//     }
+
+//     // Email validation
+//     if (!formData.email) {
+//       newErrors.email = "נדרש להזין כתובת אימייל"
+//     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+//       newErrors.email = "כתובת אימייל לא תקינה"
+//     }
+
+//     // Password validation
+//     if (!formData.passwordHash) {
+//       newErrors.passwordHash = "נדרש להזין סיסמה"
+//     } else if (formData.passwordHash.length < 4) {
+//       newErrors.passwordHash = "הסיסמה חייבת להכיל לפחות 4 תווים"
+//     }
+
+//     // Phone validation (optional but if provided should be valid)
+//     if (formData.phone && !/^[\d\-\+\(\)\s]+$/.test(formData.phone)) {
+//       newErrors.phone = "מספר טלפון לא תקין"
+//     }
+
+//     setErrors(newErrors)
+//     return Object.keys(newErrors).length === 0
+//   }
+
+//   const handleInputChange = (field: keyof RegisterFormData) => (
+//     e: React.ChangeEvent<HTMLInputElement>
+//   ) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       [field]: e.target.value,
+//     }))
+//     // Clear error for this field when user starts typing
+//     if (errors[field]) {
+//       setErrors(prev => ({
+//         ...prev,
+//         [field]: undefined,
+//       }))
+//     }
+//   }
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault()
+
+//     if (!validateForm()) {
+//       return
+//     }
+
+//     try {
+//       // Create user object matching the server expectations
+//       const userData = {
+//         id: 0, // Server will assign ID
+//         username: formData.username,
+//         email: formData.email,
+//         passwordHash: formData.passwordHash,
+//         address: formData.address || undefined,
+//         phone: formData.phone || undefined,
+//       }
+
+//       await dispatch(registerUser(userData)).unwrap()
+//       // Successful registration will redirect via the useEffect above
+//     } catch (error) {
+//       console.error("Registration failed:", error)
+//       // Error is handled by the Redux slice and displayed via errorMessage
+//     }
+//   }
+
+//   return (
+//     <Paper
+//       elevation={3}
+//       sx={{
+//         p: 4,
+//         maxWidth: 450,
+//         width: "100%",
+//         mx: "auto",
+//         borderRadius: 2,
+//         backgroundColor: "#fff",
+//         border: "1px solid #e5d6d6",
+//       }}
+//     >
+//       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 3 }}>
+//         <AppLogo size="large" />
+//         <Typography variant="h5" sx={{ mt: 2, color: "#8B0000", fontWeight: "bold" }}>
+//           הרשמה למערכת
+//         </Typography>
+//         <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
+//           הצטרפו למערכת ניהול השידוכים המתקדמת
+//         </Typography>
+//       </Box>
+
+//       {errorMessage && (
+//         <Alert severity="error" sx={{ mb: 3, direction: "rtl" }}>
+//           {errorMessage}
+//         </Alert>
+//       )}
+
+//       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }} dir="rtl">
+//         <TextField
+//           margin="normal"
+//           required
+//           fullWidth
+//           id="username"
+//           label="שם משתמש"
+//           name="username"
+//           autoComplete="username"
+//           autoFocus
+//           value={formData.username}
+//           onChange={handleInputChange("username")}
+//           error={!!errors.username}
+//           helperText={errors.username}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <Person sx={{ color: "#8B0000" }} />
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{
+//             "& .MuiOutlinedInput-root": {
+//               "&.Mui-focused fieldset": {
+//                 borderColor: "#8B0000",
+//               },
+//             },
+//             "& .MuiInputLabel-root.Mui-focused": {
+//               color: "#8B0000",
+//             },
+//           }}
+//         />
+        
+//         <TextField
+//           margin="normal"
+//           required
+//           fullWidth
+//           id="email"
+//           label="כתובת אימייל"
+//           name="email"
+//           autoComplete="email"
+//           value={formData.email}
+//           onChange={handleInputChange("email")}
+//           error={!!errors.email}
+//           helperText={errors.email}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <Email sx={{ color: "#8B0000" }} />
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{
+//             "& .MuiOutlinedInput-root": {
+//               "&.Mui-focused fieldset": {
+//                 borderColor: "#8B0000",
+//               },
+//             },
+//             "& .MuiInputLabel-root.Mui-focused": {
+//               color: "#8B0000",
+//             },
+//           }}
+//         />
+
+//         <TextField
+//           margin="normal"
+//           required
+//           fullWidth
+//           name="password"
+//           label="סיסמה"
+//           type={showPassword ? "text" : "password"}
+//           id="password"
+//           autoComplete="new-password"
+//           value={formData.passwordHash}
+//           onChange={handleInputChange("passwordHash")}
+//           error={!!errors.passwordHash}
+//           helperText={errors.passwordHash}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <Lock sx={{ color: "#8B0000" }} />
+//               </InputAdornment>
+//             ),
+//             endAdornment: (
+//               <InputAdornment position="end">
+//                 <IconButton
+//                   aria-label="toggle password visibility"
+//                   onClick={() => setShowPassword(!showPassword)}
+//                   edge="end"
+//                 >
+//                   {showPassword ? <VisibilityOff /> : <Visibility />}
+//                 </IconButton>
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{
+//             "& .MuiOutlinedInput-root": {
+//               "&.Mui-focused fieldset": {
+//                 borderColor: "#8B0000",
+//               },
+//             },
+//             "& .MuiInputLabel-root.Mui-focused": {
+//               color: "#8B0000",
+//             },
+//           }}
+//         />
+
+//         <TextField
+//           margin="normal"
+//           fullWidth
+//           id="phone"
+//           label="מספר טלפון (אופציונלי)"
+//           name="phone"
+//           autoComplete="tel"
+//           value={formData.phone}
+//           onChange={handleInputChange("phone")}
+//           error={!!errors.phone}
+//           helperText={errors.phone}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <Phone sx={{ color: "#8B0000" }} />
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{
+//             "& .MuiOutlinedInput-root": {
+//               "&.Mui-focused fieldset": {
+//                 borderColor: "#8B0000",
+//               },
+//             },
+//             "& .MuiInputLabel-root.Mui-focused": {
+//               color: "#8B0000",
+//             },
+//           }}
+//         />
+
+//         <TextField
+//           margin="normal"
+//           fullWidth
+//           id="address"
+//           label="כתובת (אופציונלי)"
+//           name="address"
+//           autoComplete="address-line1"
+//           value={formData.address}
+//           onChange={handleInputChange("address")}
+//           error={!!errors.address}
+//           helperText={errors.address}
+//           InputProps={{
+//             startAdornment: (
+//               <InputAdornment position="start">
+//                 <Home sx={{ color: "#8B0000" }} />
+//               </InputAdornment>
+//             ),
+//           }}
+//           sx={{
+//             "& .MuiOutlinedInput-root": {
+//               "&.Mui-focused fieldset": {
+//                 borderColor: "#8B0000",
+//               },
+//             },
+//             "& .MuiInputLabel-root.Mui-focused": {
+//               color: "#8B0000",
+//             },
+//           }}
+//         />
+
+//         <Button
+//           type="submit"
+//           fullWidth
+//           variant="contained"
+//           disabled={loading}
+//           sx={{
+//             mt: 3,
+//             mb: 2,
+//             py: 1.5,
+//             backgroundColor: "#8B0000",
+//             color: "white",
+//             "&:hover": {
+//               backgroundColor: "#5c0000",
+//             },
+//             "&.Mui-disabled": {
+//               backgroundColor: "#d7a3a3",
+//             },
+//           }}
+//         >
+//           {loading ? <CircularProgress size={24} color="inherit" /> : "הרשמה"}
+//         </Button>
+
+//         <Box sx={{ textAlign: "center" }}>
+//           <Typography variant="body2">
+//             כבר יש לך חשבון?{" "}
+//             <MuiLink
+//               href="/auth/login"
+//               sx={{
+//                 color: "#8B0000",
+//                 textDecoration: "none",
+//                 fontWeight: "bold",
+//                 "&:hover": {
+//                   textDecoration: "underline",
+//                 },
+//               }}
+//             >
+//               כניסה למערכת
+//             </MuiLink>
+//           </Typography>
+//         </Box>
+//       </Box>
+//     </Paper>
+//   )
+// }
+
+// export default RegisterForm

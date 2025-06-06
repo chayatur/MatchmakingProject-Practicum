@@ -28,13 +28,13 @@ const LoginForm: React.FC = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
   const dispatch = useDispatch<AppDispatch>()
-  const navigate = useNavigate() // שיניתי כאן
+  const navigate = useNavigate() 
   const { loading, msg: errorMessage, isLoggedIn } = useSelector((state: RootState) => state.user)
 
   // Redirect if already logged in
   React.useEffect(() => {
     if (isLoggedIn) {
-      navigate("/resumes") // שיניתי כאן
+      navigate("/resumes")
     }
   }, [isLoggedIn, navigate])
 

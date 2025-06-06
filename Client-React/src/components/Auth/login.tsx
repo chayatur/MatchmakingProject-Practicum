@@ -237,7 +237,7 @@
 // }
 
 // export default LoginForm
-"use client"
+
 
 import React, { useEffect } from "react"
 import { useSelector } from "react-redux"
@@ -252,7 +252,7 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/resumes") // שיניתי כאן
+      navigate("/resumes") 
     }
   }, [isLoggedIn, navigate])
 

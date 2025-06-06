@@ -1,6 +1,6 @@
-import type React from "react"
-import { useState } from "react"
-import { useSelector, useDispatch } from "react-redux"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Paper,
@@ -14,96 +14,133 @@ import {
   Snackbar,
   CircularProgress,
   InputAdornment,
-} from "@mui/material"
-import { Person, Email, Phone, LocationOn, Edit, Save, Lock } from "@mui/icons-material"
-import type { RootState, AppDispatch } from '../store'
-import { updateUserProfile } from "../slices/userSlice"
+} from "@mui/material";
+import { Person, Email, Phone, LocationOn, Edit, Save, Lock, Cancel } from "@mui/icons-material";
+import type { RootState, AppDispatch } from '../store';
+import { updateUserProfile } from "../slices/userSlice";
 
-const UserProfile: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>()
-  const { user, loading } = useSelector((state: RootState) => state.user)
+const UserProfile = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading } = useSelector((state: RootState) => state.user);
 
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: user.username || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    address: user.address || "",
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    username: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Initialize form data when user data is available or when editing starts
+  useEffect(() => {
+    if (user && user.id) {
+      setFormData({
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+      });
+    }
+  }, [user, isEditing]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
+    });
 
     // Clear error when user types
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: "",
-      })
+      });
     }
-  }
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.username) {
-      newErrors.username = "נדרש להזין שם משתמש"
+    if (!formData.username.trim()) {
+      newErrors.username = "נדרש להזין שם משתמש";
     }
 
-    if (!formData.email) {
-      newErrors.email = "נדרש להזין כתובת אימייל"
+    if (!formData.email.trim()) {
+      newErrors.email = "נדרש להזין כתובת אימייל";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "כתובת אימייל לא תקינה"
+      newErrors.email = "כתובת אימייל לא תקינה";
     }
 
-    if (formData.phone && !/^[0-9]{9,10}$/.test(formData.phone)) {
-      newErrors.phone = "מספר טלפון לא תקין"
+    if (formData.phone && !/^[0-9]{9,10}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = "מספר טלפון לא תקין (9-10 ספרות)";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async () => {
-    if (!validateForm()) return
-
-    try {
-      await dispatch(
-        updateUserProfile({
-          id: user.id,
-          username: formData.username,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-        }),
-      ).unwrap()
-
-      setSuccessMessage("הפרופיל עודכן בהצלחה")
-      setIsEditing(false)
-    } catch (error) {
-      console.error("Failed to update profile:", error)
-    }
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleCloseSnackbar = () => {
-    setSuccessMessage(null)
-  }
+    setSuccessMessage(null);
+  };
 
-  // Get initials for avatar
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      // Create update object with only the fields that should be updated
+      // DON'T include password/passwordHash at all
+      const updatedUser = {
+        id: user.id,
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || null,
+        address: formData.address.trim() || null,
+      };
+
+      console.log("Sending update request with data:", updatedUser);
+
+      await dispatch(updateUserProfile(updatedUser)).unwrap();
+
+      setSuccessMessage("הפרופיל עודכן בהצלחה!");
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error("Failed to update profile:", error);
+      setErrors({ general: "שגיאה בעדכון הפרופיל. אנא נסה שוב." });
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form data to original values
+    setFormData({
+      username: user.username || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      address: user.address || "",
+    });
+    setErrors({});
+    setIsEditing(false);
+  };
+
   const getInitials = () => {
     if (user.username) {
-      return user.username.charAt(0).toUpperCase()
+      return user.username.charAt(0).toUpperCase();
     }
     if (user.email) {
-      return user.email.charAt(0).toUpperCase()
+      return user.email.charAt(0).toUpperCase();
     }
-    return "U"
+    return "U";
+  };
+
+  // Show loading if user data is not available yet
+  if (!user || !user.id) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress sx={{ color: "#8B0000" }} />
+      </Box>
+    );
   }
 
   return (
@@ -163,26 +200,50 @@ const UserProfile: React.FC = () => {
               ערוך פרופיל
             </Button>
           ) : (
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleSubmit}
-              disabled={loading}
-              sx={{
-                backgroundColor: "#8B0000",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "#5c0000",
-                },
-                "&.Mui-disabled": {
-                  backgroundColor: "#d7a3a3",
-                },
-              }}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "שמור שינויים"}
-            </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<Cancel />}
+                onClick={handleCancel}
+                sx={{
+                  borderColor: "#757575",
+                  color: "#757575",
+                  "&:hover": {
+                    borderColor: "#424242",
+                    backgroundColor: "rgba(117, 117, 117, 0.04)",
+                  },
+                }}
+              >
+                ביטול
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<Save />}
+                onClick={handleSubmit}
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#8B0000",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#5c0000",
+                  },
+                  "&.Mui-disabled": {
+                    backgroundColor: "#d7a3a3",
+                  },
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : "שמור שינויים"}
+              </Button>
+            </Box>
           )}
         </Box>
+
+        {/* Show general error if exists */}
+        {errors.general && (
+          <Alert severity="error" sx={{ mb: 3, direction: "rtl" }}>
+            {errors.general}
+          </Alert>
+        )}
 
         {isEditing ? (
           <Grid container spacing={3}>
@@ -195,6 +256,7 @@ const UserProfile: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.username}
                 helperText={errors.username}
+                required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -219,10 +281,12 @@ const UserProfile: React.FC = () => {
                 fullWidth
                 label="כתובת אימייל"
                 name="email"
+                type="email"
                 value={formData.email}
                 onChange={handleChange}
                 error={!!errors.email}
                 helperText={errors.email}
+                required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -251,6 +315,7 @@ const UserProfile: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.phone}
                 helperText={errors.phone}
+                placeholder="לדוגמה: 0501234567"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -306,7 +371,9 @@ const UserProfile: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     שם משתמש
                   </Typography>
-                  <Typography variant="body1">{user.username || "לא הוגדר"}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {user.username || "לא הוגדר"}
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
@@ -317,7 +384,9 @@ const UserProfile: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     כתובת אימייל
                   </Typography>
-                  <Typography variant="body1">{user.email}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {user.email}
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
@@ -328,7 +397,9 @@ const UserProfile: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     טלפון
                   </Typography>
-                  <Typography variant="body1">{user.phone || "לא הוגדר"}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {user.phone || "לא הוגדר"}
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
@@ -339,7 +410,9 @@ const UserProfile: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     כתובת
                   </Typography>
-                  <Typography variant="body1">{user.address || "לא הוגדר"}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {user.address || "לא הוגדר"}
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
@@ -350,7 +423,7 @@ const UserProfile: React.FC = () => {
 
         <Box>
           <Typography variant="h6" sx={{ color: "#8B0000", mb: 2 }}>
-            אבטחה
+            אבטחת החשבון
           </Typography>
           <Button
             variant="outlined"
@@ -381,7 +454,7 @@ const UserProfile: React.FC = () => {
         </Alert>
       </Snackbar>
     </Paper>
-  )
-}
+  );
+};
 
-export default UserProfile
+export default UserProfile;

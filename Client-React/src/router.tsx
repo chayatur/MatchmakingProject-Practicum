@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
 import LoginForm from './components/Auth/login';
-import Register from './components/Auth/register';
 import Layout from './components/layout';
 import FileUploader from './components/fileUploader';
 import About from './components/about';
@@ -10,6 +9,7 @@ import UserProfile from './components/profile';
 
 import HomePage from './components/home';
 import Dashboard from './pages/Dashboard';
+import RegisterForm from './components/Auth/registerForm';
 
 const router = createBrowserRouter([
     {
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
             { path: 'FileUploader', element: <FileUploader /> },
             { path: 'resumes', element: <ResumesPage /> },
             { path: 'login', element: <LoginForm /> }, 
-            { path: 'register', element: <Register /> }, 
+            { path: 'register', element: <RegisterForm /> }, 
           { path: 'dashboard', element: <Dashboard /> },
             { path: 'profile', element: <UserProfile /> },
 
