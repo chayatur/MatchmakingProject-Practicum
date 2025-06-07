@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
-import type { User, Login, Response } from "../types/user"
+import type { User, UserDTO, Login, Response } from "../types/user"
 
 const url = "http://localhost:5138/api/Auth"
 
@@ -35,18 +35,41 @@ export const logoutUser = createAsyncThunk("user/logout", async () => {
   return
 })
 
-// Async thunk for updating user profile
-export const updateUserProfile = createAsyncThunk<User,User>(
+// Async thunk for updating user profile - משתמש ב-UserDTO
+export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
   "user/updateProfile",
   async (userData, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem("token")
-      const response = await axios.put<User>(`http://localhost:5138/api/User/${userData.id}`, userData, {
+      
+      // המר את הנתונים ל-UserDTO format (עם שמות שדות גדולים)
+      const userDTO: UserDTO = {
+        ID: userData.id!,
+        Username: userData.username || "",
+        Email: userData.email || "",
+        Address: userData.address || "",
+        Phone: userData.phone || "",
+      }
+
+      console.log("Sending UserDTO to server:", userDTO)
+
+      const response = await axios.put<UserDTO>(`http://localhost:5138/api/User/${userData.id}`, userDTO, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      return response.data
+      
+      // המר את התגובה חזרה ל-User format (עם שמות שדות קטנים)
+      const updatedUser: User = {
+        id: response.data.ID,
+        username: response.data.Username,
+        email: response.data.Email,
+        address: response.data.Address,
+        phone: response.data.Phone,
+        updatedAt: new Date().toISOString(),
+      }
+      
+      return updatedUser
     } catch (e: any) {
       return rejectWithValue(e.message)
     }
@@ -135,7 +158,8 @@ const userSlice = createSlice({
         state.isLoggedIn = false
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
-        state.user = action.payload
+        // עדכן את המשתמש הקיים עם הנתונים החדשים
+        state.user = { ...state.user, ...action.payload }
         state.loading = false
         state.msg = ""
       })

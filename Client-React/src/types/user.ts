@@ -1,8 +1,8 @@
-// Updated User type to match server structure
+// types/user.ts
 export type User = {
-  id: number
+  id: number 
   email: string
-  passwordHash?: string // This should never be sent in updates
+  passwordHash?: string
   username?: string
   address?: string | null
   phone?: string | null
@@ -10,33 +10,21 @@ export type User = {
   updatedAt?: string
 }
 
-// Login request type
+// UserDTO type שמתאים לשרת
+export type UserDTO = {
+  ID: number 
+  Username: string
+  Email: string
+  Address: string
+  Phone: string
+}
+
 export type Login = {
   email: string
   password: string
 }
 
-// Response type for login/register
 export type Response = {
   user: User
   token: string
-  message?: string
-}
-
-// User registration type
-export type UserRegistration = {
-  username: string
-  email: string
-  passwordHash: string // Only used for registration
-  phone?: string
-  address?: string
-}
-
-// Profile update type - excludes password fields completely
-export type UserProfileUpdate = {
-  id: number
-  username: string
-  email: string
-  phone?: string | null
-  address?: string | null
 }

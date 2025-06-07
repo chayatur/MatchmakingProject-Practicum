@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-
+using Resume.Core.DTOs;
 using Resume.Core.IServices;
 using Resume.Core.Models;
+using Resume.Data;
 
 
 namespace Resume.API.Controllers
@@ -13,11 +14,13 @@ namespace Resume.API.Controllers
     {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        private readonly ResumeContext _context;
 
-        public UserController(IUserService userService, IMapper mapper)
+        public UserController(IUserService userService, IMapper mapper,ResumeContext context)
         {
             _userService = userService;
             _mapper = mapper;
+            _context = context;
         }
 
 
@@ -39,10 +42,39 @@ namespace Resume.API.Controllers
             return Ok(user);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        public async Task<ActionResult<UserDTO>> UpdateUser(int id, UserDTO userDto)
         {
-            await _userService.UpdateUser(id, user);
-            return NoContent();
+            try
+            {
+                var existingUser = await _context.Users.FindAsync(id);
+                if (existingUser == null)
+                {
+                    return NotFound();
+                }
+
+                existingUser.Username = userDto.Username;
+                existingUser.Email = userDto.Email;
+                existingUser.Address = userDto.Address;
+                existingUser.Phone = userDto.Phone;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                var resultDto = new UserDTO
+                {
+                    ID = existingUser.ID,
+                    Username = existingUser.Username,
+                    Email = existingUser.Email,
+                    Address = existingUser.Address,
+                    Phone = existingUser.Phone
+                };
+
+                return Ok(resultDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
