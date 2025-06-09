@@ -753,25 +753,16 @@ export const downloadFile = createAsyncThunk(
 );
 
 
-
 export const viewOriginalFile = createAsyncThunk(
   "files/viewOriginalFile",
-  async (fileName: string, { rejectWithValue }) => {
+  async ({ fileName }: { fileName: string }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${API_BASE}/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`,
       );
 
       if (response.data?.url) {
-        const token = localStorage.getItem("authToken"); // קבלת הטוקן מה-localStorage
-
-        if (token) {
-          const urlWithToken = `${response.data.url}?token=${token}`; // הוספת הטוקן ל-URL
-          window.open(urlWithToken, "_blank");
-          return { fileName, success: true };
-        } else {
-          throw new Error("לא ניתן לפתוח את הקובץ: משתמש לא מחובר");
-        }
+        return { fileName, url: response.data.url, success: true }; // מחזיר את ה-URL
       }
       throw new Error("לא ניתן לפתוח את הקובץ");
     } catch (error: any) {
@@ -779,6 +770,7 @@ export const viewOriginalFile = createAsyncThunk(
     }
   },
 );
+
 
 // Update file
 export const updateFile = createAsyncThunk(
