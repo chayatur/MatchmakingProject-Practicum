@@ -11,6 +11,8 @@ export const loginUser = createAsyncThunk<Response, Login>("user/login", async (
     console.log("Response from login:", response.data)
     const { user, token } = response.data
     sessionStorage.setItem("token", token)
+    sessionStorage.setItem("userId", user.id.toString())
+
     return { user, token }
   } catch (e: any) {
     return rejectWithValue(e.message)
@@ -23,6 +25,8 @@ export const registerUser = createAsyncThunk<Response, User>("user/register", as
     const response = await axios.post<Response>(`${url}/register`, userData)
     const { user, token } = response.data
     sessionStorage.setItem("token", token)
+    sessionStorage.setItem("userId", user.id.toString())
+    
     return { user, token }
   } catch (e: any) {
     return rejectWithValue(e.message)

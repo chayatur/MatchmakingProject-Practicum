@@ -666,6 +666,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
 import { FileData } from "../types/file"
 import { User } from "../types/user"
+import { LogIn } from "lucide-react"
 
 interface FilesState {
   files: FileData[]
@@ -692,29 +693,56 @@ const initialState: FilesState = {
 const API_BASE = "http://localhost:5138/api"
 
 // Fetch all files
+// export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
+//   try {
+//     const state = getState() as any
+//     const currentUserId = state.user.userId
+
+//     const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
+
+//     const filesWithOwnership = response.data.map((file) => ({
+//       ...file,
+//       isOwner: file.userId === currentUserId,
+//     }))
+
+//     return filesWithOwnership.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+//   } catch (error: any) {
+//     return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים")
+//   }
+// })
 export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
   try {
-    const state = getState() as any
-    const currentUserId = state.user.userId
+    const state = getState() as any;
+    const currentUserId = state.user?.userId;
+    console.log("🚀 userId from state:", currentUserId);
 
-    const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
+    const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse`);
+    console.log("📦 response.data from server:", response.data);
 
     const filesWithOwnership = response.data.map((file) => ({
       ...file,
       isOwner: file.userId === currentUserId,
-    }))
+    }));
 
-    return filesWithOwnership.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    const sorted = filesWithOwnership.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    console.log("✅ Sorted files:", sorted);
+
+    return sorted;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים")
+    console.error("❌ Error fetching files:", error.response?.data || error.message);
+    return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים");
   }
-})
+});
+
+
 
 // Fetch shared files
 export const fetchSharedFiles = createAsyncThunk("files/fetchSharedFiles", async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get<FileData[]>(`${API_BASE}/sharedFiles`) // הנח שיש לך endpoint כזה
-    return response.data
+ 
+    console.log(response,'resEromShare');
+       return response.data
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים המשותפים")
   }
@@ -809,21 +837,29 @@ export const fetchUsers = createAsyncThunk("files/fetchUsers", async (_, { rejec
 export const shareFile = createAsyncThunk(
   "files/shareFile",
   async (
-    { resumeFileId, sharedWithUserId }: { resumeFileId: number; sharedWithUserId: number },
-    { rejectWithValue },
+    {
+      resumeFileId,
+      sharedByUserId,
+      sharedWithUserId,
+    }: { resumeFileId: number; sharedByUserId: number; sharedWithUserId: number },
+    { rejectWithValue }
   ) => {
     try {
-      return {
-        resumeFileId,
-        sharedWithUserId,
+      const response = await axios.post("http://localhost:5138/api/Sharing", {
+        resumefileID: resumeFileId,
+        sharedByUserID: sharedByUserId,
+        sharedWithUserID: sharedWithUserId,
         sharedAt: new Date().toISOString(),
-        success: true,
-      }
+      });
+console.log(response,'resShare---------------');
+
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue("שגיאה בשיתוף הקובץ")
+      return rejectWithValue(error.response?.data || "שגיאה בשיתוף הקובץ");
     }
-  },
-)
+  }
+);
+
 
 const filesSlice = createSlice({
   name: "files",
@@ -851,48 +887,79 @@ const filesSlice = createSlice({
       state.uploadProgress = action.payload
     },
     filterFiles: (state, action) => {
-      const filters = action.payload
-
+      const filters = action.payload;
+      console.log("🔍 filters received:", filters);
+      console.log("📄 state.files BEFORE filter:", state.files);
+    
       if (!filters || Object.keys(filters).length === 0) {
-        state.filteredFiles = state.files
-        return
+        console.log("🔄 No filters applied, restoring all files");
+        state.filteredFiles = state.files;
+        return;
       }
 
+    
       state.filteredFiles = state.files.filter((file) => {
-        let match = true
-
+       
+        let match = true;
         if (filters.firstName && file.firstName) {
-          match = match && file.firstName.toLowerCase().includes(filters.firstName.toLowerCase())
+          console.log("🔠 Comparing:", file.firstName, "vs", filters.firstName);
+         console.log( file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase()),"same");
+         
+
+          match = match &&  file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase())
+          console.log(match);
+          
         }
         if (filters.lastName && file.lastName) {
-          match = match && file.lastName.toLowerCase().includes(filters.lastName.toLowerCase())
+          console.log('2');
+          
+          match = match && file.lastName.toLowerCase().includes(filters.lastName.toLowerCase());
         }
         if (filters.fatherName && file.fatherName) {
-          match = match && file.fatherName.toLowerCase().includes(filters.fatherName.toLowerCase())
+          console.log('3');
+          match = match && file.fatherName.toLowerCase().includes(filters.fatherName.toLowerCase());
         }
         if (filters.motherName && file.motherName) {
-          match = match && file.motherName.toLowerCase().includes(filters.motherName.toLowerCase())
+          console.log('4');
+          match = match && file.motherName.toLowerCase().includes(filters.motherName.toLowerCase());
         }
         if (filters.address && file.address) {
-          match = match && file.address.toLowerCase().includes(filters.address.toLowerCase())
+          console.log('5');
+          match = match && file.address.toLowerCase().includes(filters.address.toLowerCase());
         }
         if (filters.placeOfStudy && file.placeOfStudy) {
-          match = match && file.placeOfStudy.toLowerCase().includes(filters.placeOfStudy.toLowerCase())
+          console.log('6');
+          match = match && file.placeOfStudy.toLowerCase().includes(filters.placeOfStudy.toLowerCase());
         }
         if (filters.occupation && file.occupation) {
-          match = match && file.occupation.toLowerCase().includes(filters.occupation.toLowerCase())
+          console.log('7');
+          match = match && file.occupation.toLowerCase().includes(filters.occupation.toLowerCase());
         }
+        if (filters.minAge  && filters.maxAge  && file.age) {
+console.log(file.age,'age');
+console.log(filters.minAge,'minA');
+console.log(filters.maxAge,'maxA');
 
-        if (filters.minAge !== undefined && filters.maxAge !== undefined && file.age) {
-          match = match && file.age >= filters.minAge && file.age <= filters.maxAge
-        }
-        if (filters.minHeight !== undefined && filters.maxHeight !== undefined && file.height) {
-          match = match && file.height >= filters.minHeight && file.height <= filters.maxHeight
-        }
 
-        return match
-      })
-    },
+          console.log('8');
+          console.log(typeof(file.age));
+          
+          console.log(file.age >= filters.minAge && file.age <= filters.maxAge,'compareA');
+          
+          match = match && file.age >= filters.minAge && file.age <= filters.maxAge;
+        }
+        if (filters.minHeight && filters.maxHeight  && file.height) {
+          console.log('9');
+          match = match && file.height*100 >= filters.minHeight && file.height*100 <= filters.maxHeight;
+        }
+        console.log(match,'file',file);
+        return match   
+      });
+      
+      console.log("🎯 Filtered files result:", state.filteredFiles);
+      //return match;
+    }
+    
   },
   extraReducers: (builder) => {
     builder
@@ -1003,9 +1070,6 @@ const filesSlice = createSlice({
       })
   },
 })
-
-
-
 
 export const {
   clearFilters,

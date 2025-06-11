@@ -7,6 +7,7 @@ export interface FileData {
     fatherName?: string
     motherName?: string
     address?: string
+    gender:string
     age: number
     height: number
     createdAt: string

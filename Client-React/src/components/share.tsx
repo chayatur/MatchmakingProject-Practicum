@@ -24,7 +24,7 @@ import {
 import { Close as CloseIcon, Share as ShareIcon, Person as PersonIcon, Search as SearchIcon } from "@mui/icons-material"
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "../store"
-import { shareFile, fetchUsers } from "../slices/fileSlice"
+import { shareFile, fetchUsers, fetchSharedFiles } from "../slices/fileSlice"
 import type { FileData } from "../types/file"
 
 interface ShareDialogProps {
@@ -74,10 +74,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
       setSharingUserId(userId)
 
       try {
+     const   currentUserId=Number(sessionStorage.getItem('userId'))
+     console.log(currentUserId,'current');
+     console.log(resume.id,'resumeId');
+     console.log(userId,'toShareWith');
+      
         await dispatch(
           shareFile({
             resumeFileId: resume.id,
-            sharedWithUserId: userId,
+            sharedWithUserId:userId ,
+            sharedByUserId:currentUserId
           }),
         ).unwrap()
 
@@ -193,10 +199,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
                         variant="contained"
                         size="small"
                         onClick={() => handleShare(user.id)}
-                        disabled={sharingUserId === user.id}
+                        disabled={sharingUserId == user.id}
                         className="btn-primary"
                         startIcon={
-                          sharingUserId === user.id ? <CircularProgress size={16} color="inherit" /> : <ShareIcon />
+                          sharingUserId == user.id ? <CircularProgress size={16} color="inherit" /> : <ShareIcon />
                         }
                         sx={{ minWidth: 100 }}
                       >

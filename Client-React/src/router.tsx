@@ -12,20 +12,21 @@ import Dashboard from './pages/Dashboard';
 import RegisterForm from './components/Auth/registerForm';
 
 const router = createBrowserRouter([
-    {
-        path: '/',
-        element: <Layout />,
-        children: [
-            { path: '/', element: <HomePage /> },
-            { path: 'about', element: <About /> }, 
-            { path: 'FileUploader', element: <FileUploader /> },
-            { path: 'resumes', element: <ResumesPage /> },
-            { path: 'login', element: <LoginForm /> }, 
-            { path: 'register', element: <RegisterForm /> }, 
-          { path: 'dashboard', element: <Dashboard /> },
-            { path: 'profile', element: <UserProfile /> },
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: 'about', element: <About /> },
+      { path: 'FileUploader', element: <FileUploader /> },
+      { path: 'resumes', element: <ResumesPage /> },
+      { path: 'login', element: <LoginForm /> },
+      { path: 'register', element: <RegisterForm /> },
+       { path: 'dashboard', element: <Dashboard /> },
+      { path: 'profile', element: <UserProfile /> },
 
-            ]    },
+    ]
+  },
 ]);
 
 export default router;

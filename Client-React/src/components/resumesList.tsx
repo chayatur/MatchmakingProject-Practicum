@@ -313,42 +313,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
                     {/* Secondary content - using Box instead of ListItemText secondary */}
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, direction: "rtl" }}>
-                      {resume.age && (
-                        <Chip
-                          icon={<CakeIcon />}
-                          label={`גיל: ${resume.age}`}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(139, 0, 0, 0.08)",
-                            color: "#5c0000",
-                            "& .MuiChip-icon": { color: "#8B0000" },
-                          }}
-                        />
-                      )}
-                      {resume.height && (
-                        <Chip
-                          icon={<HeightIcon />}
-                          label={`גובה: ${resume.height} ס"מ`}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(139, 0, 0, 0.08)",
-                            color: "#5c0000",
-                            "& .MuiChip-icon": { color: "#8B0000" },
-                          }}
-                        />
-                      )}
-                      {resume.address && (
-                        <Chip
-                          icon={<LocationOnIcon />}
-                          label={resume.address}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(139, 0, 0, 0.08)",
-                            color: "#5c0000",
-                            "& .MuiChip-icon": { color: "#8B0000" },
-                          }}
-                        />
-                      )}
                       <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                         <Typography variant="caption" color="text.secondary" component="span">
@@ -381,7 +345,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                       </IconButton>
                     </Tooltip>
 
-                    {isOwner(resume) && (
+                    {(isOwner(resume)) && (
                       <Tooltip title="אפשרויות נוספות">
                         <IconButton onClick={(e) => handleMenuOpen(e, resume)} sx={{ color: "#8B0000" }}>
                           <MoreVertIcon />

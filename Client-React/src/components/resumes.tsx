@@ -31,15 +31,35 @@ const ResumesPage: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false)
 
   useEffect(() => {
+    console.log(isLoggedIn,'isLogin');
+    
     if (isLoggedIn) {
       dispatch(fetchFiles())
     }
   }, [dispatch, isLoggedIn])
 
+  // const handleSearch = (filters: SearchFilters) => {
+  //   setSearchPerformed(true)
+
+  //   // Check if we have any active filters
+  //   const hasFilters = Object.entries(filters).some(([key, value]) => {
+  //     if (typeof value === "string") return value.trim() !== ""
+  //     if (key === "minAge") return value !== 18
+  //     if (key === "maxAge") return value !== 50
+  //     if (key === "minHeight") return value !== 150
+  //     if (key === "maxHeight") return value !== 200
+  //     return false
+  //   })
+
+  //   if (hasFilters) {
+  //     dispatch(filterFiles(filters))
+  //   } else {
+  //     dispatch(fetchFiles())
+  //   }
+  // }
   const handleSearch = (filters: SearchFilters) => {
     setSearchPerformed(true)
-
-    // Check if we have any active filters
+  
     const hasFilters = Object.entries(filters).some(([key, value]) => {
       if (typeof value === "string") return value.trim() !== ""
       if (key === "minAge") return value !== 18
@@ -48,11 +68,12 @@ const ResumesPage: React.FC = () => {
       if (key === "maxHeight") return value !== 200
       return false
     })
-
+  
     if (hasFilters) {
+      // זה יעבד מיד כי זה reducer רגיל, לא async
       dispatch(filterFiles(filters))
     } else {
-      dispatch(fetchFiles())
+      dispatch(fetchFiles()) // זה נשאר async
     }
   }
 
