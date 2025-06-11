@@ -24,7 +24,7 @@ import {
 import { Close as CloseIcon, Share as ShareIcon, Person as PersonIcon, Search as SearchIcon } from "@mui/icons-material"
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "../store"
-import { shareFile, fetchUsers, fetchSharedFiles } from "../slices/fileSlice"
+import { shareFile, fetchUsers } from "../slices/fileSlice"
 import type { FileData } from "../types/file"
 
 interface ShareDialogProps {

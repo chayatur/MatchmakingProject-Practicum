@@ -28,6 +28,7 @@ public class AIRepository : IAIRepository
 
     public async Task AddAiResponseAsync(AIResponse aiResponse, int userId, string fileName)
     {
+        Console.WriteLine("save res ai");
         aiResponse.UserId = userId;
         aiResponse.FileName = fileName;
         aiResponse.CreatedAt = DateTime.Now;
@@ -55,7 +56,21 @@ public class AIRepository : IAIRepository
         await _context.SaveChangesAsync();
     }
 
+    //public async Task UpdateAIResponseAsync(AIResponse aiResponse)
+    //{
+    //    _context.AIResponses.Update(aiResponse);
+    //    await _context.SaveChangesAsync();
+    //}
 
+    public async Task DeleteAIResponseAsync(int id)
+    {
+        var aiResponse = await _context.AIResponses.FindAsync(id);
+        if (aiResponse != null)
+        {
+            _context.AIResponses.Remove(aiResponse);
+            await _context.SaveChangesAsync();
+        }
+    }
     public async Task DeleteAllAIResponsesAsync()
     {
         var invalidResponses = await GetAllAIResponsesAsync();

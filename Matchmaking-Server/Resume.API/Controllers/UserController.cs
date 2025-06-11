@@ -52,6 +52,7 @@ namespace Resume.API.Controllers
                     return NotFound();
                 }
 
+                // עדכן רק את השדות מה-DTO - PasswordHash נשאר ללא שינוי!
                 existingUser.Username = userDto.Username;
                 existingUser.Email = userDto.Email;
                 existingUser.Address = userDto.Address;
@@ -60,6 +61,7 @@ namespace Resume.API.Controllers
 
                 await _context.SaveChangesAsync();
 
+                // החזר UserDTO בלבד (בלי PasswordHash)
                 var resultDto = new UserDTO
                 {
                     ID = existingUser.ID,

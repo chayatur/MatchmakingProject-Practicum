@@ -58,6 +58,8 @@ const ResumesPage: React.FC = () => {
   //   }
   // }
   const handleSearch = (filters: SearchFilters) => {
+    console.log(searchPerformed);
+    
     setSearchPerformed(true)
   
     const hasFilters = Object.entries(filters).some(([key, value]) => {

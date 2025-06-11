@@ -8,7 +8,6 @@ import {
   Paper,
   List,
   ListItem,
-  ListItemText,
   Divider,
   Button,
   Dialog,
@@ -43,9 +42,6 @@ import {
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
   OpenInNew as OpenInNewIcon,
-  LocationOn as LocationOnIcon,
-  Height as HeightIcon,
-  Cake as CakeIcon,
 } from "@mui/icons-material"
 import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
@@ -179,6 +175,8 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   }, [dispatch, selectedResume, showSnackbar])
 
   const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
+    console.log(event);
+    
     setPage(value)
   }, [])
 

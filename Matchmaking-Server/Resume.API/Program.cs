@@ -60,11 +60,14 @@ builder.Services.AddAutoMapper(typeof(MappingProFile));
 
 
 
+//var connectionString = builder.Configuration["ConnectionStrings:Resume"];
+//Console.WriteLine(connectionString);
+//builder.Services.AddDbContext<ResumeContext>(options =>
+//options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
 var connectionString = builder.Configuration["ConnectionStrings:Resume"];
 Console.WriteLine(connectionString);
 builder.Services.AddDbContext<ResumeContext>(options =>
 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
-
 // Amazon S3 configuration
 builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 {

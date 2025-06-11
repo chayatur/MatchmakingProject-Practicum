@@ -8,6 +8,7 @@ namespace Resume.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class ChatController : ControllerBase
+      
     {
         private readonly HttpClient client = new HttpClient();
         private readonly string myApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");

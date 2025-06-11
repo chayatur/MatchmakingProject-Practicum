@@ -666,8 +666,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
 import { FileData } from "../types/file"
 import { User } from "../types/user"
-import { LogIn } from "lucide-react"
-
 interface FilesState {
   files: FileData[]
   filteredFiles: FileData[]

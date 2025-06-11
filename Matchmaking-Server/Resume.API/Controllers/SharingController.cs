@@ -31,11 +31,8 @@ namespace Resume.API.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetSharedWithUser(int userId)
-        {
-            var sharedResumes = await _sharingService.GetSharedWithUserAsync(userId);
-            return Ok(sharedResumes);
-        }
+       
+
 
         [HttpDelete("{sharingId}")]
         public async Task<IActionResult> RemoveShare(int sharingId)

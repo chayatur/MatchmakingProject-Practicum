@@ -1,22 +1,7 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  IconButton,
-  Container,
-  Button,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Divider,
-} from "@mui/material"
+import { AppBar, Box, Toolbar, IconButton, Container, Button, Drawer,List, ListItem, ListItemButton, ListItemText,Divider,} from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import AppLogo from '../logo'
 import AuthStatus from "./status"
@@ -28,16 +13,18 @@ const pages = [
   { name: "צור קשר", path: "/contact" },
 ]
 
-const Header: React.FC = () => {
+const Header= () => {
   const navigate = useNavigate() // שימוש ב-useNavigate מ-React Router
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget)
-  }
+  // const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorElNav(event.currentTarget)
+  // }
 
   const handleCloseNavMenu = () => {
+    console.log(anchorElNav);
+    
     setAnchorElNav(null)
   }
 
