@@ -3,7 +3,7 @@
 import type React from "react"
 import { useNavigate } from "react-router-dom"
 import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaHandshake, FaClock } from "react-icons/fa"
-import "../styles/About.css"
+import '../styles/about.css'
 
 const About: React.FC = () => {
   const navigate = useNavigate()
