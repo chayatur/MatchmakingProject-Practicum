@@ -688,7 +688,7 @@ const initialState: FilesState = {
   sharedFiles: [], // הוספת sharedFiles
 }
 
-const API_BASE = "http://localhost:5138/api"
+const API_BASE = "https://matchmakingproject-practicum.onrender.com/api"
 
 // Fetch all files
 // export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
@@ -843,7 +843,7 @@ export const shareFile = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post("http://localhost:5138/api/Sharing", {
+      const response = await axios.post("https://matchmakingproject-practicum.onrender.com/api/Sharing", {
         resumefileID: resumeFileId,
         sharedByUserID: sharedByUserId,
         sharedWithUserID: sharedWithUserId,

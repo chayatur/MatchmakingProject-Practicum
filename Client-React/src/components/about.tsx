@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaHandshake, FaClock } from "react-icons/fa"
 import '../styles/about.css'
 
-const About: React.FC = () => {
+const About = () => {
   const navigate = useNavigate()
 
   const features = [

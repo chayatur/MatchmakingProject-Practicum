@@ -19,7 +19,7 @@ const DownloadResume = ({ fileName }: { fileName: string }) => {
 
         try {
             // בקשת ה-URL להורדת הקובץ
-            const response = await axios.get(`http://localhost:5138/api/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`);
+            const response = await axios.get(`https://matchmakingproject-practicum.onrender.com/api/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`);
             const downloadUrl = response.data.url;
 
             // הורדת הקובץ

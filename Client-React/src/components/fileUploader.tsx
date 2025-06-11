@@ -246,7 +246,7 @@ const FileUploader = () => {
          console.log(formData.ResumeFile,'formData.file');
         
        
-        const response = await axios.post("http://localhost:5138/api/AIResponse", formData, {
+        const response = await axios.post("https://matchmakingproject-practicum.onrender.com/api/AIResponse", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
@@ -268,7 +268,7 @@ const FileUploader = () => {
 
     try {
         const encodedFileName = encodeURIComponent(file.name);
-        const response = await axios.get(`http://localhost:5138/api/upload/presigned-url?fileName=${encodedFileName}`);
+        const response = await axios.get(`https://matchmakingproject-practicum.onrender.com/api/upload/presigned-url?fileName=${encodedFileName}`);
 
         const presignedUrl = response.data.url;
         console.log(presignedUrl);

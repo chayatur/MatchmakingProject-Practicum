@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
 import type { User, UserDTO, Login, Response } from "../types/user"
 
-const url = "http://localhost:5138/api/Auth"
+const url = "https://matchmakingproject-practicum.onrender.com/api/Auth"
 
 // Async thunk for logging in a user
 export const loginUser = createAsyncThunk<Response, Login>("user/login", async (userData, { rejectWithValue }) => {
@@ -57,7 +57,7 @@ export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
 
       console.log("Sending UserDTO to server:", userDTO)
 
-      const response = await axios.put<UserDTO>(`http://localhost:5138/api/User/${userData.id}`, userDTO, {
+      const response = await axios.put<UserDTO>(`https://matchmakingproject-practicum.onrender.com/api/User/${userData.id}`, userDTO, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
