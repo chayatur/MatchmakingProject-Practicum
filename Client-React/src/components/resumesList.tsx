@@ -1,35 +1,9 @@
-"use client"
-
 import type React from "react"
 import { useState, useCallback } from "react"
 import {
-  Box,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  Divider,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
-  Chip,
-  IconButton,
-  CircularProgress,
-  Pagination,
-  useMediaQuery,
-  useTheme,
-  Tooltip,
-  Alert,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  Snackbar,
-  Fade,
-  Zoom,
-} from "@mui/material"
+  Box,Typography,Paper,List,ListItem,Divider, Button, Dialog, DialogTitle, DialogContent,DialogActions,Grid,Chip,
+  IconButton,CircularProgress,Pagination,useMediaQuery,useTheme,Tooltip, Alert,Menu,
+  MenuItem,ListItemIcon,Snackbar,Fade,Zoom} from "@mui/material"
 import {
   Download as DownloadIcon,
   Visibility as VisibilityIcon,
@@ -47,7 +21,7 @@ import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
 import type { AppDispatch, RootState } from "../store"
 import { downloadFile, deleteFile, viewOriginalFile, clearError } from "../slices/fileSlice"
-import { EditIcon, ShareIcon } from "lucide-react"
+import{Edit2Icon, Share2Icon } from "lucide-react"
 import ShareDialog from "./share"
 import EditResumeDialog from "./editResume"
 
@@ -395,7 +369,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
         <MenuItem onClick={handleEdit}>
           <ListItemIcon>
             <Box sx={{ color: "#8B0000" }}>
-              <EditIcon />
+              <Edit2Icon />
             </Box>
           </ListItemIcon>
           עריכה
@@ -403,7 +377,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
         <MenuItem onClick={handleShare}>
           <ListItemIcon>
             <Box sx={{ color: "#8B0000" }}>
-              <ShareIcon />
+              <Share2Icon />
             </Box>
           </ListItemIcon>
           שיתוף

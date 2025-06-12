@@ -1,5 +1,3 @@
-// "use client"
-
 // import type React from "react"
 // import { Container, Box } from "@mui/material"
 // // import ChangePasswordForm from "../../components/auth/change-password-form"

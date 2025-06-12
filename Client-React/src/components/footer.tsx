@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -25,7 +23,7 @@ const Footer= () => {
     // Handle newsletter subscription
     console.log("Newsletter subscription:", email)
     setEmail("")
-    alert("תודה על ההרשמה לניוזלטר!")
+    alert("תודה על ההרשמה newsletter!")
   }
 
   const currentYear = new Date().getFullYear()
@@ -144,7 +142,7 @@ const Footer= () => {
             </ul>
 
             <div className="newsletter">
-              <h4>הירשמו לניוזלטר</h4>
+              <h4>Subscribe to the newsletter</h4>
               <p>קבלו עדכונים על אירועים חדשים וטיפים לשידוכים</p>
               <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
                 <input

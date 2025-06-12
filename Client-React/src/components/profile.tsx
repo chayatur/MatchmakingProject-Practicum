@@ -15,7 +15,7 @@ import {
   CircularProgress,
   InputAdornment,
 } from "@mui/material";
-import { Person, Email, Phone, LocationOn, Edit, Save, Lock, Cancel } from "@mui/icons-material";
+import { Person, Email, Phone, LocationOn, Edit, Save, Cancel } from "@mui/icons-material";
 import type { RootState, AppDispatch } from '../store';
 import { updateUserProfile } from "../slices/userSlice";
 
@@ -421,7 +421,7 @@ const UserProfile = () => {
 
         <Divider sx={{ my: 4 }} />
 
-        <Box>
+        {/* <Box>
           <Typography variant="h6" sx={{ color: "#8B0000", mb: 2 }}>
             אבטחת החשבון
           </Typography>
@@ -440,8 +440,8 @@ const UserProfile = () => {
           >
             שינוי סיסמה
           </Button>
-        </Box>
-      </Box>
+        </Box>*/}
+      </Box> 
 
       <Snackbar
         open={!!successMessage}

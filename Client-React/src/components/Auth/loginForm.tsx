@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom" 
@@ -190,7 +188,7 @@ const LoginForm: React.FC = () => {
               },
             }}
           >
-            שכחת סיסמה?
+            {/* שכחת סיסמה? */}
           </MuiLink>
         </Box>
         <Button
@@ -225,7 +223,7 @@ const LoginForm: React.FC = () => {
           <Typography variant="body2">
             אין לך חשבון עדיין?{" "}
             <MuiLink
-              href="/auth/register"
+              href="/register"
               sx={{
                 color: "#8B0000",
                 textDecoration: "none",

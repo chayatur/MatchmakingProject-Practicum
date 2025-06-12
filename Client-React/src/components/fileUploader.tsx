@@ -1,204 +1,25 @@
-
-// import type React from "react";
-// import { useState, useEffect } from "react";
-// import { useSelector } from "react-redux";
-// import axios from "axios";
-// import { Box, Button, LinearProgress, Typography } from "@mui/material";
-// import { RootState } from "../store";
-
-// const FileUploader = () => {
-// const [file, setFile] = useState<File | null>(null);
-// const [progress, setProgress] = useState(0);
-// const userId = useSelector((state: RootState) => state.user.userId);
-
-// useEffect(() => {
-// console.log("Current User ID:", userId); // בדוק את ה-User ID
-// }, [userId]);
-
-// const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-// if (e.target.files && e.target.files.length > 0) {
-// setFile(e.target.files[0]);
-// } else {
-// setFile(null); // אם אין קובץ, ננקה את ה-state
-// }
-// };
-
-// const saveindb = async (file: File) => {
-// try {
-// if (!file) {
-// throw new Error("No file selected");
-// }
-
-//   if (!userId) {
-//     throw new Error("Missing userId in Redux state");
-//   }
-
-//   const formData = new FormData();
-//   formData.append("ResumeFile", file);
-//   formData.append("UserId", userId.toString());
-
-//   const extension = file.name.split('.').pop();
-//   if (extension) {
-//     formData.append("extension", extension); // הוספת הסיומת רק אם היא קיימת
-//   } else {
-//     console.warn("File has no extension");
-//   }
-//   console.log(file.type);
-
-//   const response = await axios.post("http://localhost:5138/api/AIResponse", formData, {
-//     headers: {
-//       "Content-Type": "multipart/form-data",
-//     },
-    
-//   });
-
-//   console.log("Response from DB save:", response.data);
-// } catch (error) {
-//   if (axios.isAxiosError(error)) {
-//     console.error("Error saving file data:", error.response?.data || error.message);
-//   } else {
-//     console.error("Unexpected error:", error);
-//   }
-// }
-// };
-
-// const handleUpload = async () => {
-// if (!file) return;
-
-// if (!userId) {
-//   console.error("User ID is not available. Please log in first.");
-//   return;
-// }
-
-// const validExtensions = ["pdf", "docx"];
-// const fileExtension = file.name.split('.').pop()?.toLowerCase(); // הוספת ? כדי למנוע שגיאה
-// if (!fileExtension || !validExtensions.includes(fileExtension)) {
-//   console.error("Unsupported file type.");
-//   return;
-// }
-
-// try {
-//   const response = await axios.get("http://localhost:5138/api/upload/presigned-url", {
-//     params: { fileName: file.name },
-//   });
-
-//   const presignedUrl = response.data.url;
-
-//   await axios.put(presignedUrl, file, {
-//     headers: {
-//       "Content-Type": file.type,
-//     },
-//     onUploadProgress: (progressEvent) => {
-//       const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-//       setProgress(percent);
-//     },
-//   });
-
-//   alert("הקובץ הועלה בהצלחה!");
-//   await saveindb(file);
-// } catch (error) {
-//   console.error("שגיאה בהעלאה:", error);
-// }
-// };
-
-// return (
-// <Box
-// sx={{
-// padding: 3,
-// borderRadius: 2,
-// backgroundColor: "white",
-// boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-// width: "100%",
-// maxWidth: 400,
-// margin: "20px 0",
-// }}
-// >
-// <Box sx={{ mb: 2 }}>
-// <Button
-// variant="outlined"
-// component="label"
-// fullWidth
-// sx={{
-// borderColor: "#FF0000",
-// color: "#FF0000",
-// borderRadius: 2,
-// padding: "10px 0",
-// "&:hover": {
-// borderColor: "#cc0000",
-// backgroundColor: "rgba(255, 0, 0, 0.04)",
-// },
-// }}
-// >
-// Select File
-// <input type="file" onChange={handleFileChange} hidden />
-// </Button>
-// {file && <Box sx={{ mt: 1, fontSize: "0.875rem", color: "text.secondary" }}>Selected: {file.name}</Box>}
-// </Box>
-
-//   <Button
-//     onClick={handleUpload}
-//     variant="contained"
-//     fullWidth
-//     disabled={!file}
-//     sx={{
-//       backgroundColor: "#FF0000",
-//       color: "white",
-//       borderRadius: 2,
-//       padding: "10px 0",
-//       textTransform: "none",
-//       fontWeight: "bold",
-//       "&:hover": {
-//         backgroundColor: "#cc0000",
-//       },
-//       "&.Mui-disabled": {
-//         backgroundColor: "#ffcccc",
-//         color: "#990000",
-//       },
-//     }}
-//   >
-//     Upload File
-//   </Button>
-
-//   {progress > 0 && (
-//     <Box sx={{ mt: 2 }}>
-//       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-//         <Box sx={{ width: "100%", mr: 1 }}>
-//           <LinearProgress
-//             variant="determinate"
-//             value={progress}
-//             sx={{
-//               height: 10,
-//               borderRadius: 5,
-//               backgroundColor: "#ffcccc",
-//               "& .MuiLinearProgress-bar": {
-//                 backgroundColor: "#FF0000",
-//               },
-//             }}
-//           />
-//         </Box>
-//         <Box sx={{ minWidth: 35 }}>
-//           <Typography variant="body2" color="text.secondary">{`${Math.round(progress)}%`}</Typography>
-//         </Box>
-//       </Box>
-//       <Typography variant="caption" color="text.secondary">
-//         Uploading: {file?.name}
-//       </Typography>
-//     </Box>
-//   )}
-// </Box>
-// );
-// };
-
-//  export default FileUploader;
-"use client"
-
 import type React from "react"
 import { useState, useCallback } from "react"
 import axios from "axios"
-import { Box, Button, LinearProgress, Typography, Paper, Snackbar, Alert } from "@mui/material"
+import {
+  Box,
+  Button,
+  LinearProgress,
+  Typography,
+  Paper,
+  Snackbar,
+  Alert,
+  Card,
+  Tooltip,
+  IconButton,
+  Container
+} from "@mui/material"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from "react-router-dom"
 
 const FileUploader = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null)
   const [progress, setProgress] = useState(0)
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
@@ -236,16 +57,10 @@ const FileUploader = () => {
             throw new Error("Missing userId in session storage");
         }
 
-        const formData = {
-          "ResumeFile":file,
-          "UserId":userId
-        }
-        // formData.append("ResumeFile", file);
-        // formData.append("UserId", userId);
-        console.log(formData,'formdataa');
-         console.log(formData.ResumeFile,'formData.file');
-        
-       
+        const formData = new FormData();
+        formData.append("ResumeFile", file);
+        formData.append("UserId", userId);
+
         const response = await axios.post("https://matchmakingproject-practicum.onrender.com/api/AIResponse", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
@@ -260,8 +75,7 @@ const FileUploader = () => {
             console.error("Error saving file data:", error.message);
         }
     }
-}
-
+  }
 
   const handleUpload = async () => {
     if (!file) return;
@@ -284,7 +98,7 @@ const FileUploader = () => {
         });
 
         alert("File uploaded successfully!");
-        await saveindb(); // כאן אנחנו קוראים ל-func שמבצע את השמירה
+        await saveindb();
     } catch (error) {
         console.error("Upload error:", error);
         setSnackbar({ open: true, message: "שגיאה בהעלאה", severity: "error" });
@@ -292,266 +106,102 @@ const FileUploader = () => {
   }
 
   return (
-    <Box
-      sx={{
-        padding: 3,
-        borderRadius: 2,
-        backgroundColor: "white",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-        width: "100%",
-        maxWidth: 400,
-        margin: "20px auto",
-      }}
-    >
-      <Paper
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        sx={{
-          border: "2px dashed #FF0000",
-          borderRadius: 2,
-          padding: 2,
-          textAlign: "center",
-          cursor: "pointer",
-        }}
-      >
-        <CloudUploadIcon sx={{ fontSize: 50, color: "#FF0000" }} />
-        <Typography variant="h6">גרור קבצים לכאן או לחץ לבחירה</Typography>
-        <input type="file" onChange={handleFileChange} hidden />
-      </Paper>
-
-      {file && <Box sx={{ mt: 2 }}>Selected: {file.name}</Box>}
-
-      <Button
-        onClick={handleUpload}
-        variant="contained"
-        fullWidth
-        disabled={!file}
-        sx={{
-          backgroundColor: "#FF0000",
-          color: "white",
-          borderRadius: 2,
-          padding: "10px 0",
-          textTransform: "none",
-          fontWeight: "bold",
-          "&:hover": {
-            backgroundColor: "#cc0000",
-          },
-        }}
-      >
-        Upload File
-      </Button>
-
-      {progress > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <LinearProgress variant="determinate" value={progress} />
-          <Typography variant="caption">{`${Math.round(progress)}%`}</Typography>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Tooltip title="חזור">
+            <IconButton sx={{ color: "#8B0000" }} onClick={() => navigate(-1)}>
+              <ArrowBackIcon />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="h5" sx={{ fontWeight: "bold", color: "#8B0000", ml: 1 }}>
+            העלאת רזומה
+          </Typography>
         </Box>
-      )}
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+        <Card
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          sx={{
+            p: 3,
+            border: "2px dashed #8B0000",
+            textAlign: "center",
+            borderRadius: 3,
+            backgroundColor: "#fff8f8",
+            position: "relative",
+          }}
+        >
+          <CloudUploadIcon sx={{ fontSize: 60, color: "#8B0000", mb: 1 }} />
+          <Typography variant="h6" gutterBottom>
+            גרור קובץ לכאן או לחץ לבחירה
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            קבצים נתמכים: PDF, DOCX | גודל מקסימלי: 10MB
+          </Typography>
+
+          <label htmlFor="resume-upload">
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileChange}
+              hidden
+              id="resume-upload"
+            />
+            <Button variant="outlined" component="span" sx={{ borderColor: "#8B0000", color: "#8B0000" }}>
+              בחר קובץ
+            </Button>
+          </label>
+        </Card>
+
+        {file && (
+          <Typography sx={{ mt: 2, fontWeight: "bold", color: "#333" }}>
+            קובץ שנבחר: {file.name}
+          </Typography>
+        )}
+
+        <Button
+          onClick={handleUpload}
+          variant="contained"
+          fullWidth
+          disabled={!file}
+          sx={{
+            mt: 3,
+            backgroundColor: "#8B0000",
+            color: "white",
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: "bold",
+            "&:hover": {
+              backgroundColor: "#5c0000",
+            },
+            "&.Mui-disabled": {
+              backgroundColor: "#ffcccc",
+              color: "#990000",
+            },
+          }}
+        >
+          העלה קובץ
+        </Button>
+
+        {progress > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <LinearProgress variant="determinate" value={progress} sx={{ height: 10, borderRadius: 5 }} />
+            <Typography variant="caption">{`${Math.round(progress)}%`}</Typography>
+          </Box>
+        )}
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Paper>
+    </Container>
   )
 }
 
 export default FileUploader;
-
-
-
-// import type React from "react";
-// import { useState, useEffect } from "react";
-// import { useSelector } from "react-redux";
-// import axios from "axios";
-// import { Box, Button, LinearProgress, Typography } from "@mui/material";
-// import { RootState } from "../store";
-
-// const FileUploader = () => {
-//   const [file, setFile] = useState<File | null>(null);
-//   const [progress, setProgress] = useState(0);
-//   const userId = useSelector((state: RootState) => state.user.userId);
-
-//   useEffect(() => {
-//     console.log("Current User ID:", userId); // בדוק את ה-User ID
-//   }, [userId]);
-
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files && e.target.files.length > 0) {
-//       setFile(e.target.files[0]);
-//     } else {
-//       setFile(null); // אם אין קובץ, ננקה את ה-state
-//     }
-//   };
-
-//   const saveindb = async (file: File) => {
-//     try {
-//       if (!file) {
-//         throw new Error("No file selected");
-//       }
-
-//       if (!userId) {
-//         throw new Error("Missing userId in Redux state");
-//       }
-
-//       const formData = new FormData();
-//       formData.append("ResumeFile", file);
-//       formData.append("UserId", userId.toString());
-
-//       const extension = file.name.split('.').pop();
-//       if (extension) {
-//         formData.append("extension", extension); // הוספת הסיומת רק אם היא קיימת
-//       } else {
-//         console.warn("File has no extension");
-//       }
-//       console.log(file.type);
-
-//       const response = await axios.post("http://localhost:5138/api/AIResponse", formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//       });
-
-//       console.log("Response from DB save:", response.data);
-//     } catch (error) {
-//       if (axios.isAxiosError(error)) {
-//         console.error("Error saving file data:", error.response?.data || error.message);
-//       } else {
-//         console.error("Unexpected error:", error);
-//       }
-//     }
-//   };
-
-//   const handleUpload = async () => {
-//     if (!file) return;
-
-//     if (!userId) {
-//       console.error("User ID is not available. Please log in first.");
-//       return;
-//     }
-
-//     const validExtensions = ["pdf", "docx"];
-//     const fileExtension = file.name.split('.').pop()?.toLowerCase(); // הוספת ? כדי למנוע שגיאה
-//     if (!fileExtension || !validExtensions.includes(fileExtension)) {
-//       console.error("Unsupported file type.");
-//       return;
-//     }
-
-//     try {
-//       const response = await axios.get("http://localhost:5138/api/upload/presigned-url", {
-//         params: { fileName: file.name },
-//       });
-
-//       const presignedUrl = response.data.url;
-
-//       await axios.put(presignedUrl, file, {
-//         headers: {
-//           "Content-Type": file.type,
-//         },
-//         onUploadProgress: (progressEvent) => {
-//           const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-//           setProgress(percent);
-//         },
-//       });
-
-//       alert("הקובץ הועלה בהצלחה!");
-//       await saveindb(file);
-//     } catch (error) {
-//       console.error("שגיאה בהעלאה:", error);
-//     }
-//   };
-
-//   return (
-//     <Box
-//       sx={{
-//         padding: 3,
-//         borderRadius: 2,
-//         backgroundColor: "white",
-//         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-//         width: "100%",
-//         maxWidth: 400,
-//         margin: "20px 0",
-//       }}
-//     >
-//       <Box sx={{ mb: 2 }}>
-//         <Button
-//           variant="outlined"
-//           component="label"
-//           fullWidth
-//           sx={{
-//             borderColor: "#FF0000",
-//             color: "#FF0000",
-//             borderRadius: 2,
-//             padding: "10px 0",
-//             "&:hover": {
-//               borderColor: "#cc0000",
-//               backgroundColor: "rgba(255, 0, 0, 0.04)",
-//             },
-//           }}
-//         >
-//           Select File
-//           <input type="file" onChange={handleFileChange} hidden />
-//         </Button>
-//         {file && <Box sx={{ mt: 1, fontSize: "0.875rem", color: "text.secondary" }}>Selected: {file.name}</Box>}
-//       </Box>
-
-//       <Button
-//         onClick={handleUpload}
-//         variant="contained"
-//         fullWidth
-//         disabled={!file}
-//         sx={{
-//           backgroundColor: "#FF0000",
-//           color: "white",
-//           borderRadius: 2,
-//           padding: "10px 0",
-//           textTransform: "none",
-//           fontWeight: "bold",
-//           "&:hover": {
-//             backgroundColor: "#cc0000",
-//           },
-//           "&.Mui-disabled": {
-//             backgroundColor: "#ffcccc",
-//             color: "#990000",
-//           },
-//         }}
-//       >
-//         Upload File
-//       </Button>
-
-//       {progress > 0 && (
-//         <Box sx={{ mt: 2 }}>
-//           <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-//             <Box sx={{ width: "100%", mr: 1 }}>
-//               <LinearProgress
-//                 variant="determinate"
-//                 value={progress}
-//                 sx={{
-//                   height: 10,
-//                   borderRadius: 5,
-//                   backgroundColor: "#ffcccc",
-//                   "& .MuiLinearProgress-bar": {
-//                     backgroundColor: "#FF0000",
-//                   },
-//                 }}
-//               />
-//             </Box>
-//             <Box sx={{ minWidth: 35 }}>
-//               <Typography variant="body2" color="text.secondary">{`${Math.round(progress)}%`}</Typography>
-//             </Box>
-//           </Box>
-//           <Typography variant="caption" color="text.secondary">
-//             Uploading: {file?.name}
-//           </Typography>
-//         </Box>
-//       )}
-//     </Box>
-//   );
-// };
-
-// export default FileUploader;

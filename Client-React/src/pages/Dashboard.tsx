@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useEffect, useState } from "react"
 import {
   Box,
@@ -395,8 +393,6 @@ const Dashboard: React.FC = () => {
 }
 
 export default Dashboard
-
-"use client"
 
 // import React, { useEffect, useState } from "react"
 // import {

@@ -1,6 +1,3 @@
-"use client"
-
-import type React from "react"
 import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
@@ -8,7 +5,7 @@ import type { RootState, AppDispatch } from "../store"
 import { logoutUser, updateUserProfile } from "../slices/userSlice"
 
 
-const SettingsPage: React.FC = () => {
+const SettingsPage = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
   const { user, loading, isLoggedIn } = useSelector((state: RootState) => state.user)

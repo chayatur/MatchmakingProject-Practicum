@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import {
@@ -39,7 +37,7 @@ import type { RootState, AppDispatch } from "../store"
 import { logoutUser } from "../slices/userSlice"
 import AppLogo from "./logo"
 
-const NavBar: React.FC = () => {
+const NavBar= () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch<AppDispatch>()
@@ -53,7 +51,7 @@ const NavBar: React.FC = () => {
 
   const menuItems = [
     { name: "דף הבית", path: "/", icon: <HomeIcon />, public: true },
-   { name: "דשבורד", path: "/dashboard", icon: <DashboardIcon />, public: false },
+   { name: "סקירה כללית", path: "/dashboard", icon: <DashboardIcon />, public: false },
     { name: "רזומות", path: "/resumes", icon: <DescriptionIcon />, public: false },
     { name: "העלאת קובץ", path: "/FileUploader", icon: <UploadIcon />, public: false },
     { name: "אודות", path: "/about", icon: <InfoIcon />, public: true },
