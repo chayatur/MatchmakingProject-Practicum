@@ -1,6 +1,8 @@
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom" 
+import { useNavigate } from "react-router-dom"
+import { Link as RouterLink } from "react-router-dom"
+
 import {
   Box,
   TextField,
@@ -66,10 +68,8 @@ const LoginForm: React.FC = () => {
 
     try {
       await dispatch(loginUser({ email, password })).unwrap()
-      // Successful login will redirect via the useEffect above
     } catch (error) {
       console.error("Login failed:", error)
-      // Error is handled by the Redux slice and displayed via errorMessage
     }
   }
 
@@ -223,7 +223,8 @@ const LoginForm: React.FC = () => {
           <Typography variant="body2">
             אין לך חשבון עדיין?{" "}
             <MuiLink
-              href="/register"
+             component={RouterLink}
+             to="/register"
               sx={{
                 color: "#8B0000",
                 textDecoration: "none",

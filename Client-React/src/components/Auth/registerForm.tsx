@@ -1,6 +1,8 @@
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom" // שיניתי כאן
+import { useNavigate } from "react-router-dom" 
+import { Link as RouterLink } from "react-router-dom"
+
 import {
   Box,
   TextField,
@@ -31,7 +33,7 @@ import {
   ArrowBack,
   ArrowForward,
 } from "@mui/icons-material"
-import { registerUser } from "../../slices/userSlice" 
+import { registerUser } from "../../slices/userSlice"
 import type { AppDispatch, RootState } from "../../store"
 import AppLogo from "../logo"
 
@@ -133,24 +135,24 @@ const RegisterForm: React.FC = () => {
     e.preventDefault();
 
     if (!validateStep(activeStep)) {
-        return;
+      return;
     }
 
     try {
-        const userData = {
-            id: 0, 
-            email: formData.email,
-            passwordHash: formData.password, 
-            username: formData.username,
-            phone: formData.phone,
-            address: formData.address,
-        };
+      const userData = {
+        id: 0,
+        email: formData.email,
+        passwordHash: formData.password,
+        username: formData.username,
+        phone: formData.phone,
+        address: formData.address,
+      };
 
-        await dispatch(registerUser(userData)).unwrap(); 
+      await dispatch(registerUser(userData)).unwrap();
     } catch (error) {
-        console.error("Registration failed:", error);
+      console.error("Registration failed:", error);
     }
-};
+  };
 
 
   const steps = ["פרטי התחברות", "פרטים אישיים"]
@@ -484,7 +486,8 @@ const RegisterForm: React.FC = () => {
           <Typography variant="body2">
             כבר יש לך חשבון?{" "}
             <MuiLink
-              href="/login"
+              component={RouterLink}
+              to="/login"
               sx={{
                 color: "#8B0000",
                 textDecoration: "none",
