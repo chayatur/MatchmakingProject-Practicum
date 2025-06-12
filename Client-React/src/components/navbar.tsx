@@ -51,9 +51,9 @@ const NavBar= () => {
 
   const menuItems = [
     { name: "דף הבית", path: "/", icon: <HomeIcon />, public: true },
-   { name: "סקירה כללית", path: "/dashboard", icon: <DashboardIcon />, public: false },
+    { name: "האיזור האישי", path: "/personalArea", icon: <PersonIcon />, public: false },
     { name: "רזומות", path: "/resumes", icon: <DescriptionIcon />, public: false },
-    { name: "העלאת קובץ", path: "/FileUploader", icon: <UploadIcon />, public: false },
+    { name: "העלאת רזומה", path: "/FileUploader", icon: <UploadIcon />, public: false },
     { name: "אודות", path: "/about", icon: <InfoIcon />, public: true },
   ]
 
@@ -290,6 +290,7 @@ const NavBar= () => {
                     }}
                   >
                     כניסה
+                    
                   </Button>
                   <Button
                     variant="contained"
@@ -356,7 +357,7 @@ const NavBar= () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            navigate("/settings")
+            navigate("/SettingsPage")
             handleMenuClose()
           }}
         >

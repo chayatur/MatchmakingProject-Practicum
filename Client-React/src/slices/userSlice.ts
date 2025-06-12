@@ -63,7 +63,7 @@ export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
         },
       })
       
-      // המר את התגובה חזרה ל-User format (עם שמות שדות קטנים)
+    
       const updatedUser: User = {
         id: response.data.ID,
         username: response.data.Username,

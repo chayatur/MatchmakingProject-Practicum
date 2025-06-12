@@ -6,7 +6,7 @@ import rtlPlugin from "stylis-plugin-rtl";
 import { prefixer } from "stylis";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
-import store from './store';
+import { store } from './store';
 
 // Create rtl cache
 const cacheRtl = createCache({

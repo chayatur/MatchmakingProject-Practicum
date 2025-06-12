@@ -1,4 +1,5 @@
 export interface FileData {
+    sharedWith: any
     id: number
     fileName: string
     userId: number

@@ -4,13 +4,11 @@ import Layout from './components/layout';
 import FileUploader from './components/fileUploader';
 import About from './components/about';
 import ResumesPage from './components/resumes';
-
 import UserProfile from './components/profile';
-
 import HomePage from './components/home';
-import Dashboard from './pages/Dashboard';
 import RegisterForm from './components/Auth/registerForm';
-
+import SettingsPage from './components/settings';
+import PersonalArea from './components/personalArea';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -22,8 +20,9 @@ const router = createBrowserRouter([
       { path: 'resumes', element: <ResumesPage /> },
       { path: 'login', element: <LoginForm /> },
       { path: 'register', element: <RegisterForm /> },
-       { path: 'dashboard', element: <Dashboard /> },
+      { path: 'personalArea', element: <PersonalArea /> },
       { path: 'profile', element: <UserProfile /> },
+      { path: 'SettingsPage', element: <SettingsPage /> }
 
     ]
   },

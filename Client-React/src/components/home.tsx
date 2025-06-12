@@ -446,9 +446,6 @@ const HomePage: React.FC = () => {
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                נאום
-              </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
                 הרשמו לאנימציה שלנו כדי לקבל עדכונים וטיפים!
               </Typography>

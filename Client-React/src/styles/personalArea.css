@@ -1,0 +1,183 @@
+/* Dashboard Styles */
+.dashboard-container {
+    direction: rtl;
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .dashboard-header {
+    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
+    border: 1px solid rgba(139, 0, 0, 0.1) !important;
+    border-radius: 16px !important;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dashboard-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #8b0000, #dc143c);
+  }
+  
+  .stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(139, 0, 0, 0.1) !important;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #8b0000, #dc143c);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(139, 0, 0, 0.15) !important;
+  }
+  
+  .quick-action-card {
+    border-radius: 12px !important;
+    border: 1px solid rgba(139, 0, 0, 0.1) !important;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%) !important;
+  }
+  
+  .recent-file-item {
+    border-radius: 8px;
+    margin: 0 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .recent-file-item:hover {
+    background-color: rgba(139, 0, 0, 0.04) !important;
+    transform: translateX(-4px);
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+  
+  .stat-card:hover {
+    animation: pulse 0.6s ease-in-out;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 16px !important;
+    }
+  
+    .stat-card {
+      margin-bottom: 16px;
+    }
+  
+    .quick-action-card {
+      margin-bottom: 12px;
+    }
+  }
+  
+  /* Custom Scrollbar */
+  .dashboard-container ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .dashboard-container ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .dashboard-container ::-webkit-scrollbar-thumb {
+    background: #8b0000;
+    border-radius: 3px;
+  }
+  
+  .dashboard-container ::-webkit-scrollbar-thumb:hover {
+    background: #5c0000;
+  }
+  
+  /* Loading States */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  /* Enhanced Hover Effects */
+  .dashboard-header:hover {
+    box-shadow: 0 8px 25px rgba(139, 0, 0, 0.1) !important;
+  }
+  
+  /* Progress Bar Styling */
+  .MuiLinearProgress-root {
+    background-color: rgba(139, 0, 0, 0.1) !important;
+  }
+  
+  /* Card Content Spacing */
+  .MuiCardContent-root:last-child {
+    padding-bottom: 24px !important;
+  }
+  
+  /* Button Styling */
+  .MuiButton-contained {
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3) !important;
+  }
+  
+  .MuiButton-contained:hover {
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4) !important;
+    transform: translateY(-1px);
+  }
+  
+  /* Chip Styling */
+  .MuiChip-root {
+    transition: all 0.3s ease !important;
+  }
+  
+  .MuiChip-root:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Paper Elevation Override */
+  .MuiPaper-elevation2 {
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.1) !important;
+  }
+  
+  .MuiPaper-elevation3 {
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.15) !important;
+  }
+  

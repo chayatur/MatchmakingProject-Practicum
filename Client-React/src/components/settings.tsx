@@ -1,126 +1,142 @@
-import { useState, useEffect } from "react"
+"use client"
+
+import type React from "react"
+import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import {
+  Container,
+  Paper,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  Grid,
+  Avatar,
+  Divider,
+  Alert,
+  Card,
+  CardContent,
+  Switch,
+  FormControlLabel,
+  IconButton,
+  Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Slider,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Snackbar,
+} from "@mui/material"
+import {
+  ArrowBack as ArrowBackIcon,
+  Save as SaveIcon,
+  Person as PersonIcon,
+  Security as SecurityIcon,
+  Notifications as NotificationsIcon,
+  Palette as PaletteIcon,
+  Language as LanguageIcon,
+  VolumeUp as VolumeUpIcon,
+  Brightness6 as Brightness6Icon,
+  Lock as LockIcon,
+  Delete as DeleteIcon,
+  RestartAlt as RestartAltIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  PrivacyTip as PrivacyTipIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  Backup as BackupIcon,
+} from "@mui/icons-material"
 import type { RootState, AppDispatch } from "../store"
-import { logoutUser, updateUserProfile } from "../slices/userSlice"
+import { updateUserProfile } from "../slices/userSlice"
+import { getTranslation } from "../components/transletions"
+import { useNavigate } from "react-router-dom"
+import { resetSettings, updateAppearance, updateNotifications, updatePrivacy, updateSecurity, updateSounds } from "../slices/settingsSlice"
 
-
-const SettingsPage = () => {
+const SettingsPage: React.FC = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
-  const { user, loading, isLoggedIn } = useSelector((state: RootState) => state.user)
+  const { user, loading } = useSelector((state: RootState) => state.user)
+  const settings = useSelector((state: RootState) => state.settings)
 
-  const [activeSection, setActiveSection] = useState<"profile" | "security" | "notifications" | "privacy">("profile")
+  const [activeSection, setActiveSection] = useState<
+    "profile" | "notifications" | "appearance" | "privacy" | "security" | "sounds"
+  >("profile")
+  const [success, setSuccess] = useState("")
+  const [error, setError] = useState("")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
+
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    phone: "",
-    address: "",
-  })
-  const [passwordData, setPasswordData] = useState({
+    username: user?.username || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   })
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    pushNotifications: true,
-    weeklyReport: true,
-  })
-  const [privacy, setPrivacy] = useState({
-    profileVisibility: "public",
-    showEmail: false,
-    showPhone: false,
-    allowSharing: true,
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [successMessage, setSuccessMessage] = useState("")
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login")
-      return
-    }
-
-    if (user && user.id) {
-      setFormData({
-        username: user.username || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        address: user.address || "",
-      })
-    }
-  }, [user, isLoggedIn, navigate])
+  const t = (key: string) => getTranslation(settings.appearance.language, key as any)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
   }
 
-  const handlePasswordChange = (field: string, value: string) => {
-    setPasswordData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
+  const handleNotificationChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateNotifications({ [setting]: event.target.checked }))
+    setSuccess(t("success") + "!")
   }
 
-  const handleNotificationChange = (field: string, value: boolean) => {
-    setNotifications((prev) => ({ ...prev, [field]: value }))
+  const handleAppearanceChange = (setting: string) => (event: any) => {
+    const value = event.target ? event.target.value : event
+    dispatch(updateAppearance({ [setting]: value }))
+    setSuccess(t("success") + "!")
   }
 
-  const handlePrivacyChange = (field: string, value: string | boolean) => {
-    setPrivacy((prev) => ({ ...prev, [field]: value }))
+  const handlePrivacyChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updatePrivacy({ [setting]: event.target.checked }))
+    setSuccess(t("success") + "!")
   }
 
-  const validateProfile = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.username.trim()) {
-      newErrors.username = "שם משתמש נדרש"
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "כתובת אימייל נדרשת"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "כתובת אימייל לא תקינה"
-    }
-
-    if (formData.phone && !/^[0-9]{9,10}$/.test(formData.phone.replace(/\D/g, ""))) {
-      newErrors.phone = "מספר טלפון לא תקין"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const handleSecurityChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateSecurity({ [setting]: event.target.checked }))
+    setSuccess(t("success") + "!")
   }
 
-  const validatePassword = () => {
-    const newErrors: Record<string, string> = {}
+  const handleSoundsChange = (setting: string) => (event: any) => {
+    const value = event.target ? event.target.value : event
+    dispatch(updateSounds({ [setting]: value }))
+    setSuccess(t("success") + "!")
+  }
 
-    if (!passwordData.currentPassword) {
-      newErrors.currentPassword = "סיסמה נוכחית נדרשת"
+  const handleSliderChange = (category: string, setting: string) => (event: Event, value: number | number[]) => {
+    const finalValue = Array.isArray(value) ? value[0] : value
+
+    if (category === "appearance") {
+      dispatch(updateAppearance({ [setting]: finalValue }))
+    } else if (category === "security") {
+      dispatch(updateSecurity({ [setting]: finalValue }))
+    } else if (category === "sounds") {
+      dispatch(updateSounds({ [setting]: finalValue }))
     }
 
-    if (!passwordData.newPassword) {
-      newErrors.newPassword = "סיסמה חדשה נדרשת"
-    } else if (passwordData.newPassword.length < 6) {
-      newErrors.newPassword = "הסיסמה חייבת להכיל לפחות 6 תווים"
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = "הסיסמאות אינן תואמות"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setSuccess(t("success") + "!")
   }
 
   const handleSaveProfile = async () => {
-    if (!validateProfile()) return
-
     try {
+      if (!user?.id) {
+        setError("משתמש לא מזוהה")
+        return
+      }
+
       const updatedUser = {
         id: user.id,
         username: formData.username.trim(),
@@ -130,849 +146,827 @@ const SettingsPage = () => {
       }
 
       await dispatch(updateUserProfile(updatedUser)).unwrap()
-      setSuccessMessage("הפרופיל עודכן בהצלחה!")
-      setTimeout(() => setSuccessMessage(""), 3000)
-    } catch (error) {
-      setErrors({ general: "שגיאה בעדכון הפרופיל" })
+      setSuccess("הפרופיל עודכן בהצלחה!")
+      setError("")
+    } catch (err: any) {
+      setError(err.message || "שגיאה בעדכון הפרופיל")
+      setSuccess("")
     }
+  }
+
+  const handleResetSettings = () => {
+    dispatch(resetSettings())
+    setResetDialogOpen(false)
+    setSuccess("ההגדרות אופסו לברירת המחדל!")
   }
 
   const handleChangePassword = async () => {
-    if (!validatePassword()) return
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError("הסיסמאות אינן תואמות")
+      return
+    }
 
-    // כאן תוכל להוסיף לוגיקה לשינוי סיסמה
-    setSuccessMessage("הסיסמה שונתה בהצלחה!")
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
-    setTimeout(() => setSuccessMessage(""), 3000)
-  }
-
-  const handleDeleteAccount = async () => {
-    if (window.confirm("האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה ניתנת לביטול.")) {
-      // כאן תוכל להוסיף לוגיקה למחיקת חשבון
-      await dispatch(logoutUser())
-      navigate("/")
+    try {
+      setSuccess("הסיסמה שונתה בהצלחה!")
+      setError("")
+      setFormData((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }))
+    } catch (err) {
+      setError("שגיאה בשינוי הסיסמה")
+      setSuccess("")
     }
   }
 
-  const getInitials = () => {
-    if (user?.username) return user.username.charAt(0).toUpperCase()
-    if (user?.email) return user.email.charAt(0).toUpperCase()
-    return "U"
+  const SettingsSection = ({
+    title,
+    icon,
+    children,
+  }: {
+    title: string
+    icon: React.ReactNode
+    children: React.ReactNode
+  }) => (
+    <Card
+      elevation={2}
+      sx={{
+        mb: 3,
+        borderRadius: 2,
+        border: "1px solid #e5d6d6",
+        "&:hover": {
+          boxShadow: "0 4px 12px rgba(139, 0, 0, 0.1)",
+        },
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <Avatar sx={{ bgcolor: "#8B0000", mr: 2, width: 40, height: 40 }}>{icon}</Avatar>
+          <Typography variant="h6" sx={{ color: "#8B0000", fontWeight: "bold" }}>
+            {title}
+          </Typography>
+        </Box>
+        {children}
+      </CardContent>
+    </Card>
+  )
+
+  const handleSelectChange = (category: string, setting: string) => (event: any) => {
+    const value = event.target ? event.target.value : event
+    if (category === "privacy") {
+      dispatch(updatePrivacy({ [setting]: value }))
+    } else if (category === "security") {
+      dispatch(updateSecurity({ [setting]: value }))
+    } else if (category === "sounds") {
+      dispatch(updateSounds({ [setting]: value }))
+    }
+    setSuccess(t("success") + "!")
   }
 
-  const sections = [
-    { id: "profile", title: "פרופיל אישי", icon: "👤" },
-    { id: "security", title: "אבטחה", icon: "🔒" },
-    { id: "notifications", title: "התראות", icon: "🔔" },
-    { id: "privacy", title: "פרטיות", icon: "🛡️" },
-  ]
+  const handleSwitchChange = (category: string, setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (category === "privacy") {
+      dispatch(updatePrivacy({ [setting]: event.target.checked }))
+    } else if (category === "security") {
+      dispatch(updateSecurity({ [setting]: event.target.checked }))
+    } else if (category === "sounds") {
+      dispatch(updateSounds({ [setting]: event.target.checked }))
+    }
+    setSuccess(t("success") + "!")
+  }
+
+  if (!user) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="h6" color="error">
+            יש להתחבר למערכת כדי לגשת להגדרות
+          </Typography>
+        </Paper>
+      </Container>
+    )
+  }
 
   return (
-    <div className="settings-container">
-      {/* Header */}
-      <div className="settings-header">
-        <div className="header-content">
-          <button onClick={() => navigate("/personal-area")} className="back-btn">
-            ← חזרה לאזור האישי
-          </button>
-          <div className="header-info">
-            <div className="user-avatar">{getInitials()}</div>
-            <div className="header-text">
-              <h1>הגדרות חשבון</h1>
-              <p>נהל את הפרופיל והעדפות החשבון שלך</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box className="settings-container">
+        {/* Header */}
+        <Paper
+          elevation={3}
+          sx={{
+            background: "linear-gradient(135deg, #8B0000 0%, #DC143C 100%)",
+            color: "white",
+            p: 3,
+            borderRadius: 2,
+            mb: 3,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Tooltip title="חזור לאיזור האישי">
+              <IconButton onClick={() => navigate("/profile")} sx={{ color: "white" }}>
+                <ArrowBackIcon />
+              </IconButton>
+            </Tooltip>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t("settingsTitle")}
+            </Typography>
+          </Box>
+        </Paper>
 
-      {/* Success Message */}
-      {successMessage && <div className="success-message">✅ {successMessage}</div>}
+        {/* Alerts */}
+        {success && (
+          <Alert severity="success" sx={{ mt: 2 }} onClose={() => setSuccess("")}>
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError("")}>
+            {error}
+          </Alert>
+        )}
 
-      <div className="settings-content">
-        {/* Sidebar Navigation */}
-        <div className="settings-sidebar">
-          <div className="sidebar-header">
-            <h3>הגדרות</h3>
-          </div>
-          <nav className="settings-nav">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                className={`nav-item ${activeSection === section.id ? "active" : ""}`}
-                onClick={() => setActiveSection(section.id as any)}
-              >
-                <span className="nav-icon">{section.icon}</span>
-                <span className="nav-text">{section.title}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+        <Grid container spacing={3} sx={{ mt: 2 }}>
+          {/* Sidebar */}
+          <Grid item xs={12} md={3}>
+            <Paper elevation={2} sx={{ p: 2 }}>
+              <Box sx={{ textAlign: "center", mb: 3 }}>
+                <Avatar
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: "#8B0000",
+                    fontSize: "2rem",
+                    mx: "auto",
+                    mb: 2,
+                  }}
+                >
+                  {user.username ? user.username.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                </Avatar>
+                <Typography variant="h6">{user.username || user.email}</Typography>
+              </Box>
 
-        {/* Main Content */}
-        <div className="settings-main">
-          {activeSection === "profile" && (
-            <div className="settings-section">
-              <div className="section-header">
-                <h2>👤 פרופיל אישי</h2>
-                <p>עדכן את הפרטים האישיים שלך</p>
-              </div>
-
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>שם משתמש *</label>
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange("username", e.target.value)}
-                    className={errors.username ? "error" : ""}
-                    placeholder="הכנס שם משתמש"
-                  />
-                  {errors.username && <span className="error-text">{errors.username}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>כתובת אימייל *</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className={errors.email ? "error" : ""}
-                    placeholder="הכנס כתובת אימייל"
-                  />
-                  {errors.email && <span className="error-text">{errors.email}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label>מספר טלפון</label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className={errors.phone ? "error" : ""}
-                    placeholder="הכנס מספר טלפון"
-                  />
-                  {errors.phone && <span className="error-text">{errors.phone}</span>}
-                </div>
-
-                <div className="form-group full-width">
-                  <label>כתובת</label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    placeholder="הכנס כתובת"
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button onClick={handleSaveProfile} disabled={loading} className="save-btn">
-                  {loading ? "שומר..." : "שמור שינויים"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeSection === "security" && (
-            <div className="settings-section">
-              <div className="section-header">
-                <h2>🔒 אבטחה</h2>
-                <p>נהל את הגדרות האבטחה של החשבון</p>
-              </div>
-
-              <div className="security-section">
-                <h3>שינוי סיסמה</h3>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>סיסמה נוכחית *</label>
-                    <input
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
-                      className={errors.currentPassword ? "error" : ""}
-                      placeholder="הכנס סיסמה נוכחית"
-                    />
-                    {errors.currentPassword && <span className="error-text">{errors.currentPassword}</span>}
-                  </div>
-
-                  <div className="form-group">
-                    <label>סיסמה חדשה *</label>
-                    <input
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
-                      className={errors.newPassword ? "error" : ""}
-                      placeholder="הכנס סיסמה חדשה"
-                    />
-                    {errors.newPassword && <span className="error-text">{errors.newPassword}</span>}
-                  </div>
-
-                  <div className="form-group">
-                    <label>אימות סיסמה חדשה *</label>
-                    <input
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
-                      className={errors.confirmPassword ? "error" : ""}
-                      placeholder="הכנס שוב את הסיסמה החדשה"
-                    />
-                    {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-                  </div>
-                </div>
-
-                <div className="form-actions">
-                  <button onClick={handleChangePassword} className="save-btn">
-                    שנה סיסמה
-                  </button>
-                </div>
-              </div>
-
-              <div className="danger-zone">
-                <h3>אזור מסוכן</h3>
-                <p>פעולות אלו אינן ניתנות לביטול</p>
-                <button onClick={handleDeleteAccount} className="danger-btn">
-                  מחק חשבון
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeSection === "notifications" && (
-            <div className="settings-section">
-              <div className="section-header">
-                <h2>🔔 התראות</h2>
-                <p>נהל את העדפות ההתראות שלך</p>
-              </div>
-
-              <div className="notifications-grid">
-                <div className="notification-item">
-                  <div className="notification-info">
-                    <h4>התראות אימייל</h4>
-                    <p>קבל עדכונים חשובים באימייל</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notifications.emailNotifications}
-                      onChange={(e) => handleNotificationChange("emailNotifications", e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-info">
-                    <h4>התראות SMS</h4>
-                    <p>קבל התראות דחופות בהודעות טקסט</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notifications.smsNotifications}
-                      onChange={(e) => handleNotificationChange("smsNotifications", e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-info">
-                    <h4>התראות דחיפה</h4>
-                    <p>קבל התראות בדפדפן</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notifications.pushNotifications}
-                      onChange={(e) => handleNotificationChange("pushNotifications", e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-info">
-                    <h4>דוח שבועי</h4>
-                    <p>קבל סיכום שבועי של הפעילות</p>
-                  </div>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={notifications.weeklyReport}
-                      onChange={(e) => handleNotificationChange("weeklyReport", e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === "privacy" && (
-            <div className="settings-section">
-              <div className="section-header">
-                <h2>🛡️ פרטיות</h2>
-                <p>נהל את הגדרות הפרטיות שלך</p>
-              </div>
-
-              <div className="privacy-settings">
-                <div className="privacy-item">
-                  <h4>נראות הפרופיל</h4>
-                  <p>בחר מי יכול לראות את הפרופיל שלך</p>
-                  <select
-                    value={privacy.profileVisibility}
-                    onChange={(e) => handlePrivacyChange("profileVisibility", e.target.value)}
-                    className="privacy-select"
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {[
+                  { key: "profile", label: t("personalDetails"), icon: <PersonIcon /> },
+                  { key: "notifications", label: t("notifications"), icon: <NotificationsIcon /> },
+                  { key: "appearance", label: t("appearance"), icon: <PaletteIcon /> },
+                  { key: "privacy", label: t("privacy"), icon: <PrivacyTipIcon /> },
+                  { key: "security", label: t("security"), icon: <SecurityIcon /> },
+                  { key: "sounds", label: t("sounds"), icon: <VolumeUpIcon /> },
+                ].map((section) => (
+                  <Button
+                    key={section.key}
+                    variant={activeSection === section.key ? "contained" : "outlined"}
+                    startIcon={section.icon}
+                    onClick={() => setActiveSection(section.key as any)}
+                    fullWidth
+                    sx={{
+                      justifyContent: "flex-start",
+                      bgcolor: activeSection === section.key ? "#8B0000" : "transparent",
+                      borderColor: "#8B0000",
+                      color: activeSection === section.key ? "white" : "#8B0000",
+                    }}
                   >
-                    <option value="public">ציבורי - כולם יכולים לראות</option>
-                    <option value="users">משתמשים רשומים בלבד</option>
-                    <option value="private">פרטי - רק אני</option>
-                  </select>
-                </div>
+                    {section.label}
+                  </Button>
+                ))}
+              </Box>
+            </Paper>
+          </Grid>
 
-                <div className="privacy-item">
-                  <div className="privacy-toggle">
-                    <div className="privacy-info">
-                      <h4>הצג כתובת אימייל</h4>
-                      <p>אפשר למשתמשים אחרים לראות את האימייל שלך</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={privacy.showEmail}
-                        onChange={(e) => handlePrivacyChange("showEmail", e.target.checked)}
+          {/* Main Content */}
+          <Grid item xs={12} md={9}>
+            <Paper elevation={2} sx={{ p: 3 }}>
+              {activeSection === "appearance" && (
+                <SettingsSection title={t("appearance")} icon={<PaletteIcon />}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={4}>
+                      <FormControl fullWidth>
+                        <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>{t("theme")}</InputLabel>
+                        <Select
+                          value={settings.appearance.theme}
+                          onChange={handleAppearanceChange("theme")}
+                          sx={{
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
+                          }}
+                        >
+                          <MenuItem value="light">
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <Brightness6Icon sx={{ mr: 1 }} />
+                              {t("lightTheme")}
+                            </Box>
+                          </MenuItem>
+                          <MenuItem value="dark">{t("darkTheme")}</MenuItem>
+                          <MenuItem value="auto">{t("autoTheme")}</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <FormControl fullWidth>
+                        <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>{t("language")}</InputLabel>
+                        <Select
+                          value={settings.appearance.language}
+                          onChange={handleAppearanceChange("language")}
+                          sx={{
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
+                          }}
+                        >
+                          <MenuItem value="he">
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <LanguageIcon sx={{ mr: 1 }} />
+                              {t("hebrew")}
+                            </Box>
+                          </MenuItem>
+                          <MenuItem value="en">{t("english")}</MenuItem>
+                          <MenuItem value="ar">{t("arabic")}</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <Typography gutterBottom>
+                        {t("fontSize")}: {settings.appearance.fontSize}px
+                      </Typography>
+                      <Slider
+                        value={settings.appearance.fontSize}
+                        onChange={handleSliderChange("appearance", "fontSize")}
+                        min={12}
+                        max={20}
+                        step={1}
+                        sx={{
+                          color: "#8B0000",
+                          "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
+                          "& .MuiSlider-track": { backgroundColor: "#8B0000" },
+                        }}
                       />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                </div>
+                    </Grid>
+                  </Grid>
+                </SettingsSection>
+              )}
 
-                <div className="privacy-item">
-                  <div className="privacy-toggle">
-                    <div className="privacy-info">
-                      <h4>הצג מספר טלפון</h4>
-                      <p>אפשר למשתמשים אחרים לראות את הטלפון שלך</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={privacy.showPhone}
-                        onChange={(e) => handlePrivacyChange("showPhone", e.target.checked)}
+              {activeSection === "notifications" && (
+                <SettingsSection title={t("notifications")} icon={<NotificationsIcon />}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={settings.notifications.email}
+                            onChange={handleNotificationChange("email")}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
+                            }}
+                          />
+                        }
+                        label={
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <EmailIcon sx={{ mr: 1, color: "#8B0000" }} />
+                            {t("emailNotifications")}
+                          </Box>
+                        }
                       />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="privacy-item">
-                  <div className="privacy-toggle">
-                    <div className="privacy-info">
-                      <h4>אפשר שיתוף</h4>
-                      <p>אפשר למשתמשים אחרים לשתף איתך רזומות</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={privacy.allowSharing}
-                        onChange={(e) => handlePrivacyChange("allowSharing", e.target.checked)}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={settings.notifications.push}
+                            onChange={handleNotificationChange("push")}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
+                            }}
+                          />
+                        }
+                        label={t("pushNotifications")}
                       />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={settings.notifications.sms}
+                            onChange={handleNotificationChange("sms")}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
+                            }}
+                          />
+                        }
+                        label={
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <PhoneIcon sx={{ mr: 1, color: "#8B0000" }} />
+                            {t("smsNotifications")}
+                          </Box>
+                        }
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={settings.notifications.marketing}
+                            onChange={handleNotificationChange("marketing")}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
+                            }}
+                          />
+                        }
+                        label={t("marketingEmails")}
+                      />
+                    </Grid>
+                  </Grid>
+                </SettingsSection>
+              )}
+
+              {activeSection === "profile" && (
+                <div>
+                  <Typography variant="h5" gutterBottom sx={{ color: "#8B0000", fontWeight: "bold" }}>
+                    פרטים אישיים
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="שם משתמש"
+                        value={formData.username}
+                        onChange={(e) => handleInputChange("username", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="אימייל"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        variant="outlined"
+                        type="email"
+                        dir="rtl"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="טלפון"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="כתובת"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSaveProfile}
+                      disabled={loading}
+                      sx={{ bgcolor: "#8B0000", "&:hover": { bgcolor: "#5c0000" } }}
+                    >
+                      {loading ? "שומר..." : "שמור פרטים"}
+                    </Button>
+                  </Box>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <style >{`
-        .settings-container {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .settings-header {
-          background: linear-gradient(135deg, #8B0000 0%, #5c0000 100%);
-          color: white;
-          padding: 30px;
-          box-shadow: 0 5px 20px rgba(139, 0, 0, 0.3);
-        }
-
-        .header-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          gap: 30px;
-        }
-
-        .back-btn {
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-
-        .header-info {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-
-        .user-avatar {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          font-weight: bold;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .header-text h1 {
-          margin: 0 0 5px 0;
-          font-size: 28px;
-          font-weight: 700;
-        }
-
-        .header-text p {
-          margin: 0;
-          opacity: 0.9;
-          font-size: 16px;
-        }
-
-        .success-message {
-          background: #d4edda;
-          color: #155724;
-          padding: 15px;
-          margin: 20px auto;
-          max-width: 1200px;
-          border-radius: 8px;
-          border: 1px solid #c3e6cb;
-          text-align: center;
-          font-weight: 600;
-        }
-
-        .settings-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 30px;
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          gap: 30px;
-        }
-
-        .settings-sidebar {
-          background: white;
-          border-radius: 15px;
-          padding: 25px;
-          height: fit-content;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-          border: 1px solid rgba(139, 0, 0, 0.1);
-        }
-
-        .sidebar-header h3 {
-          margin: 0 0 20px 0;
-          color: #8B0000;
-          font-size: 20px;
-          font-weight: 700;
-        }
-
-        .settings-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .nav-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 15px;
-          background: transparent;
-          border: none;
-          border-radius: 10px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-align: right;
-          width: 100%;
-        }
-
-        .nav-item:hover {
-          background: rgba(139, 0, 0, 0.1);
-        }
-
-        .nav-item.active {
-          background: #8B0000;
-          color: white;
-        }
-
-        .nav-icon {
-          font-size: 20px;
-          width: 24px;
-          text-align: center;
-        }
-
-        .nav-text {
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .settings-main {
-          background: white;
-          border-radius: 15px;
-          padding: 30px;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-          border: 1px solid rgba(139, 0, 0, 0.1);
-        }
-
-        .settings-section {
-          animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-header {
-          margin-bottom: 30px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #f8f9fa;
-        }
-
-        .section-header h2 {
-          margin: 0 0 8px 0;
-          color: #8B0000;
-          font-size: 24px;
-          font-weight: 700;
-        }
-
-        .section-header p {
-          margin: 0;
-          color: #666;
-          font-size: 16px;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .form-group.full-width {
-          grid-column: 1 / -1;
-        }
-
-        .form-group label {
-          font-weight: 600;
-          color: #333;
-          font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select {
-          padding: 12px 16px;
-          border: 2px solid #e1e5e9;
-          border-radius: 8px;
-          font-size: 16px;
-          transition: all 0.3s ease;
-          background: white;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-          outline: none;
-          border-color: #8B0000;
-          box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
-        }
-
-        .form-group input.error {
-          border-color: #dc3545;
-        }
-
-        .error-text {
-          color: #dc3545;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .form-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 15px;
-          margin-top: 30px;
-        }
-
-        .save-btn {
-          background: #8B0000;
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .save-btn:hover:not(:disabled) {
-          background: #5c0000;
-          transform: translateY(-2px);
-        }
-
-        .save-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .security-section {
-          margin-bottom: 40px;
-          padding: 25px;
-          background: #f8f9fa;
-          border-radius: 12px;
-          border: 1px solid #e9ecef;
-        }
-
-        .security-section h3 {
-          margin: 0 0 20px 0;
-          color: #8B0000;
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .danger-zone {
-          padding: 25px;
-          background: #fff5f5;
-          border-radius: 12px;
-          border: 2px solid #fed7d7;
-        }
-
-        .danger-zone h3 {
-          margin: 0 0 10px 0;
-          color: #dc3545;
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .danger-zone p {
-          margin: 0 0 20px 0;
-          color: #666;
-          font-size: 14px;
-        }
-
-        .danger-btn {
-          background: #dc3545;
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .danger-btn:hover {
-          background: #c82333;
-          transform: translateY(-2px);
-        }
-
-        .notifications-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .notification-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px;
-          background: #f8f9fa;
-          border-radius: 12px;
-          border: 1px solid #e9ecef;
-        }
-
-        .notification-info h4 {
-          margin: 0 0 5px 0;
-          color: #333;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .notification-info p {
-          margin: 0;
-          color: #666;
-          font-size: 14px;
-        }
-
-        .toggle-switch {
-          position: relative;
-          display: inline-block;
-          width: 50px;
-          height: 24px;
-        }
-
-        .toggle-switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-
-        .toggle-slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: 0.4s;
-          border-radius: 24px;
-        }
-
-        .toggle-slider:before {
-          position: absolute;
-          content: "";
-          height: 18px;
-          width: 18px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: 0.4s;
-          border-radius: 50%;
-        }
-
-        input:checked + .toggle-slider {
-          background-color: #8B0000;
-        }
-
-        input:checked + .toggle-slider:before {
-          transform: translateX(26px);
-        }
-
-        .privacy-settings {
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
-
-        .privacy-item {
-          padding: 20px;
-          background: #f8f9fa;
-          border-radius: 12px;
-          border: 1px solid #e9ecef;
-        }
-
-        .privacy-item h4 {
-          margin: 0 0 8px 0;
-          color: #333;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .privacy-item p {
-          margin: 0 0 15px 0;
-          color: #666;
-          font-size: 14px;
-        }
-
-        .privacy-select {
-          width: 100%;
-          padding: 12px 16px;
-          border: 2px solid #e1e5e9;
-          border-radius: 8px;
-          font-size: 16px;
-          background: white;
-          cursor: pointer;
-        }
-
-        .privacy-select:focus {
-          outline: none;
-          border-color: #8B0000;
-          box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
-        }
-
-        .privacy-toggle {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .privacy-info {
-          flex: 1;
-        }
-
-        @media (max-width: 768px) {
-          .settings-content {
-            grid-template-columns: 1fr;
-            padding: 20px;
-          }
-
-          .settings-sidebar {
-            order: 2;
-          }
-
-          .settings-main {
-            order: 1;
-          }
-
-          .settings-nav {
-            flex-direction: row;
-            overflow-x: auto;
-            gap: 10px;
-          }
-
-          .nav-item {
-            min-width: 120px;
-            flex-shrink: 0;
-          }
-
-          .form-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .header-content {
-            flex-direction: column;
-            text-align: center;
-            gap: 20px;
-          }
-
-          .notification-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-          }
-
-          .privacy-toggle {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-          }
-        }
-      `}</style>
-    </div>
+              )}
+
+              {activeSection === "privacy" && (
+                <SettingsSection title="הגדרות פרטיות" icon={<PrivacyTipIcon />}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>נראות פרופיל</InputLabel>
+                        <Select
+                          value={settings.privacy.profileVisibility}
+                          onChange={handleSelectChange("privacy", "profileVisibility")}
+                          sx={{
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
+                          }}
+                        >
+                          <MenuItem value="public">
+                            <Chip label="ציבורי" size="small" color="success" sx={{ mr: 1 }} />
+                            כולם יכולים לראות
+                          </MenuItem>
+                          <MenuItem value="friends">
+                            <Chip label="חברים" size="small" color="primary" sx={{ mr: 1 }} />
+                            רק חברים
+                          </MenuItem>
+                          <MenuItem value="private">
+                            <Chip label="פרטי" size="small" color="error" sx={{ mr: 1 }} />
+                            רק אני
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={settings.privacy.showEmail}
+                              onChange={handleSwitchChange("privacy", "showEmail")}
+                              sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                  backgroundColor: "#8B0000",
+                                },
+                              }}
+                            />
+                          }
+                          label="הצג אימייל בפרופיל"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={settings.privacy.showPhone}
+                              onChange={handleSwitchChange("privacy", "showPhone")}
+                              sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                  backgroundColor: "#8B0000",
+                                },
+                              }}
+                            />
+                          }
+                          label="הצג טלפון בפרופיל"
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={settings.privacy.showLocation}
+                              onChange={handleSwitchChange("privacy", "showLocation")}
+                              sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                  backgroundColor: "#8B0000",
+                                },
+                              }}
+                            />
+                          }
+                          label="הצג מיקום בפרופיל"
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </SettingsSection>
+              )}
+
+              {activeSection === "security" && (
+                <div>
+                  <SettingsSection title="הגדרות אבטחה" icon={<SecurityIcon />}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={settings.security.twoFactor}
+                              onChange={handleSwitchChange("security", "twoFactor")}
+                              sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                  backgroundColor: "#8B0000",
+                                },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <LockIcon sx={{ mr: 1, color: "#8B0000" }} />
+                              אימות דו-שלבי
+                              {settings.security.twoFactor && (
+                                <Chip label="מופעל" size="small" color="success" sx={{ mr: 1 }} />
+                              )}
+                            </Box>
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={settings.security.loginAlerts}
+                              onChange={handleSwitchChange("security", "loginAlerts")}
+                              sx={{
+                                "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                  backgroundColor: "#8B0000",
+                                },
+                              }}
+                            />
+                          }
+                          label="התראות התחברות"
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography gutterBottom>זמן קצוב לסשן (דקות): {settings.security.sessionTimeout}</Typography>
+                        <Slider
+                          value={settings.security.sessionTimeout}
+                          onChange={handleSliderChange("security", "sessionTimeout")}
+                          min={15}
+                          max={120}
+                          step={15}
+                          marks={[
+                            { value: 15, label: "15 דק" },
+                            { value: 30, label: "30 דק" },
+                            { value: 60, label: "60 דק" },
+                            { value: 120, label: "120 דק" },
+                          ]}
+                          sx={{
+                            color: "#8B0000",
+                            "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
+                            "& .MuiSlider-track": { backgroundColor: "#8B0000" },
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </SettingsSection>
+
+                  {/* Password Change Section */}
+                  <Typography variant="h6" gutterBottom sx={{ color: "#8B0000", fontWeight: "bold", mt: 3 }}>
+                    שינוי סיסמה
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="סיסמה נוכחית"
+                        type="password"
+                        value={formData.currentPassword}
+                        onChange={(e) => handleInputChange("currentPassword", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="סיסמה חדשה"
+                        type="password"
+                        value={formData.newPassword}
+                        onChange={(e) => handleInputChange("newPassword", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="אישור סיסמה חדשה"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        variant="outlined"
+                        dir="rtl"
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="contained"
+                      startIcon={<SecurityIcon />}
+                      onClick={handleChangePassword}
+                      sx={{ bgcolor: "#8B0000", "&:hover": { bgcolor: "#5c0000" } }}
+                    >
+                      שנה סיסמה
+                    </Button>
+                  </Box>
+                </div>
+              )}
+
+              {activeSection === "sounds" && (
+                <SettingsSection title="הגדרות צלילים" icon={<VolumeUpIcon />}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={settings.sounds.enabled}
+                            onChange={handleSwitchChange("sounds", "enabled")}
+                            sx={{
+                              "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
+                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
+                            }}
+                          />
+                        }
+                        label="הפעל צלילים"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth disabled={!settings.sounds.enabled}>
+                        <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>צליל התראות</InputLabel>
+                        <Select
+                          value={settings.sounds.notificationSound}
+                          onChange={handleSelectChange("sounds", "notificationSound")}
+                          sx={{
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
+                          }}
+                        >
+                          <MenuItem value="default">ברירת מחדל</MenuItem>
+                          <MenuItem value="bell">פעמון</MenuItem>
+                          <MenuItem value="chime">צלצול</MenuItem>
+                          <MenuItem value="beep">ביפ</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography gutterBottom>עוצמת קול: {settings.sounds.volume}%</Typography>
+                      <Slider
+                        value={settings.sounds.volume}
+                        onChange={handleSliderChange("sounds", "volume")}
+                        disabled={!settings.sounds.enabled}
+                        min={0}
+                        max={100}
+                        step={10}
+                        sx={{
+                          color: "#8B0000",
+                          "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
+                          "& .MuiSlider-track": { backgroundColor: "#8B0000" },
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </SettingsSection>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* System Actions */}
+        <Paper
+          elevation={2}
+          sx={{
+            p: 3,
+            mt: 3,
+            borderRadius: 2,
+            border: "1px solid #e5d6d6",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          <Typography variant="h6" sx={{ color: "#8B0000", mb: 3, fontWeight: "bold" }}>
+            פעולות מערכת
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<SaveIcon />}
+                sx={{
+                  backgroundColor: "#8B0000",
+                  color: "white",
+                  "&:hover": { backgroundColor: "#5c0000" },
+                  mb: 1,
+                }}
+              >
+                {t("save")}
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<RestartAltIcon />}
+                onClick={() => setResetDialogOpen(true)}
+                sx={{
+                  borderColor: "#FF9800",
+                  color: "#FF9800",
+                  "&:hover": {
+                    borderColor: "#F57C00",
+                    backgroundColor: "rgba(255, 152, 0, 0.04)",
+                  },
+                  mb: 1,
+                }}
+              >
+                איפוס הגדרות
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<BackupIcon />}
+                sx={{
+                  borderColor: "#2196F3",
+                  color: "#2196F3",
+                  "&:hover": {
+                    borderColor: "#1976D2",
+                    backgroundColor: "rgba(33, 150, 243, 0.04)",
+                  },
+                  mb: 1,
+                }}
+              >
+                גיבוי נתונים
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                onClick={() => setDeleteDialogOpen(true)}
+                sx={{
+                  borderColor: "#f44336",
+                  color: "#f44336",
+                  "&:hover": {
+                    borderColor: "#d32f2f",
+                    backgroundColor: "rgba(244, 67, 54, 0.04)",
+                  },
+                  mb: 1,
+                }}
+              >
+                מחק חשבון
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Delete Account Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          PaperProps={{ sx: { borderRadius: 2 } }}
+        >
+          <DialogTitle sx={{ color: "#f44336", display: "flex", alignItems: "center" }}>
+            <WarningIcon sx={{ mr: 1 }} />
+            מחיקת חשבון
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText dir="rtl">
+              האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה ותמחק את כל הנתונים שלך לצמיתות.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: "#757575" }}>
+              ביטול
+            </Button>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{ color: "#f44336" }}
+              variant="contained"
+              color="error"
+            >
+              מחק חשבון
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Reset Settings Dialog */}
+        <Dialog
+          open={resetDialogOpen}
+          onClose={() => setResetDialogOpen(false)}
+          PaperProps={{ sx: { borderRadius: 2 } }}
+        >
+          <DialogTitle sx={{ color: "#FF9800", display: "flex", alignItems: "center" }}>
+            <InfoIcon sx={{ mr: 1 }} />
+            איפוס הגדרות
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>האם אתה בטוח שברצונך לאפס את כל ההגדרות לברירת המחדל?</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setResetDialogOpen(false)} sx={{ color: "#757575" }}>
+              {t("cancel")}
+            </Button>
+            <Button onClick={handleResetSettings} sx={{ color: "#FF9800" }} variant="contained">
+              איפוס
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Success Snackbar */}
+        <Snackbar
+          open={!!success}
+          autoHideDuration={3000}
+          onClose={() => setSuccess("")}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSuccess("")}
+            severity="success"
+            sx={{
+              width: "100%",
+              "& .MuiAlert-icon": { color: "#4caf50" },
+            }}
+          >
+            {success}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Container>
   )
 }
 
