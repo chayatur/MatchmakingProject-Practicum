@@ -14,12 +14,14 @@ using Resume.Data.Repositories;
 using Resume.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Load appsettings.json
+// ✅ Load appsettings.json (required)
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// Controllers + enum JSON handling
+// ✅ Add services
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -30,18 +32,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-    c.OperationFilter<SwaggerFileOperationFilter>();
+    c.OperationFilter<SwaggerFileOperationFilter>(); // ודא שהפילטר לא משפיע על הטיפוסים
 });
 
-// ✅ CORS מותאם ל־Render
+// CORS Policy
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("MyPolicy", policy =>
     {
-        policy
-            .WithOrigins("https://matchmakingproject-practicum-1.onrender.com/") 
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -54,18 +53,22 @@ builder.Services.AddScoped<IResumeFileService, ResumeFileService>();
 builder.Services.AddScoped<IResumefileRepository, ResumeFileRepository>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<IAIRepository, AIRepository>();
-builder.Services.AddScoped<ISharingService, SharingService>();
-builder.Services.AddScoped<ISharingRepository, SharingRepository>();
+builder.Services.AddScoped<ISharingService, SharingService>(); // הוסף שורה זו
+builder.Services.AddScoped<ISharingRepository, SharingRepository>(); // הוסף שורה זו
 builder.Services.AddDbContext<ResumeContext>();
 builder.Services.AddAutoMapper(typeof(MappingProFile));
 
-// DB Connection
+
+
+//var connectionString = builder.Configuration["ConnectionStrings:Resume"];
+//Console.WriteLine(connectionString);
+//builder.Services.AddDbContext<ResumeContext>(options =>
+//options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
 var connectionString = builder.Configuration["ConnectionStrings:Resume"];
 Console.WriteLine(connectionString);
 builder.Services.AddDbContext<ResumeContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), opt => opt.CommandTimeout(600)));
-
-// Amazon S3
+options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
+// Amazon S3 configuration
 builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 {
     var config = builder.Configuration.GetSection("AWS");
@@ -75,28 +78,29 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
 
     if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(regionValue))
     {
-        throw new InvalidOperationException("AWS credentials or region are not configured properly.");
+        throw new InvalidOperationException("AWS credentials or region are not configured properly in appsettings.json.");
     }
 
     var credentials = new Amazon.Runtime.BasicAWSCredentials(accessKey, secretKey);
     var region = Amazon.RegionEndpoint.GetBySystemName(regionValue);
+
     return new AmazonS3Client(credentials, region);
 });
 
-// OpenAI
+// OpenAI client from appsettings.json
 builder.Services.AddScoped<OpenAIClient>(provider =>
 {
     var apiKey = builder.Configuration["OpenAI:ApiKey"];
     if (string.IsNullOrEmpty(apiKey))
     {
-        throw new Exception("OpenAI API key is not configured.");
+        throw new Exception("OpenAI API key is not configured in appsettings.json.");
     }
     return new OpenAIClient(apiKey);
 });
 
 var app = builder.Build();
 
-// Swagger
+// ✅ Use Swagger
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -104,8 +108,10 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
-// Middleware
+// ✅ Middleware
 app.UseCors("MyPolicy");
 app.UseAuthorization();
 app.MapControllers();
+
+// ✅ Run the application
 app.Run();
