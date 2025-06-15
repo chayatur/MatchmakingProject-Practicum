@@ -24,7 +24,6 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   Description as DescriptionIcon,
-  Dashboard as DashboardIcon,
   Upload as UploadIcon,
   Info as InfoIcon,
   Person as PersonIcon,
