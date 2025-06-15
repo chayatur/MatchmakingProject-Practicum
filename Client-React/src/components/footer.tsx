@@ -9,7 +9,6 @@ import {
   FaWhatsapp,
   FaPhone,
   FaEnvelope,
-  FaMapMarkerAlt,
   FaHeart,
 } from "react-icons/fa"
 import {
@@ -43,7 +42,7 @@ const Footer = () => {
           <div className="footer-brand">
             <div className="footer-logo">
               <div className="logo-icon"><FaHeart /></div>
-              <div className="logo-text">שידוכים פלוס</div>
+              <div className="logo-text">lechaim</div>
             </div>
             <p className="footer-description">
               אנו מתמחים ביצירת קשרים משמעותיים ובניית משפחות מאושרות. עם ניסיון של שנים רבות ומחויבות מלאה לכל לקוח,
@@ -66,7 +65,7 @@ const Footer = () => {
               <li><a href="#" onClick={() => navigate("/about")}>אודותינו</a></li>
               <li><a href="#" onClick={() => navigate("/resumes")}>רזומות</a></li>
               <li><a href="#" onClick={() => navigate("/profile")}>פרופיל אישי</a></li>
-              <li><a href="#" onClick={() => navigate("/dashboard")}>לוח בקרה</a></li>
+              {/* <li><a href="#" onClick={() => navigate("/dashboard")}>לוח בקרה</a></li> */}
             </ul>
           </div>
 
@@ -78,7 +77,7 @@ const Footer = () => {
               <li><a href="#">ייעוץ זוגי</a></li>
               <li><a href="#">אירועי היכרות</a></li>
               <li><a href="#">הכנה לחתונה</a></li>
-              <li><a href="#">ליווי משפחתי</a></li>
+              {/* <li><a href="#">ליווי משפחתי</a></li> */}
             </ul>
           </div>
 
@@ -88,15 +87,15 @@ const Footer = () => {
             <ul className="contact-info">
               <li><FaPhone /><span>03-1234567</span></li>
               <li><FaWhatsapp /><span>050-1234567</span></li>
-              <li><FaEnvelope /><span>info@shiduchim-plus.co.il</span></li>
-              <li><FaMapMarkerAlt /><span>תל אביב, ישראל</span></li>
+              <li><FaEnvelope /><span>lechyim@shiduchim-plus.co.il</span></li>
+              {/* <li><FaMapMarkerAlt /><span>תל אביב, ישראל</span></li> */}
             </ul>
 
             {/* Newsletter Toggle */}
             <div className="newsletter">
               <IconButton onClick={() => setNewsletterOpen(!newsletterOpen)} sx={{ color: "#8B0000", fontSize: "1rem" }}>
                 <Email /> &nbsp;
-                {newsletterOpen ? <ExpandLess /> : <ExpandMore />} הצטרפות לניוזלטר
+                {newsletterOpen ? <ExpandLess /> : <ExpandMore />} Subscribe to the newsletter
               </IconButton>
 
               <Collapse in={newsletterOpen}>
@@ -123,7 +122,7 @@ const Footer = () => {
 
         <div className="footer-bottom">
           <div className="footer-copyright">
-            © {currentYear} שידוכים פלוס. כל הזכויות שמורות. נבנה באהבה ומסירות.
+            © {currentYear} lechaim. כל הזכויות שמורות. נבנה באהבה ומסירות.
           </div>
           <div className="footer-legal">
             <a href="#">תנאי שימוש</a>
