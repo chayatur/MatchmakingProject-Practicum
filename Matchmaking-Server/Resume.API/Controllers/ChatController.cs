@@ -18,7 +18,8 @@ namespace Resume.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GptRequest gptRequest)
         {
-            string myApiKey = _configuration["ApiKey"];
+            string myApiKey = _configuration["OpenAI:ApiKey"];
+
             try
             {
                 // לוג של נתוני הבקשה
