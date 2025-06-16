@@ -7,12 +7,12 @@ namespace Resume.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatController : ControllerBase
+    public class GPTController : ControllerBase
     {
         private readonly HttpClient _httpClient;
         private readonly string _myApiKey;
 
-        public ChatController(IConfiguration configuration, HttpClient httpClient)
+        public GPTController(IConfiguration configuration, HttpClient httpClient)
         {
             _myApiKey = configuration["OpenAI:ApiKey"];
             _httpClient = httpClient;
