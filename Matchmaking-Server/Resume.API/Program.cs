@@ -58,12 +58,6 @@ builder.Services.AddScoped<ISharingRepository, SharingRepository>(); // הוסף
 builder.Services.AddDbContext<ResumeContext>();
 builder.Services.AddAutoMapper(typeof(MappingProFile));
 
-
-
-//var connectionString = builder.Configuration["ConnectionStrings:Resume"];
-//Console.WriteLine(connectionString);
-//builder.Services.AddDbContext<ResumeContext>(options =>
-//options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options => options.CommandTimeout(600)));
 var connectionString = builder.Configuration["ConnectionStrings:Resume"];
 Console.WriteLine(connectionString);
 builder.Services.AddDbContext<ResumeContext>(options =>

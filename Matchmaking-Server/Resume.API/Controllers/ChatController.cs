@@ -1,17 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resume.Core.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Resume.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ChatController : ControllerBase
     {
-
         private readonly HttpClient client = new HttpClient();
         private readonly IConfiguration _configuration;
+
         public ChatController(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -23,26 +21,32 @@ namespace Resume.API.Controllers
             string myApiKey = _configuration["ApiKey"];
             try
             {
+                // לוג של נתוני הבקשה
+                Console.WriteLine($"Sending request with prompt: {gptRequest.Prompt} and question: {gptRequest.Question}");
+
                 var prompt = new
                 {
                     model = "gpt-4o-mini",
-                    messages = new[] {
-            new { role = "system", content = gptRequest.Prompt },
-            new { role = "user", content = gptRequest.Question }
-            }
+                    messages = new[]
+                    {
+                        new { role = "system", content = gptRequest.Prompt },
+                        new { role = "user", content = gptRequest.Question }
+                    }
                 };
+
                 var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions")
                 {
                     Content = JsonContent.Create(prompt)
                 };
                 request.Headers.Add("Authorization", $"Bearer {myApiKey}");
+
                 // שליחת הבקשה ל-API
                 var response = await client.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(responseContent);
+                    Console.WriteLine($"Error response from OpenAI: {responseContent}");
                     throw new Exception($": {response.StatusCode}. תשובה: {responseContent}");
                 }
 
