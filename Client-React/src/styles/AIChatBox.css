@@ -1,0 +1,359 @@
+/* אנימציות וסגנונות מתקדמים לצ'אט */
+
+.chat-fab {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  animation: pulse 2s infinite;
+  z-index: 1350 !important; /* גבוה יותר מהנאב-בר */
+}
+
+.chat-fab:hover {
+  animation: none;
+}
+
+.chat-fab-open {
+  transform: rotate(180deg);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.6);
+  }
+  100% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3);
+  }
+}
+
+.chat-container {
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1340 !important; /* נמוך יותר מהכפתור אבל גבוה מהנאב-בר */
+}
+
+.chat-container.fullscreen {
+  border-radius: 0 !important;
+  z-index: 1400 !important; /* במסך מלא z-index גבוה יותר */
+}
+
+.chat-header {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.chat-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 0, 0, 0.3) transparent;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(139, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 0, 0, 0.5);
+}
+
+.welcome-message {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.welcome-message .MuiChip-root {
+  margin: 4px;
+  transition: all 0.3s ease;
+}
+
+.welcome-message .MuiChip-root:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message {
+  animation: slideIn 0.3s ease-out;
+}
+
+.message.user {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.message.assistant {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.message-bubble {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.message-bubble.user {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+}
+
+.message-bubble.user::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  right: -8px;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-left-color: #dc143c;
+  border-right: 0;
+  margin-top: -8px;
+  margin-right: 0;
+}
+
+.message-bubble.assistant::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-right-color: #f8f9fa;
+  border-left: 0;
+  margin-top: -8px;
+  margin-left: 0;
+}
+
+.typing-indicator {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 8px 12px;
+}
+
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8b0000;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.chat-input {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* אנימציות נוספות */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chat-container {
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* תמיכה במובייל */
+@media (max-width: 768px) {
+  .chat-container:not(.fullscreen) {
+    width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    max-width: 400px;
+  }
+
+  .chat-fab {
+    bottom: 16px !important;
+    left: 16px !important;
+  }
+}
+
+/* אפקטים מתקדמים */
+.message-bubble.user {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+  box-shadow: 0 4px 16px rgba(139, 0, 0, 0.3);
+}
+
+.message-bubble.assistant {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* הוספת גלוו אפקט */
+.chat-fab:hover {
+  box-shadow: 0 0 30px rgba(139, 0, 0, 0.6) !important;
+}
+
+.message-bubble.user:hover {
+  box-shadow: 0 6px 24px rgba(139, 0, 0, 0.4) !important;
+}
+
+/* אנימציית הופעה חלקה */
+.chat-messages > * {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* תיקון למיקום בצד שמאל */
+.chat-container {
+  left: 24px !important;
+  right: auto !important;
+}
+
+.chat-fab {
+  left: 24px !important;
+  right: auto !important;
+}
+
+/* הבטחת z-index נכון - תיקון חשוב! */
+.MuiAppBar-root {
+  z-index: 1100 !important;
+}
+
+.MuiDrawer-root {
+  z-index: 1200 !important;
+}
+
+.chat-fab {
+  z-index: 1350 !important;
+}
+
+.chat-container {
+  z-index: 1340 !important;
+}
+
+.chat-container.fullscreen {
+  z-index: 1400 !important;
+}
+
+/* שיפור נראות האיקונים */
+.chat-header .MuiIconButton-root {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  margin: 0 2px !important;
+  transition: all 0.3s ease !important;
+}
+
+.chat-header .MuiIconButton-root:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.1) !important;
+}
+
+/* אפקט מיוחד לכפתור הצ'אט */
+.chat-fab {
+  box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3), 0 0 0 0 rgba(139, 0, 0, 0.4) !important;
+  animation: pulse-ring 2s infinite !important;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3), 0 0 0 0 rgba(139, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3), 0 0 0 10px rgba(139, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 8px 32px rgba(139, 0, 0, 0.3), 0 0 0 0 rgba(139, 0, 0, 0);
+  }
+}
