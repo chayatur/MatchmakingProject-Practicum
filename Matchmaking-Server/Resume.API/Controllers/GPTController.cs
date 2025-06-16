@@ -3,20 +3,19 @@ using Resume.Core.Models;
 using System.Net.Http;
 using System.Text.Json;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Resume.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ChatController : ControllerBase
     {
-        private static readonly HttpClient client = new HttpClient();
-        private readonly string myApiKey;
+        private readonly HttpClient _httpClient;
+        private readonly string _myApiKey;
 
-        public ChatController(IConfiguration configuration)
+        public ChatController(IConfiguration configuration, HttpClient httpClient)
         {
-            myApiKey = configuration["OpenAI:ApiKey"];
+            _myApiKey = configuration["OpenAI:ApiKey"];
+            _httpClient = httpClient;
         }
 
         [HttpPost]
@@ -38,10 +37,9 @@ namespace Resume.API.Controllers
                     Content = JsonContent.Create(prompt)
                 };
 
-                request.Headers.Add("Authorization", $"Bearer {myApiKey}");
+                request.Headers.Add("Authorization", $"Bearer {_myApiKey}");
 
-                // שליחת הבקשה ל-API
-                var response = await client.SendAsync(request);
+                var response = await _httpClient.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -50,7 +48,7 @@ namespace Resume.API.Controllers
                 }
 
                 var responseContent1 = await response.Content.ReadAsStringAsync();
-                return Ok(responseContent1); // החזרת התוכן כהצלחה
+                return Ok(responseContent1);
             }
             catch (HttpRequestException httpEx)
             {
