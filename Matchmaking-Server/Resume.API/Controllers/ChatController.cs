@@ -1,54 +1,53 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Resume.Core.Models;
-using System.Net.Http;
-using System.Text.Json;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Resume.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GPTController : ControllerBase
+    public class ChatController : ControllerBase
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _myApiKey;
 
-        public GPTController(IConfiguration configuration, HttpClient httpClient)
+        private readonly HttpClient client = new HttpClient();
+        private readonly IConfiguration _configuration;
+        public ChatController(IConfiguration configuration)
         {
-            _myApiKey = configuration["OpenAI:ApiKey"];
-            _httpClient = httpClient;
+            _configuration = configuration;
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] GptRequest gptRequest)
         {
+            string myApiKey = _configuration["ApiKey"];
             try
             {
                 var prompt = new
                 {
                     model = "gpt-4o-mini",
                     messages = new[] {
-                        new { role = "system", content = gptRequest.Prompt },
-                        new { role = "user", content = gptRequest.Question }
-                    }
+            new { role = "system", content = gptRequest.Prompt },
+            new { role = "user", content = gptRequest.Question }
+            }
                 };
-
                 var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions")
                 {
                     Content = JsonContent.Create(prompt)
                 };
-
-                request.Headers.Add("Authorization", $"Bearer {_myApiKey}");
-
-                var response = await _httpClient.SendAsync(request);
+                request.Headers.Add("Authorization", $"Bearer {myApiKey}");
+                // שליחת הבקשה ל-API
+                var response = await client.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, responseContent);
+                    Console.WriteLine(responseContent);
+                    throw new Exception($": {response.StatusCode}. תשובה: {responseContent}");
                 }
 
                 var responseContent1 = await response.Content.ReadAsStringAsync();
-                return Ok(responseContent1);
+                return Ok(responseContent1); // החזרת התוכן כהצלחה
             }
             catch (HttpRequestException httpEx)
             {
