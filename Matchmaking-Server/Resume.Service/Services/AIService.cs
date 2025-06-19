@@ -126,20 +126,32 @@ namespace Resume.Service.Services
 
         private string ExtractTextFromPdf(IFormFile pdfFile)
         {
-            using (var stream = pdfFile.OpenReadStream()) // השתמש במתודה הזו
-            using (PdfReader reader = new PdfReader(stream))
-            using (PdfDocument pdfDoc = new PdfDocument(reader))
+
             {
-                StringWriter stringWriter = new StringWriter();
 
-                for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
+                using (var stream = pdfFile.OpenReadStream())
+                using (PdfReader reader = new PdfReader(stream))
+                using (PdfDocument pdfDoc = new PdfDocument(reader))
                 {
-                    string pageText = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page));
-                    stringWriter.Write(pageText);
-                }
-                Console.WriteLine(stringWriter.ToString());
+                    StringBuilder stringBuilder = new StringBuilder();
 
-                return stringWriter.ToString();
+                    for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
+                    {
+                        string pageText = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page));
+                        if (!string.IsNullOrWhiteSpace(pageText))
+                        {
+                            stringBuilder.AppendLine(pageText);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Page {page} is empty or could not be read.");
+                        }
+                    }
+
+                    string result = stringBuilder.ToString();
+                    Console.WriteLine(result);
+                    return result;
+                }
             }
         }
 
