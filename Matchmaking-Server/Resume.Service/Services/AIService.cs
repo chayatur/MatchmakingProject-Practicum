@@ -137,6 +137,7 @@ namespace Resume.Service.Services
                     string pageText = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page));
                     stringWriter.Write(pageText);
                 }
+                Console.WriteLine(stringWriter.ToString());
 
                 return stringWriter.ToString();
             }
