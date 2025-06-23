@@ -1,973 +1,1009 @@
-// "use client"
 
-// import type React from "react"
-// import { useState } from "react"
-// import { useSelector, useDispatch } from "react-redux"
-// import {
-//   Container,
-//   Paper,
-//   Typography,
-//   Box,
-//   TextField,
-//   Button,
-//   Grid,
-//   Avatar,
-//   Divider,
-//   Alert,
-//   Card,
-//   CardContent,
-//   Switch,
-//   FormControlLabel,
-//   IconButton,
-//   Tooltip,
-//   Select,
-//   MenuItem,
-//   FormControl,
-//   InputLabel,
-//   Slider,
-//   Chip,
-//   Dialog,
-//   DialogTitle,
-//   DialogContent,
-//   DialogActions,
-//   DialogContentText,
-//   Snackbar,
-// } from "@mui/material"
-// import {
-//   ArrowBack as ArrowBackIcon,
-//   Save as SaveIcon,
-//   Person as PersonIcon,
-//   Security as SecurityIcon,
-//   Notifications as NotificationsIcon,
-//   Palette as PaletteIcon,
-//   Language as LanguageIcon,
-//   VolumeUp as VolumeUpIcon,
-//   Brightness6 as Brightness6Icon,
-//   Lock as LockIcon,
-//   Delete as DeleteIcon,
-//   RestartAlt as RestartAltIcon,
-//   Email as EmailIcon,
-//   Phone as PhoneIcon,
-//   PrivacyTip as PrivacyTipIcon,
-//   Warning as WarningIcon,
-//   Info as InfoIcon,
-//   Backup as BackupIcon,
-// } from "@mui/icons-material"
-// import type { RootState, AppDispatch } from "../store"
-// import { updateUserProfile } from "../slices/userSlice"
-// import { getTranslation } from "../components/transletions"
-// import { useNavigate } from "react-router-dom"
-// import { resetSettings, updateAppearance, updateNotifications, updatePrivacy, updateSecurity, updateSounds } from "../slices/settingsSlice"
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Switch,
+  FormControlLabel,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  Alert,
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  IconButton,
+  Tooltip,
+  Avatar,
+  LinearProgress,
+} from "@mui/material"
+import {
+  Settings as SettingsIcon,
+  Notifications as NotificationsIcon,
+  Security as SecurityIcon,
+  Palette as PaletteIcon,
+  Language as LanguageIcon,
+  Storage as StorageIcon,
+  Delete as DeleteIcon,
+  Save as SaveIcon,
+  ArrowBack as ArrowBackIcon,
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  VpnKey as VpnKeyIcon,
+  Email as EmailIcon,
+  Sms as SmsIcon,
+  DarkMode as DarkModeIcon,
+  Download as DownloadIcon,
+} from "@mui/icons-material"
+import type { RootState } from "../store"
+import "../styles/setting.css"
 
-// const SettingsPage: React.FC = () => {
-//   const navigate = useNavigate()
-//   const dispatch = useDispatch<AppDispatch>()
-//   const { user, loading } = useSelector((state: RootState) => state.user)
-//   const settings = useSelector((state: RootState) => state.settings)
+interface UserSettings {
+  notifications: {
+    email: boolean
+    sms: boolean
+    push: boolean
+    newMatches: boolean
+    messages: boolean
+    systemUpdates: boolean
+  }
+  privacy: {
+    profileVisibility: "public" | "private" | "friends"
+    showOnlineStatus: boolean
+    allowDirectMessages: boolean
+    dataCollection: boolean
+  }
+  appearance: {
+    theme: "light" | "dark" | "auto"
+    language: "he" | "en" | "ar"
+    fontSize: "small" | "medium" | "large"
+  }
+  account: {
+    twoFactorAuth: boolean
+    loginAlerts: boolean
+    sessionTimeout: number
+  }
+}
 
-//   const [activeSection, setActiveSection] = useState<
-//     "profile" | "notifications" | "appearance" | "privacy" | "security" | "sounds"
-//   >("profile")
-//   const [success, setSuccess] = useState("")
-//   const [error, setError] = useState("")
-//   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-//   const [resetDialogOpen, setResetDialogOpen] = useState(false)
+const SettingsPage: React.FC = () => {
+  // const dispatch = useDispatch<AppDispatch>()
+  const navigate = useNavigate()
+  const { user, isLoggedIn } = useSelector((state: RootState) => state.user)
 
-//   const [formData, setFormData] = useState({
-//     username: user?.username || "",
-//     email: user?.email || "",
-//     phone: user?.phone || "",
-//     address: user?.address || "",
-//     currentPassword: "",
-//     newPassword: "",
-//     confirmPassword: "",
-//   })
+  const [activeTab, setActiveTab] = useState("general")
+  const [settings, setSettings] = useState<UserSettings>({
+    notifications: {
+      email: true,
+      sms: false,
+      push: true,
+      newMatches: true,
+      messages: true,
+      systemUpdates: false,
+    },
+    privacy: {
+      profileVisibility: "public",
+      showOnlineStatus: true,
+      allowDirectMessages: true,
+      dataCollection: false,
+    },
+    appearance: {
+      theme: "light",
+      language: "he",
+      fontSize: "medium",
+    },
+    account: {
+      twoFactorAuth: false,
+      loginAlerts: true,
+      sessionTimeout: 30,
+    },
+  })
 
-//   const t = (key: string) => getTranslation(settings.appearance.language, key as any)
+  const [loading, setLoading] = useState(false)
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: "success" | "error" | "info"
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  })
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
 
-//   const handleInputChange = (field: string, value: string) => {
-//     setFormData((prev) => ({ ...prev, [field]: value }))
-//   }
+  // Load user settings on component mount
+  useEffect(() => {
+    if (isLoggedIn && user.id) {
+      loadUserSettings()
+    }
+  }, [isLoggedIn, user.id])
 
-//   const handleNotificationChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//     dispatch(updateNotifications({ [setting]: event.target.checked }))
-//     setSuccess(t("success") + "!")
-//   }
+  const loadUserSettings = async () => {
+    try {
+      const savedSettings = localStorage.getItem(`settings_${user.id}`)
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings))
+      }
+    } catch (error) {
+      console.error("Failed to load settings:", error)
+    }
+  }
 
-//   const handleAppearanceChange = (setting: string) => (event: any) => {
-//     const value = event.target ? event.target.value : event
-//     dispatch(updateAppearance({ [setting]: value }))
-//     setSuccess(t("success") + "!")
-//   }
+  const handleSettingChange = (category: keyof UserSettings, key: string, value: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value,
+      },
+    }))
+  }
 
-//   const handlePrivacyChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//     dispatch(updatePrivacy({ [setting]: event.target.checked }))
-//     setSuccess(t("success") + "!")
-//   }
+  const handleSaveSettings = async () => {
+    setLoading(true)
+    try {
+      localStorage.setItem(`settings_${user.id}`, JSON.stringify(settings))
+      setSnackbar({
+        open: true,
+        message: "ההגדרות נשמרו בהצלחה!",
+        severity: "success",
+      })
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "שגיאה בשמירת ההגדרות",
+        severity: "error",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-//   const handleSecurityChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//     dispatch(updateSecurity({ [setting]: event.target.checked }))
-//     setSuccess(t("success") + "!")
-//   }
+  const handleExportData = async () => {
+    try {
+      const userData = {
+        profile: user,
+        settings: settings,
+        exportDate: new Date().toISOString(),
+      }
 
-//   const handleSoundsChange = (setting: string) => (event: any) => {
-//     const value = event.target ? event.target.value : event
-//     dispatch(updateSounds({ [setting]: value }))
-//     setSuccess(t("success") + "!")
-//   }
+      const blob = new Blob([JSON.stringify(userData, null, 2)], {
+        type: "application/json",
+      })
 
-//   const handleSliderChange = (category: string, setting: string) => (event: Event, value: number | number[]) => {
-//     const finalValue = Array.isArray(value) ? value[0] : value
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `my-data-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
 
-//     if (category === "appearance") {
-//       dispatch(updateAppearance({ [setting]: finalValue }))
-//     } else if (category === "security") {
-//       dispatch(updateSecurity({ [setting]: finalValue }))
-//     } else if (category === "sounds") {
-//       dispatch(updateSounds({ [setting]: finalValue }))
-//     }
+      setExportDialogOpen(false)
+      setSnackbar({
+        open: true,
+        message: "הנתונים יוצאו בהצלחה!",
+        severity: "success",
+      })
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "שגיאה בייצוא הנתונים",
+        severity: "error",
+      })
+    }
+  }
 
-//     setSuccess(t("success") + "!")
-//   }
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "מחק את החשבון שלי") {
+      setSnackbar({
+        open: true,
+        message: "יש להקליד את הטקסט בדיוק כפי שמופיע",
+        severity: "error",
+      })
+      return
+    }
 
-//   const handleSaveProfile = async () => {
-//     try {
-//       if (!user?.id) {
-//         setError("משתמש לא מזוהה")
-//         return
-//       }
+    try {
+      setSnackbar({
+        open: true,
+        message: "החשבון נמחק בהצלחה",
+        severity: "info",
+      })
+      setDeleteDialogOpen(false)
+      setTimeout(() => {
+        navigate("/")
+      }, 2000)
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "שגיאה במחיקת החשבון",
+        severity: "error",
+      })
+    }
+  }
 
-//       const updatedUser = {
-//         id: user.id,
-//         username: formData.username.trim(),
-//         email: formData.email.trim(),
-//         phone: formData.phone.trim() || null,
-//         address: formData.address.trim() || null,
-//       }
+  const getInitials = () => {
+    if (user.username) {
+      return user.username.charAt(0).toUpperCase()
+    }
+    if (user.email) {
+      return user.email.charAt(0).toUpperCase()
+    }
+    return "U"
+  }
 
-//       await dispatch(updateUserProfile(updatedUser)).unwrap()
-//       setSuccess("הפרופיל עודכן בהצלחה!")
-//       setError("")
-//     } catch (err: any) {
-//       setError(err.message || "שגיאה בעדכון הפרופיל")
-//       setSuccess("")
-//     }
-//   }
+  if (!isLoggedIn) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
+          <Typography variant="h5" color="#8B0000" gutterBottom>
+            יש להתחבר למערכת כדי לגשת להגדרות
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/login")}
+            sx={{
+              mt: 2,
+              backgroundColor: "#8B0000",
+              "&:hover": { backgroundColor: "#5c0000" },
+            }}
+          >
+            התחבר למערכת
+          </Button>
+        </Paper>
+      </Container>
+    )
+  }
 
-//   const handleResetSettings = () => {
-//     dispatch(resetSettings())
-//     setResetDialogOpen(false)
-//     setSuccess("ההגדרות אופסו לברירת המחדל!")
-//   }
+  const tabs = [
+    { id: "general", label: "כללי", icon: <SettingsIcon /> },
+    { id: "notifications", label: "התראות", icon: <NotificationsIcon /> },
+    { id: "privacy", label: "פרטיות", icon: <SecurityIcon /> },
+    { id: "appearance", label: "תצוגה", icon: <PaletteIcon /> },
+    { id: "account", label: "חשבון", icon: <VpnKeyIcon /> },
+  ]
 
-//   const handleChangePassword = async () => {
-//     if (formData.newPassword !== formData.confirmPassword) {
-//       setError("הסיסמאות אינן תואמות")
-//       return
-//     }
+  return (
+    <div className="settings-container">
+      {/* Header */}
+      <div className="settings-header">
+        <Container maxWidth="lg">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 2 }}>
+            <Tooltip title="חזור">
+              <IconButton onClick={() => navigate(-1)} sx={{ color: "white" }}>
+                <ArrowBackIcon />
+              </IconButton>
+            </Tooltip>
+            <Avatar
+              sx={{
+                width: 72,
+                height: 72,
+                bgcolor: "rgba(255, 255, 255, 0.2)",
+                fontSize: "1.8rem",
+                fontWeight: "bold",
+                border: "3px solid rgba(255, 255, 255, 0.3)",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
+              }}
+            >
+              {getInitials()}
+            </Avatar>
+            <Box>
+              <Typography className="welcome-text">
+                שלום {user.username || "משתמש"}, ברוך הבא לאזור ההגדרות! 👋
+              </Typography>
+              <Typography className="settings-title">הגדרות מתקדמות</Typography>
+              <Typography className="settings-subtitle">
+                התאם את המערכת בדיוק לפי הצרכים והעדפות שלך במערכת השידוכים המתקדמת
+              </Typography>
+            </Box>
+          </Box>
+        </Container>
+      </div>
 
-//     try {
-//       setSuccess("הסיסמה שונתה בהצלחה!")
-//       setError("")
-//       setFormData((prev) => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }))
-//     } catch (err) {
-//       setError("שגיאה בשינוי הסיסמה")
-//       setSuccess("")
-//     }
-//   }
+      {/* Content */}
+      <div className="settings-content">
+        <Container maxWidth="lg">
+          {/* Tabs */}
+          <div className="settings-tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.icon}
+                <span style={{ marginRight: 8 }}>{tab.label}</span>
+              </button>
+            ))}
+          </div>
 
-//   const SettingsSection = ({
-//     title,
-//     icon,
-//     children,
-//   }: {
-//     title: string
-//     icon: React.ReactNode
-//     children: React.ReactNode
-//   }) => (
-//     <Card
-//       elevation={2}
-//       sx={{
-//         mb: 3,
-//         borderRadius: 2,
-//         border: "1px solid #e5d6d6",
-//         "&:hover": {
-//           boxShadow: "0 4px 12px rgba(139, 0, 0, 0.1)",
-//         },
-//       }}
-//     >
-//       <CardContent sx={{ p: 3 }}>
-//         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-//           <Avatar sx={{ bgcolor: "#8B0000", mr: 2, width: 40, height: 40 }}>{icon}</Avatar>
-//           <Typography variant="h6" sx={{ color: "#8B0000", fontWeight: "bold" }}>
-//             {title}
-//           </Typography>
-//         </Box>
-//         {children}
-//       </CardContent>
-//     </Card>
-//   )
+          {/* General Settings */}
+          {activeTab === "general" && (
+            <div className="slide-in">
+              <div className="settings-section">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <SettingsIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">הגדרות כלליות</h2>
+                    <p className="section-description">הגדרות בסיסיות לחשבון שלך</p>
+                  </div>
+                </div>
 
-//   const handleSelectChange = (category: string, setting: string) => (event: any) => {
-//     const value = event.target ? event.target.value : event
-//     if (category === "privacy") {
-//       dispatch(updatePrivacy({ [setting]: value }))
-//     } else if (category === "security") {
-//       dispatch(updateSecurity({ [setting]: value }))
-//     } else if (category === "sounds") {
-//       dispatch(updateSounds({ [setting]: value }))
-//     }
-//     setSuccess(t("success") + "!")
-//   }
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <InfoIcon sx={{ color: "#8B0000" }} />
+                      פרטי פרופיל
+                    </div>
+                    <div className="setting-description">עדכן את הפרטים האישיים שלך</div>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate("/profile")}
+                      sx={{
+                        borderColor: "#8B0000",
+                        color: "#8B0000",
+                        "&:hover": {
+                          borderColor: "#5c0000",
+                          backgroundColor: "rgba(139, 0, 0, 0.04)",
+                        },
+                      }}
+                    >
+                      עדכן פרופיל
+                    </Button>
+                  </div>
 
-//   const handleSwitchChange = (category: string, setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//     if (category === "privacy") {
-//       dispatch(updatePrivacy({ [setting]: event.target.checked }))
-//     } else if (category === "security") {
-//       dispatch(updateSecurity({ [setting]: event.target.checked }))
-//     } else if (category === "sounds") {
-//       dispatch(updateSounds({ [setting]: event.target.checked }))
-//     }
-//     setSuccess(t("success") + "!")
-//   }
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <StorageIcon sx={{ color: "#8B0000" }} />
+                      ניהול נתונים
+                    </div>
+                    <div className="setting-description">ייצא או מחק את הנתונים שלך</div>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => setExportDialogOpen(true)}
+                        sx={{
+                          borderColor: "#8B0000",
+                          color: "#8B0000",
+                          "&:hover": {
+                            borderColor: "#5c0000",
+                            backgroundColor: "rgba(139, 0, 0, 0.04)",
+                          },
+                        }}
+                      >
+                        ייצא נתונים
+                      </Button>
+                    </Box>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-//   if (!user) {
-//     return (
-//       <Container maxWidth="lg" sx={{ py: 4 }}>
-//         <Paper elevation={3} sx={{ p: 3, textAlign: "center" }}>
-//           <Typography variant="h6" color="error">
-//             יש להתחבר למערכת כדי לגשת להגדרות
-//           </Typography>
-//         </Paper>
-//       </Container>
-//     )
-//   }
+          {/* Notifications Settings */}
+          {activeTab === "notifications" && (
+            <div className="slide-in">
+              <div className="settings-section">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <NotificationsIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">הגדרות התראות</h2>
+                    <p className="section-description">בחר איך ומתי תרצה לקבל התראות</p>
+                  </div>
+                </div>
 
-//   return (
-//     <Container maxWidth="lg" sx={{ py: 4 }}>
-//       <Box className="settings-container">
-//         {/* Header */}
-//         <Paper
-//           elevation={3}
-//           sx={{
-//             background: "linear-gradient(135deg, #8B0000 0%, #DC143C 100%)",
-//             color: "white",
-//             p: 3,
-//             borderRadius: 2,
-//             mb: 3,
-//           }}
-//         >
-//           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-//             <Tooltip title="חזור לאיזור האישי">
-//               <IconButton onClick={() => navigate("/profile")} sx={{ color: "white" }}>
-//                 <ArrowBackIcon />
-//               </IconButton>
-//             </Tooltip>
-//             <Typography variant="h4" sx={{ fontWeight: 700 }}>
-//               {t("settingsTitle")}
-//             </Typography>
-//           </Box>
-//         </Paper>
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <EmailIcon sx={{ color: "#8B0000" }} />
+                      התראות אימייל
+                    </div>
+                    <div className="setting-description">קבל התראות באימייל על פעילות חשובה</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.email}
+                          onChange={(e) => handleSettingChange("notifications", "email", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//         {/* Alerts */}
-//         {success && (
-//           <Alert severity="success" sx={{ mt: 2 }} onClose={() => setSuccess("")}>
-//             {success}
-//           </Alert>
-//         )}
-//         {error && (
-//           <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError("")}>
-//             {error}
-//           </Alert>
-//         )}
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <SmsIcon sx={{ color: "#8B0000" }} />
+                      התראות SMS
+                    </div>
+                    <div className="setting-description">קבל התראות בהודעות טקסט</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.sms}
+                          onChange={(e) => handleSettingChange("notifications", "sms", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//         <Grid container spacing={3} sx={{ mt: 2 }}>
-//           {/* Sidebar */}
-//           <Grid item xs={12} md={3}>
-//             <Paper elevation={2} sx={{ p: 2 }}>
-//               <Box sx={{ textAlign: "center", mb: 3 }}>
-//                 <Avatar
-//                   sx={{
-//                     width: 80,
-//                     height: 80,
-//                     bgcolor: "#8B0000",
-//                     fontSize: "2rem",
-//                     mx: "auto",
-//                     mb: 2,
-//                   }}
-//                 >
-//                   {user.username ? user.username.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-//                 </Avatar>
-//                 <Typography variant="h6">{user.username || user.email}</Typography>
-//               </Box>
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <NotificationsIcon sx={{ color: "#8B0000" }} />
+                      התראות דחיפה
+                    </div>
+                    <div className="setting-description">קבל התראות ישירות בדפדפן</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.push}
+                          onChange={(e) => handleSettingChange("notifications", "push", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-//                 {[
-//                   { key: "profile", label: t("personalDetails"), icon: <PersonIcon /> },
-//                   { key: "notifications", label: t("notifications"), icon: <NotificationsIcon /> },
-//                   { key: "appearance", label: t("appearance"), icon: <PaletteIcon /> },
-//                   { key: "privacy", label: t("privacy"), icon: <PrivacyTipIcon /> },
-//                   { key: "security", label: t("security"), icon: <SecurityIcon /> },
-//                   { key: "sounds", label: t("sounds"), icon: <VolumeUpIcon /> },
-//                 ].map((section) => (
-//                   <Button
-//                     key={section.key}
-//                     variant={activeSection === section.key ? "contained" : "outlined"}
-//                     startIcon={section.icon}
-//                     onClick={() => setActiveSection(section.key as any)}
-//                     fullWidth
-//                     sx={{
-//                       justifyContent: "flex-start",
-//                       bgcolor: activeSection === section.key ? "#8B0000" : "transparent",
-//                       borderColor: "#8B0000",
-//                       color: activeSection === section.key ? "white" : "#8B0000",
-//                     }}
-//                   >
-//                     {section.label}
-//                   </Button>
-//                 ))}
-//               </Box>
-//             </Paper>
-//           </Grid>
+                  <div className="setting-item">
+                    <div className="setting-label">התראות על התאמות חדשות</div>
+                    <div className="setting-description">קבל התראה כאשר נמצאות התאמות חדשות</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.notifications.newMatches}
+                          onChange={(e) => handleSettingChange("notifications", "newMatches", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-//           {/* Main Content */}
-//           <Grid item xs={12} md={9}>
-//             <Paper elevation={2} sx={{ p: 3 }}>
-//               {activeSection === "appearance" && (
-//                 <SettingsSection title={t("appearance")} icon={<PaletteIcon />}>
-//                   <Grid container spacing={3}>
-//                     <Grid item xs={12} sm={4}>
-//                       <FormControl fullWidth>
-//                         <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>{t("theme")}</InputLabel>
-//                         <Select
-//                           value={settings.appearance.theme}
-//                           onChange={handleAppearanceChange("theme")}
-//                           sx={{
-//                             "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
-//                           }}
-//                         >
-//                           <MenuItem value="light">
-//                             <Box sx={{ display: "flex", alignItems: "center" }}>
-//                               <Brightness6Icon sx={{ mr: 1 }} />
-//                               {t("lightTheme")}
-//                             </Box>
-//                           </MenuItem>
-//                           <MenuItem value="dark">{t("darkTheme")}</MenuItem>
-//                           <MenuItem value="auto">{t("autoTheme")}</MenuItem>
-//                         </Select>
-//                       </FormControl>
-//                     </Grid>
-//                     <Grid item xs={12} sm={4}>
-//                       <FormControl fullWidth>
-//                         <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>{t("language")}</InputLabel>
-//                         <Select
-//                           value={settings.appearance.language}
-//                           onChange={handleAppearanceChange("language")}
-//                           sx={{
-//                             "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
-//                           }}
-//                         >
-//                           <MenuItem value="he">
-//                             <Box sx={{ display: "flex", alignItems: "center" }}>
-//                               <LanguageIcon sx={{ mr: 1 }} />
-//                               {t("hebrew")}
-//                             </Box>
-//                           </MenuItem>
-//                           <MenuItem value="en">{t("english")}</MenuItem>
-//                           <MenuItem value="ar">{t("arabic")}</MenuItem>
-//                         </Select>
-//                       </FormControl>
-//                     </Grid>
-//                     <Grid item xs={12} sm={4}>
-//                       <Typography gutterBottom>
-//                         {t("fontSize")}: {settings.appearance.fontSize}px
-//                       </Typography>
-//                       <Slider
-//                         value={settings.appearance.fontSize}
-//                         onChange={handleSliderChange("appearance", "fontSize")}
-//                         min={12}
-//                         max={20}
-//                         step={1}
-//                         sx={{
-//                           color: "#8B0000",
-//                           "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
-//                           "& .MuiSlider-track": { backgroundColor: "#8B0000" },
-//                         }}
-//                       />
-//                     </Grid>
-//                   </Grid>
-//                 </SettingsSection>
-//               )}
+          {/* Privacy Settings */}
+          {activeTab === "privacy" && (
+            <div className="slide-in">
+              <div className="settings-section">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <SecurityIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">הגדרות פרטיות</h2>
+                    <p className="section-description">שלוט על הפרטיות והנראות שלך במערכת</p>
+                  </div>
+                </div>
 
-//               {activeSection === "notifications" && (
-//                 <SettingsSection title={t("notifications")} icon={<NotificationsIcon />}>
-//                   <Grid container spacing={2}>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             checked={settings.notifications.email}
-//                             onChange={handleNotificationChange("email")}
-//                             sx={{
-//                               "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                               "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
-//                             }}
-//                           />
-//                         }
-//                         label={
-//                           <Box sx={{ display: "flex", alignItems: "center" }}>
-//                             <EmailIcon sx={{ mr: 1, color: "#8B0000" }} />
-//                             {t("emailNotifications")}
-//                           </Box>
-//                         }
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             checked={settings.notifications.push}
-//                             onChange={handleNotificationChange("push")}
-//                             sx={{
-//                               "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                               "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
-//                             }}
-//                           />
-//                         }
-//                         label={t("pushNotifications")}
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             checked={settings.notifications.sms}
-//                             onChange={handleNotificationChange("sms")}
-//                             sx={{
-//                               "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                               "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
-//                             }}
-//                           />
-//                         }
-//                         label={
-//                           <Box sx={{ display: "flex", alignItems: "center" }}>
-//                             <PhoneIcon sx={{ mr: 1, color: "#8B0000" }} />
-//                             {t("smsNotifications")}
-//                           </Box>
-//                         }
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             checked={settings.notifications.marketing}
-//                             onChange={handleNotificationChange("marketing")}
-//                             sx={{
-//                               "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                               "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
-//                             }}
-//                           />
-//                         }
-//                         label={t("marketingEmails")}
-//                       />
-//                     </Grid>
-//                   </Grid>
-//                 </SettingsSection>
-//               )}
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">נראות פרופיל</div>
+                    <div className="setting-description">בחר מי יכול לראות את הפרופיל שלך</div>
+                    <FormControl fullWidth>
+                      <Select
+                        value={settings.privacy.profileVisibility}
+                        onChange={(e) => handleSettingChange("privacy", "profileVisibility", e.target.value)}
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.2)",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.4)",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#8B0000",
+                          },
+                        }}
+                      >
+                        <MenuItem value="public">ציבורי - כולם יכולים לראות</MenuItem>
+                        <MenuItem value="private">פרטי - רק אני יכול לראות</MenuItem>
+                        <MenuItem value="friends">חברים - רק חברים יכולים לראות</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
 
-//               {activeSection === "profile" && (
-//                 <div>
-//                   <Typography variant="h5" gutterBottom sx={{ color: "#8B0000", fontWeight: "bold" }}>
-//                     פרטים אישיים
-//                   </Typography>
-//                   <Divider sx={{ mb: 3 }} />
+                  <div className="setting-item">
+                    <div className="setting-label">הצג סטטוס מקוון</div>
+                    <div className="setting-description">אפשר למשתמשים אחרים לראות שאתה מקוון</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.privacy.showOnlineStatus}
+                          onChange={(e) => handleSettingChange("privacy", "showOnlineStatus", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//                   <Grid container spacing={3}>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="שם משתמש"
-//                         value={formData.username}
-//                         onChange={(e) => handleInputChange("username", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="אימייל"
-//                         value={formData.email}
-//                         onChange={(e) => handleInputChange("email", e.target.value)}
-//                         variant="outlined"
-//                         type="email"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="טלפון"
-//                         value={formData.phone}
-//                         onChange={(e) => handleInputChange("phone", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="כתובת"
-//                         value={formData.address}
-//                         onChange={(e) => handleInputChange("address", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                   </Grid>
+                  <div className="setting-item">
+                    <div className="setting-label">אפשר הודעות ישירות</div>
+                    <div className="setting-description">אפשר למשתמשים אחרים לשלוח לך הודעות ישירות</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.privacy.allowDirectMessages}
+                          onChange={(e) => handleSettingChange("privacy", "allowDirectMessages", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//                   <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-//                     <Button
-//                       variant="contained"
-//                       startIcon={<SaveIcon />}
-//                       onClick={handleSaveProfile}
-//                       disabled={loading}
-//                       sx={{ bgcolor: "#8B0000", "&:hover": { bgcolor: "#5c0000" } }}
-//                     >
-//                       {loading ? "שומר..." : "שמור פרטים"}
-//                     </Button>
-//                   </Box>
-//                 </div>
-//               )}
+                  <div className="setting-item">
+                    <div className="setting-label">איסוף נתונים לשיפור השירות</div>
+                    <div className="setting-description">אפשר איסוף נתונים אנונימיים לשיפור המערכת</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.privacy.dataCollection}
+                          onChange={(e) => handleSettingChange("privacy", "dataCollection", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-//               {activeSection === "privacy" && (
-//                 <SettingsSection title="הגדרות פרטיות" icon={<PrivacyTipIcon />}>
-//                   <Grid container spacing={2}>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControl fullWidth>
-//                         <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>נראות פרופיל</InputLabel>
-//                         <Select
-//                           value={settings.privacy.profileVisibility}
-//                           onChange={handleSelectChange("privacy", "profileVisibility")}
-//                           sx={{
-//                             "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
-//                           }}
-//                         >
-//                           <MenuItem value="public">
-//                             <Chip label="ציבורי" size="small" color="success" sx={{ mr: 1 }} />
-//                             כולם יכולים לראות
-//                           </MenuItem>
-//                           <MenuItem value="friends">
-//                             <Chip label="חברים" size="small" color="primary" sx={{ mr: 1 }} />
-//                             רק חברים
-//                           </MenuItem>
-//                           <MenuItem value="private">
-//                             <Chip label="פרטי" size="small" color="error" sx={{ mr: 1 }} />
-//                             רק אני
-//                           </MenuItem>
-//                         </Select>
-//                       </FormControl>
-//                     </Grid>
-//                     <Grid item xs={12} sm={6}>
-//                       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               checked={settings.privacy.showEmail}
-//                               onChange={handleSwitchChange("privacy", "showEmail")}
-//                               sx={{
-//                                 "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-//                                   backgroundColor: "#8B0000",
-//                                 },
-//                               }}
-//                             />
-//                           }
-//                           label="הצג אימייל בפרופיל"
-//                         />
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               checked={settings.privacy.showPhone}
-//                               onChange={handleSwitchChange("privacy", "showPhone")}
-//                               sx={{
-//                                 "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-//                                   backgroundColor: "#8B0000",
-//                                 },
-//                               }}
-//                             />
-//                           }
-//                           label="הצג טלפון בפרופיל"
-//                         />
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               checked={settings.privacy.showLocation}
-//                               onChange={handleSwitchChange("privacy", "showLocation")}
-//                               sx={{
-//                                 "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-//                                   backgroundColor: "#8B0000",
-//                                 },
-//                               }}
-//                             />
-//                           }
-//                           label="הצג מיקום בפרופיל"
-//                         />
-//                       </Box>
-//                     </Grid>
-//                   </Grid>
-//                 </SettingsSection>
-//               )}
+          {/* Appearance Settings */}
+          {activeTab === "appearance" && (
+            <div className="slide-in">
+              <div className="settings-section">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <PaletteIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">הגדרות תצוגה</h2>
+                    <p className="section-description">התאם את המראה והתחושה של המערכת</p>
+                  </div>
+                </div>
 
-//               {activeSection === "security" && (
-//                 <div>
-//                   <SettingsSection title="הגדרות אבטחה" icon={<SecurityIcon />}>
-//                     <Grid container spacing={2}>
-//                       <Grid item xs={12} sm={6}>
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               checked={settings.security.twoFactor}
-//                               onChange={handleSwitchChange("security", "twoFactor")}
-//                               sx={{
-//                                 "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-//                                   backgroundColor: "#8B0000",
-//                                 },
-//                               }}
-//                             />
-//                           }
-//                           label={
-//                             <Box sx={{ display: "flex", alignItems: "center" }}>
-//                               <LockIcon sx={{ mr: 1, color: "#8B0000" }} />
-//                               אימות דו-שלבי
-//                               {settings.security.twoFactor && (
-//                                 <Chip label="מופעל" size="small" color="success" sx={{ mr: 1 }} />
-//                               )}
-//                             </Box>
-//                           }
-//                         />
-//                       </Grid>
-//                       <Grid item xs={12} sm={6}>
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               checked={settings.security.loginAlerts}
-//                               onChange={handleSwitchChange("security", "loginAlerts")}
-//                               sx={{
-//                                 "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-//                                   backgroundColor: "#8B0000",
-//                                 },
-//                               }}
-//                             />
-//                           }
-//                           label="התראות התחברות"
-//                         />
-//                       </Grid>
-//                       <Grid item xs={12}>
-//                         <Typography gutterBottom>זמן קצוב לסשן (דקות): {settings.security.sessionTimeout}</Typography>
-//                         <Slider
-//                           value={settings.security.sessionTimeout}
-//                           onChange={handleSliderChange("security", "sessionTimeout")}
-//                           min={15}
-//                           max={120}
-//                           step={15}
-//                           marks={[
-//                             { value: 15, label: "15 דק" },
-//                             { value: 30, label: "30 דק" },
-//                             { value: 60, label: "60 דק" },
-//                             { value: 120, label: "120 דק" },
-//                           ]}
-//                           sx={{
-//                             color: "#8B0000",
-//                             "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
-//                             "& .MuiSlider-track": { backgroundColor: "#8B0000" },
-//                           }}
-//                         />
-//                       </Grid>
-//                     </Grid>
-//                   </SettingsSection>
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <DarkModeIcon sx={{ color: "#8B0000" }} />
+                      ערכת נושא
+                    </div>
+                    <div className="setting-description">בחר בין מצב בהיר, כהה או אוטומטי</div>
+                    <FormControl fullWidth>
+                      <Select
+                        value={settings.appearance.theme}
+                        onChange={(e) => handleSettingChange("appearance", "theme", e.target.value)}
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.2)",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.4)",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#8B0000",
+                          },
+                        }}
+                      >
+                        <MenuItem value="light">בהיר</MenuItem>
+                        <MenuItem value="dark">כהה</MenuItem>
+                        <MenuItem value="auto">אוטומטי</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
 
-//                   {/* Password Change Section */}
-//                   <Typography variant="h6" gutterBottom sx={{ color: "#8B0000", fontWeight: "bold", mt: 3 }}>
-//                     שינוי סיסמה
-//                   </Typography>
-//                   <Divider sx={{ mb: 3 }} />
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <LanguageIcon sx={{ color: "#8B0000" }} />
+                      שפה
+                    </div>
+                    <div className="setting-description">בחר את שפת הממשק</div>
+                    <FormControl fullWidth>
+                      <Select
+                        value={settings.appearance.language}
+                        onChange={(e) => handleSettingChange("appearance", "language", e.target.value)}
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.2)",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.4)",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#8B0000",
+                          },
+                        }}
+                      >
+                        <MenuItem value="he">עברית</MenuItem>
+                        <MenuItem value="en">English</MenuItem>
+                        <MenuItem value="ar">العربية</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
 
-//                   <Grid container spacing={3}>
-//                     <Grid item xs={12}>
-//                       <TextField
-//                         fullWidth
-//                         label="סיסמה נוכחית"
-//                         type="password"
-//                         value={formData.currentPassword}
-//                         onChange={(e) => handleInputChange("currentPassword", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="סיסמה חדשה"
-//                         type="password"
-//                         value={formData.newPassword}
-//                         onChange={(e) => handleInputChange("newPassword", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} md={6}>
-//                       <TextField
-//                         fullWidth
-//                         label="אישור סיסמה חדשה"
-//                         type="password"
-//                         value={formData.confirmPassword}
-//                         onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-//                         variant="outlined"
-//                         dir="rtl"
-//                       />
-//                     </Grid>
-//                   </Grid>
+                  <div className="setting-item">
+                    <div className="setting-label">גודל גופן</div>
+                    <div className="setting-description">בחר את גודל הטקסט המועדף עליך</div>
+                    <FormControl fullWidth>
+                      <Select
+                        value={settings.appearance.fontSize}
+                        onChange={(e) => handleSettingChange("appearance", "fontSize", e.target.value)}
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.2)",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "rgba(139, 0, 0, 0.4)",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#8B0000",
+                          },
+                        }}
+                      >
+                        <MenuItem value="small">קטן</MenuItem>
+                        <MenuItem value="medium">בינוני</MenuItem>
+                        <MenuItem value="large">גדול</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-//                   <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-//                     <Button
-//                       variant="contained"
-//                       startIcon={<SecurityIcon />}
-//                       onClick={handleChangePassword}
-//                       sx={{ bgcolor: "#8B0000", "&:hover": { bgcolor: "#5c0000" } }}
-//                     >
-//                       שנה סיסמה
-//                     </Button>
-//                   </Box>
-//                 </div>
-//               )}
+          {/* Account Settings */}
+          {activeTab === "account" && (
+            <div className="slide-in">
+              <div className="settings-section">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <VpnKeyIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">הגדרות חשבון</h2>
+                    <p className="section-description">נהל את האבטחה והגישה לחשבון שלך</p>
+                  </div>
+                </div>
 
-//               {activeSection === "sounds" && (
-//                 <SettingsSection title="הגדרות צלילים" icon={<VolumeUpIcon />}>
-//                   <Grid container spacing={2}>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             checked={settings.sounds.enabled}
-//                             onChange={handleSwitchChange("sounds", "enabled")}
-//                             sx={{
-//                               "& .MuiSwitch-switchBase.Mui-checked": { color: "#8B0000" },
-//                               "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#8B0000" },
-//                             }}
-//                           />
-//                         }
-//                         label="הפעל צלילים"
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12} sm={6}>
-//                       <FormControl fullWidth disabled={!settings.sounds.enabled}>
-//                         <InputLabel sx={{ "&.Mui-focused": { color: "#8B0000" } }}>צליל התראות</InputLabel>
-//                         <Select
-//                           value={settings.sounds.notificationSound}
-//                           onChange={handleSelectChange("sounds", "notificationSound")}
-//                           sx={{
-//                             "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#8B0000" },
-//                           }}
-//                         >
-//                           <MenuItem value="default">ברירת מחדל</MenuItem>
-//                           <MenuItem value="bell">פעמון</MenuItem>
-//                           <MenuItem value="chime">צלצול</MenuItem>
-//                           <MenuItem value="beep">ביפ</MenuItem>
-//                         </Select>
-//                       </FormControl>
-//                     </Grid>
-//                     <Grid item xs={12}>
-//                       <Typography gutterBottom>עוצמת קול: {settings.sounds.volume}%</Typography>
-//                       <Slider
-//                         value={settings.sounds.volume}
-//                         onChange={handleSliderChange("sounds", "volume")}
-//                         disabled={!settings.sounds.enabled}
-//                         min={0}
-//                         max={100}
-//                         step={10}
-//                         sx={{
-//                           color: "#8B0000",
-//                           "& .MuiSlider-thumb": { backgroundColor: "#8B0000" },
-//                           "& .MuiSlider-track": { backgroundColor: "#8B0000" },
-//                         }}
-//                       />
-//                     </Grid>
-//                   </Grid>
-//                 </SettingsSection>
-//               )}
-//             </Paper>
-//           </Grid>
-//         </Grid>
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <SecurityIcon sx={{ color: "#8B0000" }} />
+                      אימות דו-שלבי
+                      <Chip
+                        label="מומלץ"
+                        size="small"
+                        sx={{
+                          backgroundColor: "#10b981",
+                          color: "white",
+                          fontWeight: 600,
+                          marginRight: 1,
+                        }}
+                      />
+                    </div>
+                    <div className="setting-description">הוסף שכבת אבטחה נוספת לחשבון שלך</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.account.twoFactorAuth}
+                          onChange={(e) => handleSettingChange("account", "twoFactorAuth", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//         {/* System Actions */}
-//         <Paper
-//           elevation={2}
-//           sx={{
-//             p: 3,
-//             mt: 3,
-//             borderRadius: 2,
-//             border: "1px solid #e5d6d6",
-//             backgroundColor: "#fafafa",
-//           }}
-//         >
-//           <Typography variant="h6" sx={{ color: "#8B0000", mb: 3, fontWeight: "bold" }}>
-//             פעולות מערכת
-//           </Typography>
-//           <Grid container spacing={2}>
-//             <Grid item xs={12} sm={6} md={3}>
-//               <Button
-//                 fullWidth
-//                 variant="contained"
-//                 startIcon={<SaveIcon />}
-//                 sx={{
-//                   backgroundColor: "#8B0000",
-//                   color: "white",
-//                   "&:hover": { backgroundColor: "#5c0000" },
-//                   mb: 1,
-//                 }}
-//               >
-//                 {t("save")}
-//               </Button>
-//             </Grid>
-//             <Grid item xs={12} sm={6} md={3}>
-//               <Button
-//                 fullWidth
-//                 variant="outlined"
-//                 startIcon={<RestartAltIcon />}
-//                 onClick={() => setResetDialogOpen(true)}
-//                 sx={{
-//                   borderColor: "#FF9800",
-//                   color: "#FF9800",
-//                   "&:hover": {
-//                     borderColor: "#F57C00",
-//                     backgroundColor: "rgba(255, 152, 0, 0.04)",
-//                   },
-//                   mb: 1,
-//                 }}
-//               >
-//                 איפוס הגדרות
-//               </Button>
-//             </Grid>
-//             <Grid item xs={12} sm={6} md={3}>
-//               <Button
-//                 fullWidth
-//                 variant="outlined"
-//                 startIcon={<BackupIcon />}
-//                 sx={{
-//                   borderColor: "#2196F3",
-//                   color: "#2196F3",
-//                   "&:hover": {
-//                     borderColor: "#1976D2",
-//                     backgroundColor: "rgba(33, 150, 243, 0.04)",
-//                   },
-//                   mb: 1,
-//                 }}
-//               >
-//                 גיבוי נתונים
-//               </Button>
-//             </Grid>
-//             <Grid item xs={12} sm={6} md={3}>
-//               <Button
-//                 fullWidth
-//                 variant="outlined"
-//                 startIcon={<DeleteIcon />}
-//                 onClick={() => setDeleteDialogOpen(true)}
-//                 sx={{
-//                   borderColor: "#f44336",
-//                   color: "#f44336",
-//                   "&:hover": {
-//                     borderColor: "#d32f2f",
-//                     backgroundColor: "rgba(244, 67, 54, 0.04)",
-//                   },
-//                   mb: 1,
-//                 }}
-//               >
-//                 מחק חשבון
-//               </Button>
-//             </Grid>
-//           </Grid>
-//         </Paper>
+                  <div className="setting-item">
+                    <div className="setting-label">התראות כניסה</div>
+                    <div className="setting-description">קבל התראה על כניסות חדשות לחשבון</div>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={settings.account.loginAlerts}
+                          onChange={(e) => handleSettingChange("account", "loginAlerts", e.target.checked)}
+                          sx={{
+                            "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "#8B0000",
+                            },
+                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#8B0000",
+                            },
+                          }}
+                        />
+                      }
+                      label=""
+                    />
+                  </div>
 
-//         {/* Delete Account Dialog */}
-//         <Dialog
-//           open={deleteDialogOpen}
-//           onClose={() => setDeleteDialogOpen(false)}
-//           PaperProps={{ sx: { borderRadius: 2 } }}
-//         >
-//           <DialogTitle sx={{ color: "#f44336", display: "flex", alignItems: "center" }}>
-//             <WarningIcon sx={{ mr: 1 }} />
-//             מחיקת חשבון
-//           </DialogTitle>
-//           <DialogContent>
-//             <DialogContentText dir="rtl">
-//               האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה ותמחק את כל הנתונים שלך לצמיתות.
-//             </DialogContentText>
-//           </DialogContent>
-//           <DialogActions>
-//             <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: "#757575" }}>
-//               ביטול
-//             </Button>
-//             <Button
-//               onClick={() => setDeleteDialogOpen(false)}
-//               sx={{ color: "#f44336" }}
-//               variant="contained"
-//               color="error"
-//             >
-//               מחק חשבון
-//             </Button>
-//           </DialogActions>
-//         </Dialog>
+                  <div className="setting-item">
+                    <div className="setting-label">זמן תפוגת הפעלה (דקות)</div>
+                    <div className="setting-description">כמה זמן להישאר מחובר ללא פעילות</div>
+                    <TextField
+                      type="number"
+                      value={settings.account.sessionTimeout}
+                      onChange={(e) =>
+                        handleSettingChange("account", "sessionTimeout", Number.parseInt(e.target.value))
+                      }
+                      inputProps={{ min: 5, max: 120 }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          "&.Mui-focused fieldset": {
+                            borderColor: "#8B0000",
+                          },
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "#8B0000",
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
 
-//         {/* Reset Settings Dialog */}
-//         <Dialog
-//           open={resetDialogOpen}
-//           onClose={() => setResetDialogOpen(false)}
-//           PaperProps={{ sx: { borderRadius: 2 } }}
-//         >
-//           <DialogTitle sx={{ color: "#FF9800", display: "flex", alignItems: "center" }}>
-//             <InfoIcon sx={{ mr: 1 }} />
-//             איפוס הגדרות
-//           </DialogTitle>
-//           <DialogContent>
-//             <DialogContentText>האם אתה בטוח שברצונך לאפס את כל ההגדרות לברירת המחדל?</DialogContentText>
-//           </DialogContent>
-//           <DialogActions>
-//             <Button onClick={() => setResetDialogOpen(false)} sx={{ color: "#757575" }}>
-//               {t("cancel")}
-//             </Button>
-//             <Button onClick={handleResetSettings} sx={{ color: "#FF9800" }} variant="contained">
-//               איפוס
-//             </Button>
-//           </DialogActions>
-//         </Dialog>
+              {/* Danger Zone */}
+              <div className="danger-zone">
+                <div className="section-header">
+                  <div className="section-icon">
+                    <WarningIcon />
+                  </div>
+                  <div>
+                    <h2 className="section-title">אזור מסוכן</h2>
+                    <p className="section-description">פעולות בלתי הפיכות - היזהר מאוד!</p>
+                  </div>
+                </div>
 
-//         {/* Success Snackbar */}
-//         <Snackbar
-//           open={!!success}
-//           autoHideDuration={3000}
-//           onClose={() => setSuccess("")}
-//           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-//         >
-//           <Alert
-//             onClose={() => setSuccess("")}
-//             severity="success"
-//             sx={{
-//               width: "100%",
-//               "& .MuiAlert-icon": { color: "#4caf50" },
-//             }}
-//           >
-//             {success}
-//           </Alert>
-//         </Snackbar>
-//       </Box>
-//     </Container>
-//   )
-// }
+                <div className="settings-grid">
+                  <div className="setting-item">
+                    <div className="setting-label">
+                      <DeleteIcon sx={{ color: "#8b0000" }} />
+                      מחיקת חשבון לצמיתות
+                    </div>
+                    <div className="setting-description">
+                      מחק את החשבון שלך לצמיתות כולל כל הרזומות והנתונים. פעולה זו בלתי הפיכה!
+                    </div>
+                    <Button
+                      variant="contained"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="danger-button"
+                    >
+                      מחק חשבון לצמיתות
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-// export default SettingsPage
+          {/* Save Button */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={loading ? <LinearProgress /> : <SaveIcon />}
+              onClick={handleSaveSettings}
+              disabled={loading}
+              sx={{
+                backgroundColor: "#8B0000",
+                color: "white",
+                px: 4,
+                py: 1.5,
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                borderRadius: 3,
+                "&:hover": {
+                  backgroundColor: "#5c0000",
+                },
+                "&:disabled": {
+                  backgroundColor: "#cccccc",
+                },
+              }}
+            >
+              {loading ? "שומר..." : "שמור הגדרות"}
+            </Button>
+          </Box>
+        </Container>
+      </div>
+
+      {/* Export Data Dialog */}
+      <Dialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#8B0000", fontWeight: 600 }}>ייצוא נתונים</DialogTitle>
+        <DialogContent>
+          <Typography>
+            האם אתה בטוח שברצונך לייצא את כל הנתונים שלך? הקובץ יכלול את פרטי הפרופיל, ההגדרות וכל המידע הקשור לחשבון
+            שלך.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setExportDialogOpen(false)}
+            variant="outlined"
+            sx={{ borderColor: "#ccc", color: "#666" }}
+          >
+            ביטול
+          </Button>
+          <Button
+            onClick={handleExportData}
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            sx={{
+              backgroundColor: "#8B0000",
+              "&:hover": { backgroundColor: "#5c0000" },
+            }}
+          >
+            ייצא נתונים
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Account Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#ef4444", fontWeight: 600 }}>מחיקת חשבון</DialogTitle>
+        <DialogContent>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+              אזהרה: פעולה זו בלתי הפיכה!
+            </Typography>
+          </Alert>
+          <Typography>
+            האם אתה בטוח שברצונך למחוק את החשבון שלך לצמיתות? כל הנתונים, הרזומות והשיתופים שלך יימחקו ולא ניתן יהיה
+            לשחזר אותם.
+          </Typography>
+          <Typography sx={{ mt: 2, fontWeight: 600, color: "#ef4444" }}>הקלד "מחק את החשבון שלי" כדי לאשר:</Typography>
+          <TextField
+            fullWidth
+            placeholder="מחק את החשבון שלי"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            sx={{
+              mt: 1,
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#8B0000",
+                },
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            variant="outlined"
+            sx={{ borderColor: "#ccc", color: "#666" }}
+          >
+            ביטול
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            variant="contained"
+            startIcon={<DeleteIcon />}
+            disabled={deleteConfirmText !== "מחק את החשבון שלי"}
+            sx={{
+              backgroundColor: "#ef4444",
+              "&:hover": { backgroundColor: "#dc2626" },
+            }}
+          >
+            מחק חשבון
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%", borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </div>
+  )
+}
+
+export default SettingsPage

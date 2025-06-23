@@ -1,6 +1,3 @@
-"use client"
-
-import type React from "react"
 import { useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
@@ -23,7 +20,7 @@ const theme = createTheme({
   },
 })
 
-const Layout: React.FC = () => {
+const Layout = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { authChecked } = useSelector((state: RootState) => state.user)
 

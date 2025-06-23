@@ -356,7 +356,7 @@ const NavBar= () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            navigate("/SettingsPage")
+            navigate("/settings")
             handleMenuClose()
           }}
         >

@@ -1,0 +1,446 @@
+/* Advanced Sharing System Styles */
+.sharing-system-container {
+  direction: rtl;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Personal Area Enhanced Styles */
+.enhanced-personal-area {
+  direction: rtl;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.personal-area-header {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.personal-area-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+/* Stats Cards */
+.stat-card-enhanced {
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--card-color, #8b0000);
+}
+
+.stat-card-enhanced:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(139, 0, 0, 0.15);
+}
+
+.stat-icon-container {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  position: relative;
+  background: var(--icon-gradient, linear-gradient(135deg, #8b0000, #dc143c));
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.3);
+}
+
+/* Sharing Cards */
+.sharing-card {
+  background: #ffffff;
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.sharing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.1);
+  border-color: #8b0000;
+}
+
+.sharing-card-header {
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.05) 0%, rgba(139, 0, 0, 0.02) 100%);
+  padding: 16px;
+  border-bottom: 1px solid rgba(139, 0, 0, 0.1);
+}
+
+.sharing-card-content {
+  padding: 20px;
+}
+
+/* Permission Chips */
+.permission-chip {
+  margin: 2px 4px;
+  font-weight: 500;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.permission-chip.view {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: #1976d2;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.permission-chip.download {
+  background-color: rgba(156, 39, 176, 0.1);
+  color: #7b1fa2;
+  border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.permission-chip.edit {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #f57c00;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.permission-chip.full {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #d32f2f;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.permission-chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Tabs Styling */
+.enhanced-tabs {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(139, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.enhanced-tabs .MuiTab-root {
+  min-height: 64px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.enhanced-tabs .MuiTab-root:hover {
+  color: #8b0000;
+  background-color: rgba(139, 0, 0, 0.04);
+}
+
+.enhanced-tabs .Mui-selected {
+  color: #8b0000 !important;
+  font-weight: 700;
+}
+
+.enhanced-tabs .MuiTabs-indicator {
+  background: linear-gradient(90deg, #8b0000, #dc143c);
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* Quick Actions */
+.quick-action-enhanced {
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-action-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 0%, rgba(139, 0, 0, 0.02) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.quick-action-enhanced:hover::before {
+  opacity: 1;
+}
+
+.quick-action-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(139, 0, 0, 0.15);
+  border-color: var(--action-color, #8b0000);
+}
+
+.quick-action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  background-color: var(--action-color-light, rgba(139, 0, 0, 0.1));
+  color: var(--action-color, #8b0000);
+  transition: all 0.3s ease;
+}
+
+.quick-action-enhanced:hover .quick-action-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.2);
+}
+
+/* Recent Files List */
+.recent-files-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.recent-file-item-enhanced {
+  border-radius: 8px;
+  margin: 0 8px 8px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.recent-file-item-enhanced:hover {
+  background-color: rgba(139, 0, 0, 0.04);
+  border-color: rgba(139, 0, 0, 0.1);
+  transform: translateX(-4px);
+}
+
+/* Sharing Management */
+.sharing-management-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(139, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.sharing-user-card {
+  background: #ffffff;
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.sharing-user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.1);
+  border-color: #8b0000;
+}
+
+/* Shared With Me */
+.shared-with-me-container {
+  direction: rtl;
+}
+
+.shared-resume-card {
+  background: #ffffff;
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.shared-resume-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.1);
+  border-color: #8b0000;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Loading States */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .enhanced-personal-area {
+    padding: 16px;
+  }
+
+  .stat-card-enhanced {
+    margin-bottom: 16px;
+  }
+
+  .quick-action-enhanced {
+    margin-bottom: 12px;
+  }
+
+  .sharing-card {
+    margin-bottom: 12px;
+  }
+}
+
+/* Custom Scrollbar */
+.enhanced-personal-area ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.enhanced-personal-area ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.enhanced-personal-area ::-webkit-scrollbar-thumb {
+  background: #8b0000;
+  border-radius: 3px;
+}
+
+.enhanced-personal-area ::-webkit-scrollbar-thumb:hover {
+  background: #5c0000;
+}
+
+/* Enhanced Button Styles */
+.btn-primary-enhanced {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+.btn-primary-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+  background: linear-gradient(135deg, #5c0000 0%, #8b0000 100%);
+}
+
+.btn-secondary-enhanced {
+  background: transparent;
+  border: 2px solid #8b0000;
+  border-radius: 8px;
+  color: #8b0000;
+  font-weight: 600;
+  padding: 10px 22px;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-enhanced:hover {
+  background: #8b0000;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+/* Progress Bars */
+.progress-bar-enhanced {
+  background-color: rgba(139, 0, 0, 0.1);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-enhanced .MuiLinearProgress-bar {
+  background: linear-gradient(90deg, #8b0000, #dc143c);
+  border-radius: 8px;
+}
+
+/* Notification Styles */
+.notification-badge {
+  background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Dialog Enhancements */
+.enhanced-dialog {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.enhanced-dialog .MuiDialogTitle-root {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+  color: white;
+  padding: 24px;
+}
+
+.enhanced-dialog .MuiDialogContent-root {
+  padding: 24px;
+}
+
+.enhanced-dialog .MuiDialogActions-root {
+  padding: 16px 24px;
+  background-color: #fafafa;
+}

@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from "react-redux"
 import { Container, Box, Typography, Paper, Button, Collapse } from "@mui/material"
 import { Search as SearchIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from "@mui/icons-material"
 
-import { fetchFiles, downloadFile, filterFiles } from "../slices/fileSlice"
+
 import type { AppDispatch, RootState } from "../store"
 import ResumeList from "./resumesList"
 import ResumeSearch from "./resumeSearch"
+import { downloadFile, fetchFiles, filterFiles } from "../slices/fileSlice"
 
 interface SearchFilters {
   firstName: string

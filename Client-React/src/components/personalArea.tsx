@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
@@ -140,7 +138,7 @@ const PersonalArea = () => {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-            return "תאריך לא חוקי"; // במקרה שהתאריך לא חוקי
+            return "תאריך לא חוקי"; 
         }
 
         const now = new Date();
@@ -200,6 +198,8 @@ const PersonalArea = () => {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }} className="dashboard-container">
+
+
             {/* Header Section */}
             <Paper elevation={3} className="dashboard-header" sx={{ mb: 4, overflow: "hidden" }}>
                 <Box sx={{ p: 3 }}>
@@ -611,6 +611,7 @@ const PersonalArea = () => {
                                                 borderRadius: 4,
                                                 "& .MuiLinearProgress-bar": { backgroundColor: "#4CAF50" },
                                             }}
+                                            
                                         />
                                     </Box>
                                 </Grid>

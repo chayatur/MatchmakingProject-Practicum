@@ -20,7 +20,7 @@ import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "../store"
 import { updateFile } from "../slices/fileSlice"
 import type { FileData } from "../types/file"
-
+import "../styles/editResume.css"
 interface EditResumeDialogProps {
   open: boolean
   onClose: () => void

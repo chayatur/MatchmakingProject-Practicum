@@ -27,14 +27,19 @@ const DownloadResume = ({ fileName }: { fileName: string }) => {
                 responseType: 'blob'
             });
 
-            const url = window.URL.createObjectURL(new Blob([fileResponse.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', fileName); // שם הקובץ להורדה
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url); // לנקות את ה-URL שנוצר
+            // בדוק אם הסטטוס הוא 200
+            if (fileResponse.status === 200) {
+                const url = window.URL.createObjectURL(new Blob([fileResponse.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName); // שם הקובץ להורדה
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url); // לנקות את ה-URL שנוצר
+            } else {
+                alert('שגיאה: ' + fileResponse.data.message);
+            }
         } catch (error: any) {
             // טיפול בשגיאות
             dispatch(setError(error.response?.data?.message || error.message));

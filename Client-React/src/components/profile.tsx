@@ -18,7 +18,7 @@ import {
 import { Person, Email, Phone, LocationOn, Edit, Save, Cancel } from "@mui/icons-material";
 import type { RootState, AppDispatch } from '../store';
 import { updateUserProfile } from "../slices/userSlice";
-
+import BackToSettingsButton from "./backToSettings";
 const UserProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.user);
@@ -33,7 +33,6 @@ const UserProfile = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Initialize form data when user data is available or when editing starts
   useEffect(() => {
     if (user && user.id) {
       setFormData({
@@ -52,7 +51,6 @@ const UserProfile = () => {
       [name]: value,
     });
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -90,8 +88,6 @@ const UserProfile = () => {
     if (!validateForm()) return;
 
     try {
-      // Create update object with only the fields that should be updated
-      // DON'T include password/passwordHash at all
       const updatedUser = {
         id: user.id,
         username: formData.username.trim(),
@@ -113,7 +109,6 @@ const UserProfile = () => {
   };
 
   const handleCancel = () => {
-    // Reset form data to original values
     setFormData({
       username: user.username || "",
       email: user.email || "",
@@ -134,7 +129,6 @@ const UserProfile = () => {
     return "U";
   };
 
-  // Show loading if user data is not available yet
   if (!user || !user.id) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -156,6 +150,7 @@ const UserProfile = () => {
         border: "1px solid #e5d6d6",
       }}
     >
+      <BackToSettingsButton />
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
         <Avatar
           sx={{
@@ -238,7 +233,6 @@ const UserProfile = () => {
           )}
         </Box>
 
-        {/* Show general error if exists */}
         {errors.general && (
           <Alert severity="error" sx={{ mb: 3, direction: "rtl" }}>
             {errors.general}
@@ -420,27 +414,6 @@ const UserProfile = () => {
         )}
 
         <Divider sx={{ my: 4 }} />
-
-        {/* <Box>
-          <Typography variant="h6" sx={{ color: "#8B0000", mb: 2 }}>
-            אבטחת החשבון
-          </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<Lock />}
-            href="/auth/change-password"
-            sx={{
-              borderColor: "#8B0000",
-              color: "#8B0000",
-              "&:hover": {
-                borderColor: "#5c0000",
-                backgroundColor: "rgba(139, 0, 0, 0.04)",
-              },
-            }}
-          >
-            שינוי סיסמה
-          </Button>
-        </Box>*/}
       </Box> 
 
       <Snackbar

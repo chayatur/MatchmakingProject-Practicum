@@ -20,10 +20,11 @@ import {
 import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
 import type { AppDispatch, RootState } from "../store"
-import { downloadFile, deleteFile, viewOriginalFile, clearError } from "../slices/fileSlice"
-import{Edit2Icon, Share2Icon } from "lucide-react"
+
+import{ Share2Icon } from "lucide-react"
 import ShareDialog from "./share"
 import EditResumeDialog from "./editResume"
+import { clearError, deleteFile, downloadFile, viewOriginalFile } from "../slices/fileSlice"
 
 interface ResumeListProps {
   resumes: FileData[]
@@ -74,17 +75,29 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
   const handleDownload = useCallback(
     async (resume: FileData) => {
-      if (!resume.fileName) return
+      if (!resume.fileName) return;
 
       try {
-        await dispatch(downloadFile({ fileName: resume.fileName })).unwrap()
-        showSnackbar("הקובץ הורד בהצלחה")
+        const downloadUrl = await dispatch(downloadFile({ fileName: resume.fileName })).unwrap()
+        console.log(downloadUrl)
+        const response = await fetch(downloadUrl.url)
+        const blob = await response.blob()
+        const link = document.createElement("a")
+        link.href = window.URL.createObjectURL(blob)
+        link.download = resume.fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(link.href)
+
+        showSnackbar("הקובץ הורד בהצלחה");
       } catch (error) {
-        showSnackbar("שגיאה בהורדת הקובץ", "error")
+        console.error("Error downloading file:", error);
+        showSnackbar("שגיאה בהורדת הקובץ", "error");
       }
     },
-    [dispatch, showSnackbar],
-  )
+    [dispatch, showSnackbar]
+  );
 
   const handleViewOriginal = useCallback(
     async (resume: FileData) => {
@@ -120,10 +133,10 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const handleMenuClose = useCallback(() => {
     setAnchorEl(null)
   }, [])
-  const handleEdit = useCallback(() => {
-    setEditOpen(true)
-    handleMenuClose()
-  }, [handleMenuClose])
+  // const handleEdit = useCallback(() => {
+  //   setEditOpen(true)
+  //   handleMenuClose()
+  // }, [handleMenuClose])
 
   const handleShare = useCallback(() => {
     setShareOpen(true)
@@ -366,14 +379,14 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
           },
         }}
       >
-        <MenuItem onClick={handleEdit}>
+        {/* <MenuItem onClick={handleEdit}>
           <ListItemIcon>
             <Box sx={{ color: "#8B0000" }}>
               <Edit2Icon />
             </Box>
           </ListItemIcon>
           עריכה
-        </MenuItem>
+        </MenuItem> */}
         <MenuItem onClick={handleShare}>
           <ListItemIcon>
             <Box sx={{ color: "#8B0000" }}>
@@ -539,18 +552,11 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                 >
                   צפה ברזומה המקורי
                 </Button>
-                <Button
-                  onClick={() => handleDownload(selectedResume)}
-                  variant="contained"
-                  startIcon={<DownloadIcon />}
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: "#8B0000",
-                    "&:hover": { backgroundColor: "#5c0000" },
-                  }}
-                >
-                  הורד רזומה
-                </Button>
+                <Tooltip title="הורד רזומה">
+                      <IconButton onClick={() => handleDownload(selectedResume)} sx={{ color: "#8B0000" }} disabled={loading}>
+                        <DownloadIcon />
+                      </IconButton>
+                    </Tooltip>
               </Box>
             </DialogActions>
           </>
