@@ -9,6 +9,7 @@ import UserProfile from "./components/profile"
 import HomePage from "./components/home"
 import RegisterForm from "./components/Auth/registerForm"
 import SettingsPage from "./components/settings"
+import PersonalArea from "./components/personalArea"
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: "resumes", element: <ResumesPage /> },
       { path: "login", element: <LoginForm /> },
       { path: "register", element: <RegisterForm /> },
+      { path: "personalArea", element: <PersonalArea /> },
       { path: "profile", element: <UserProfile /> },
       { path: "settings", element: <SettingsPage /> },
 
