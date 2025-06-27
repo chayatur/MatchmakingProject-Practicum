@@ -17,6 +17,7 @@ using PdfReader = iText.Kernel.Pdf.PdfReader;
 using Resume.Core.IRepository;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Tesseract;
 
 
 namespace Resume.Service.Services
@@ -129,17 +130,75 @@ namespace Resume.Service.Services
             using (PdfReader reader = new PdfReader(stream))
             using (PdfDocument pdfDoc = new PdfDocument(reader))
             {
-                StringWriter stringWriter = new StringWriter();
+                StringBuilder stringBuilder = new StringBuilder();
 
                 for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
                 {
                     string pageText = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page));
-                    stringWriter.Write(pageText);
+                    if (!string.IsNullOrWhiteSpace(pageText))
+                    {
+                        stringBuilder.AppendLine(pageText);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Page {page} is empty or could not be read.");
+                    }
                 }
 
-                return stringWriter.ToString();
+                var textResult = stringBuilder.ToString();
+                return string.IsNullOrWhiteSpace(textResult) || IsReversedHebrew(textResult)
+                    ? ExtractTextWithOcr(pdfStream) // אם הטקסט הפוך, השתמש ב-OCR
+                    : textResult;
             }
         }
+        private string ExtractTextWithOcr(IFormFile pdfFile)
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+
+            string pdfPath = Path.Combine(tempDir, "input.pdf");
+            using (var fs = new FileStream(pdfPath, FileMode.Create))
+            {
+                pdfFile.CopyTo(fs);
+            }
+
+            // Convert PDF to images using Ghostscript
+            var images = ConvertPdfToImages(pdfPath, tempDir);
+
+            var textResult = new StringBuilder();
+            using var ocr = new TesseractEngine("./tessdata", "heb", EngineMode.Default);
+            foreach (var imgPath in images)
+            {
+                using var img = Pix.LoadFromFile(imgPath);
+                using var page = ocr.Process(img);
+                textResult.AppendLine(page.GetText());
+            }
+
+            Directory.Delete(tempDir, true);
+            return textResult.ToString();
+        }
+        private bool IsReversedHebrew(string text)
+        {
+            var lines = text.Split('\n').Take(5);
+            return lines.All(line => line.Trim().Any(c => c >= 0x0590 && c <= 0x05FF) && line.Trim().Reverse().SequenceEqual(line.Trim()));
+        }
+        private List<string> ConvertPdfToImages(string pdfPath, string outputDir)
+        {
+            var images = new List<string>();
+            using (var processor = new Ghostscript.NET.Rasterizer.GhostscriptRasterizer())
+            {
+                processor.Open(pdfPath);
+                for (int i = 1; i <= processor.PageCount; i++)
+                {
+                    var img = processor.GetPage(300, i);
+                    var path = Path.Combine(outputDir, $"page-{i}.png");
+                    img.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+                    images.Add(path);
+                }
+            }
+            return images;
+        }
+
 
 
         private string ExtractTextFromDocx(IFormFile resumeFile)
