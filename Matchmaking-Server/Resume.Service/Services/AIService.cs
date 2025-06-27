@@ -199,8 +199,6 @@ namespace Resume.Service.Services
             return images;
         }
 
-
-
         private string ExtractTextFromDocx(IFormFile resumeFile)
         {
             if (resumeFile == null || resumeFile.Length == 0)
@@ -226,6 +224,16 @@ namespace Resume.Service.Services
         {
             return _IaIRepository.GetFilesByUserIdAsync(userId);
         }
+        public async Task UpdateAIResponseAsync(int id, AIResponse aiResponse)
+        {
+            await _IaIRepository.UpdateAIResponseAsync(id, aiResponse);
+        }
+
+        public async Task DeleteAIResponseAsync(int id)
+        {
+            await _IaIRepository.DeleteAIResponseAsync(id);
+        }
+
 
         public async Task DeleteAllAIResponsesAsync()
         {
