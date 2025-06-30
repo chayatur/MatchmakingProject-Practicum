@@ -19,13 +19,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Tesseract;
 
-
 namespace Resume.Service.Services
 {
     public class AIService : IAIService
     {
         private readonly HttpClient _httpClient;
-        //private readonly string _openAiApiKey;
         private readonly IAIRepository _IaIRepository;
         private readonly IMapper _mapper;
         private readonly string _myApiKey;
@@ -33,10 +31,11 @@ namespace Resume.Service.Services
         public AIService(IConfiguration config, OpenAIClient openAI, IAIRepository aIRepository, IMapper mapper)
         {
             _httpClient = new HttpClient();
-            _myApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            _myApiKey = config["OpenAI:ApiKey"]; 
             _IaIRepository = aIRepository;
             _mapper = mapper;
         }
+
         public async Task<AIResponse> GetAIResponseById(int aiId)
         {
             return await _IaIRepository.GetAIResponseByIdAsync(aiId);
@@ -73,13 +72,12 @@ namespace Resume.Service.Services
             {
                 model = "gpt-4o-mini", // Ensure this model is correct
                 messages = new[] {
-            new { role = "system", content = "You are an AI that extracts information from a resume file." },
-            new { role = "user", content = $"Extract the following information: " +
-                $"Occupation, Height, Age, PlaceOfStudy, " +
-                $"FirstName, FatherName, MotherName, LastName, Address. " +
-                $"Return them in JSON format.\n\n{resumeText}" }
-        }
-                ,
+                    new { role = "system", content = "You are an AI that extracts information from a resume file." },
+                    new { role = "user", content = $"Extract the following information: " +
+                        $"Occupation, Height, Age, PlaceOfStudy, " +
+                        $"FirstName, FatherName, MotherName, LastName, Address. " +
+                        $"Return them in JSON format.\n\n{resumeText}" }
+                },
                 temperature = 0.5
             };
 
@@ -89,7 +87,6 @@ namespace Resume.Service.Services
 
             var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
 
-            // Add this logging to inspect the OpenAI API response
             var responseBody = await response.Content.ReadAsStringAsync();
             Console.WriteLine("OpenAI API Response:");
             Console.WriteLine(responseBody);  // This will log the raw response body
@@ -97,23 +94,16 @@ namespace Resume.Service.Services
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"AI request failed with status code {response.StatusCode}: {responseBody}");
 
-            // Parse response to extract JSON content
             using var document = JsonDocument.Parse(responseBody);
             var messageContent = document.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
                 .GetProperty("content")
                 .GetString();
-            Console.WriteLine(document.RootElement);
+
             if (string.IsNullOrEmpty(messageContent))
                 throw new Exception("AI response is empty.");
 
-            Console.WriteLine("************** JSON Response **************");
-            Console.WriteLine(messageContent);
-            Console.WriteLine("*******************************************");
-            messageContent = messageContent.Replace("```json", "");
-            messageContent = messageContent.Replace("```", "");
-            // Deserialize the JSON response into the AIResponse object
             AIResponse aiResponse = JsonSerializer.Deserialize<AIResponse>(messageContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -121,6 +111,7 @@ namespace Resume.Service.Services
 
             if (aiResponse == null)
                 throw new Exception("Failed to parse AI response.");
+
             await _IaIRepository.AddAiResponseAsync(aiResponse, userId, fileName);
         }
 
@@ -145,58 +136,8 @@ namespace Resume.Service.Services
                     }
                 }
 
-                var textResult = stringBuilder.ToString();
-                return string.IsNullOrWhiteSpace(textResult) || IsReversedHebrew(textResult)
-                    ? ExtractTextWithOcr(pdfStream) // אם הטקסט הפוך, השתמש ב-OCR
-                    : textResult;
+                return stringBuilder.ToString();
             }
-        }
-        private string ExtractTextWithOcr(IFormFile pdfFile)
-        {
-            string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
-
-            string pdfPath = Path.Combine(tempDir, "input.pdf");
-            using (var fs = new FileStream(pdfPath, FileMode.Create))
-            {
-                pdfFile.CopyTo(fs);
-            }
-
-            // Convert PDF to images using Ghostscript
-            var images = ConvertPdfToImages(pdfPath, tempDir);
-
-            var textResult = new StringBuilder();
-            using var ocr = new TesseractEngine("./tessdata", "heb", EngineMode.Default);
-            foreach (var imgPath in images)
-            {
-                using var img = Pix.LoadFromFile(imgPath);
-                using var page = ocr.Process(img);
-                textResult.AppendLine(page.GetText());
-            }
-
-            Directory.Delete(tempDir, true);
-            return textResult.ToString();
-        }
-        private bool IsReversedHebrew(string text)
-        {
-            var lines = text.Split('\n').Take(5);
-            return lines.All(line => line.Trim().Any(c => c >= 0x0590 && c <= 0x05FF) && line.Trim().Reverse().SequenceEqual(line.Trim()));
-        }
-        private List<string> ConvertPdfToImages(string pdfPath, string outputDir)
-        {
-            var images = new List<string>();
-            using (var processor = new Ghostscript.NET.Rasterizer.GhostscriptRasterizer())
-            {
-                processor.Open(pdfPath);
-                for (int i = 1; i <= processor.PageCount; i++)
-                {
-                    var img = processor.GetPage(300, i);
-                    var path = Path.Combine(outputDir, $"page-{i}.png");
-                    img.Save(path, System.Drawing.Imaging.ImageFormat.Png);
-                    images.Add(path);
-                }
-            }
-            return images;
         }
 
         private string ExtractTextFromDocx(IFormFile resumeFile)
@@ -214,7 +155,6 @@ namespace Resume.Service.Services
             return doc.Text;
         }
 
-
         public Task<IEnumerable<AIResponse>> GetAllAIResponsesAsync()
         {
             return _IaIRepository.GetAllAIResponsesAsync();
@@ -224,6 +164,7 @@ namespace Resume.Service.Services
         {
             return _IaIRepository.GetFilesByUserIdAsync(userId);
         }
+
         public async Task UpdateAIResponseAsync(int id, AIResponse aiResponse)
         {
             await _IaIRepository.UpdateAIResponseAsync(id, aiResponse);
@@ -234,14 +175,9 @@ namespace Resume.Service.Services
             await _IaIRepository.DeleteAIResponseAsync(id);
         }
 
-
         public async Task DeleteAllAIResponsesAsync()
         {
             await _IaIRepository.DeleteAllAIResponsesAsync();
         }
     }
 }
-
-
-
-
