@@ -31,7 +31,7 @@ namespace Resume.Service.Services
         public AIService(IConfiguration config, OpenAIClient openAI, IAIRepository aIRepository, IMapper mapper)
         {
             _httpClient = new HttpClient();
-            _myApiKey = config["OpenAI:ApiKey"]; 
+            _myApiKey = config["OpenAI:ApiKey"];
             _IaIRepository = aIRepository;
             _mapper = mapper;
         }
@@ -86,13 +86,18 @@ namespace Resume.Service.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _myApiKey);
 
             var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
-
             var responseBody = await response.Content.ReadAsStringAsync();
             Console.WriteLine("OpenAI API Response:");
             Console.WriteLine(responseBody);  // This will log the raw response body
 
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"AI request failed with status code {response.StatusCode}: {responseBody}");
+
+            // נקה את התגובה מתווים לא חוקיים
+            if (responseBody.StartsWith("`"))
+            {
+                responseBody = responseBody.Substring(1); // הסר את התו הראשון
+            }
 
             using var document = JsonDocument.Parse(responseBody);
             var messageContent = document.RootElement
