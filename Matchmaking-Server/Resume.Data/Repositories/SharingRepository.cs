@@ -16,58 +16,87 @@ namespace Resume.Data.Repositories
             _context = context;
         }
 
-        public async Task<Sharing> GetSharingByIdAsync(int id)
+        public async Task<bool> IsAlreadySharedAsync(int resumeFileId, int sharedWithUserId)
         {
-            return await _context.Sharings.Include(s => s.Resumefile).Include(s => s.SharedWithUser).FirstOrDefaultAsync(s => s.ShareID == id);
+            return await _context.Sharings.AnyAsync(s =>
+                s.ResumefileID == resumeFileId &&
+                s.SharedWithUserID == sharedWithUserId);
         }
 
-        public async Task<List<Sharing>> GetAllSharingAsync()
+        public async Task AddSharingAsync(Sharing sharing)
         {
-            return await _context.Sharings.Include(s => s.Resumefile).Include(s => s.SharedWithUser).ToListAsync();
-        }
-
-        public async Task<Sharing> AddSharingAsync(Sharing entity)
-        {
-            await _context.Sharings.AddAsync(entity);
+            await _context.Sharings.AddAsync(sharing);
             await _context.SaveChangesAsync();
-            return entity;
         }
 
-        public async Task<Sharing> UpdateSharingAsync(Sharing entity)
+        public async Task<AIResponse> GetResumeFileByIdAsync(int fileId)
         {
-            _context.Sharings.Update(entity);
-            await _context.SaveChangesAsync();
-            return entity;
+            return await _context.AIResponses.FindAsync(fileId);
         }
 
-        public async Task<bool> DeleteSharingAsync(int id)
+        public async Task<User> GetUserByIdAsync(int userId)
         {
-            var sharing = await GetSharingByIdAsync(id);
-            if (sharing != null)
+            return await _context.Users.FindAsync(userId);
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
+        public async Task<string> ShareFileWithAllAsync(int sharedByUserId, int resumeFileId)
+        {
+            var file = await _context.AIResponses.FindAsync(resumeFileId);
+            if (file == null) return "Resume file not found.";
+
+            var allUsers = await _context.Users.ToListAsync();
+
+            foreach (var user in allUsers)
             {
-                _context.Sharings.Remove(sharing);
-                await _context.SaveChangesAsync();
-                return true;
+                if (user.ID == sharedByUserId) continue;
+
+                bool alreadyShared = await _context.Sharings.AnyAsync(s =>
+                    s.ResumefileID == resumeFileId && s.SharedWithUserID == user.ID);
+
+                if (!alreadyShared)
+                {
+                    _context.Sharings.Add(new Sharing
+                    {
+                        ResumefileID = resumeFileId,
+                        SharedByUserID = sharedByUserId,
+                        SharedWithUserID = user.ID,
+                        SharedAt = DateTime.UtcNow
+                    });
+                }
             }
-            return false;
+
+            await _context.SaveChangesAsync();
+            return "שיתוף עם כל המשתמשים בוצע בהצלחה.";
         }
 
-        public async Task<IEnumerable<Sharing>> GetSharedWithUserAsync(int userId)
+        public async Task<IEnumerable<Sharing>> GetAllSharingsAsync()
+        {
+            return await _context.Sharings
+                .Include(s => s.Resumefile)
+                .Include(s => s.SharedWithUser)
+                .Include(s => s.SharedByUser)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Sharing>> GetAllSharingsByIdAsync(int userId)
         {
             return await _context.Sharings
                 .Where(s => s.SharedWithUserID == userId)
                 .Include(s => s.Resumefile)
-                .Include(s => s.SharedWithUser)
+                .Include(s => s.SharedByUser)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Sharing>> GetSharedByUserAsync(int userId)
+        public async Task DeleteAllSharingAsync()
         {
-            return await _context.Sharings
-                .Where(s => s.SharedWithUserID == userId)
-                .Include(s => s.Resumefile)
-                .Include(s => s.SharedWithUser)
-                .ToListAsync();
+            var allSharings = await _context.Sharings.ToListAsync();
+            _context.Sharings.RemoveRange(allSharings);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -9,38 +9,52 @@ namespace Resume.Core.Services
 {
     public class SharingService : ISharingService
     {
-        private readonly ISharingRepository _sharingRepository;
+        private readonly ISharingRepository _repository;
 
-        public SharingService(ISharingRepository sharingRepository)
+        public SharingService(ISharingRepository repository)
         {
-            _sharingRepository = sharingRepository;
+            _repository = repository;
         }
 
-        public async Task<Sharing> ShareResumeAsync(int resumeFileId, int sharedByUserId, int sharedWithUserId)
+        public async Task<string> ShareFileAsync(int resumeFileId, int sharedByUserId, int sharedWithUserId)
         {
+            var file = await _repository.GetResumeFileByIdAsync(resumeFileId);
+            if (file == null)
+                return "Resume file not found.";
+
+            if (await _repository.IsAlreadySharedAsync(resumeFileId, sharedWithUserId))
+                return "כבר שותף עם המשתמש הזה.";
+
             var sharing = new Sharing
             {
                 ResumefileID = resumeFileId,
                 SharedWithUserID = sharedWithUserId,
+                SharedByUserID = sharedByUserId,
                 SharedAt = DateTime.UtcNow
             };
 
-            return await _sharingRepository.AddSharingAsync(sharing);
+            await _repository.AddSharingAsync(sharing);
+            return "שיתוף בוצע בהצלחה.";
         }
 
-        public async Task<IEnumerable<Sharing>> GetSharedWithUserAsync(int userId)
+        public async Task<string> ShareFileWithAllAsync(int sharedByUserId, int resumeFileId)
         {
-            return await _sharingRepository.GetSharedWithUserAsync(userId);
+            return await _repository.ShareFileWithAllAsync(sharedByUserId, resumeFileId);
         }
 
-        public async Task<IEnumerable<Sharing>> GetSharedByUserAsync(int userId) // הוספת המתודה
+        public async Task<IEnumerable<Sharing>> GetAllSharingsAsync()
         {
-            return await _sharingRepository.GetSharedByUserAsync(userId);
+            return await _repository.GetAllSharingsAsync();
         }
 
-        public async Task<bool> RemoveShareAsync(int sharingId)
+        public async Task<IEnumerable<Sharing>> GetAllSharingsByIdAsync(int userId)
         {
-            return await _sharingRepository.DeleteSharingAsync(sharingId);
+            return await _repository.GetAllSharingsByIdAsync(userId);
+        }
+
+        public async Task DeleteAllSharingAsync()
+        {
+            await _repository.DeleteAllSharingAsync();
         }
     }
 }

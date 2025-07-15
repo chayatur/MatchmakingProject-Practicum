@@ -6,9 +6,10 @@ namespace Resume.Core.IServices
 {
     public interface ISharingService
     {
-        Task<Sharing> ShareResumeAsync(int resumeFileId, int sharedByUserId, int sharedWithUserId);
-        Task<IEnumerable<Sharing>> GetSharedWithUserAsync(int userId);
-        Task<IEnumerable<Sharing>> GetSharedByUserAsync(int userId);
-        Task<bool> RemoveShareAsync(int sharingId);
+        Task<string> ShareFileAsync(int resumeFileId, int sharedByUserId, int sharedWithUserId);
+        Task<string> ShareFileWithAllAsync(int sharedByUserId, int resumeFileId);
+        Task<IEnumerable<Sharing>> GetAllSharingsAsync();
+        Task<IEnumerable<Sharing>> GetAllSharingsByIdAsync(int userId);
+        Task DeleteAllSharingAsync();
     }
 }

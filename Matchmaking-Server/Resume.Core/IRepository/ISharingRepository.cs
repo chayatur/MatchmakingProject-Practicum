@@ -6,12 +6,15 @@ namespace Resume.Core.IRepository
 {
     public interface ISharingRepository
     {
-        Task<Sharing> GetSharingByIdAsync(int id);
-        Task<List<Sharing>> GetAllSharingAsync();
-        Task<Sharing> AddSharingAsync(Sharing entity);
-        Task<Sharing> UpdateSharingAsync(Sharing entity);
-        Task<bool> DeleteSharingAsync(int id);
-        Task<IEnumerable<Sharing>> GetSharedWithUserAsync(int userId);
-        Task<IEnumerable<Sharing>> GetSharedByUserAsync(int userId); // הוספת המתודה
+        Task<bool> IsAlreadySharedAsync(int resumeFileId, int sharedWithUserId);
+        Task AddSharingAsync(Sharing sharing);
+        Task<AIResponse> GetResumeFileByIdAsync(int fileId);
+        Task<User> GetUserByIdAsync(int userId);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<string> ShareFileWithAllAsync(int sharedByUserId, int resumeFileId);
+        Task<IEnumerable<Sharing>> GetAllSharingsAsync();
+        Task<IEnumerable<Sharing>> GetAllSharingsByIdAsync(int userId);
+        Task DeleteAllSharingAsync();
+
     }
 }

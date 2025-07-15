@@ -4,10 +4,9 @@ namespace Resume.Core.DTOs
 {
     public class SharingDTO
     {
-        //public int ShareID { get; set; } // מזהה השיתוף
-        public int ResumefileID { get; set; } // מזהה הרזומה
-        public int SharedByUserID { get; set; } // הוספת שדה זה
-        public int SharedWithUserID { get; set; } // עם מי שיתף
-        public DateTime SharedAt { get; set; } // תאריך השיתוף
+        public int UserId { get; set; } // SharedByUserID
+        public int ResumeFileId { get; set; }
+        public int? SharedWithUserId { get; set; } // אופציונלי, null אם shareAll
+        public bool ShareAll { get; set; }
     }
 }

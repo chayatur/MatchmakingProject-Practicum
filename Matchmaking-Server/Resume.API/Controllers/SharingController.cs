@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Resume.Core.Models;
-using Resume.Core.IServices;
-using System.Threading.Tasks;
 using Resume.Core.DTOs;
+using Resume.Core.IServices;
 
 namespace Resume.API.Controllers
 {
@@ -18,31 +16,51 @@ namespace Resume.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ShareFile([FromBody] SharingDTO model)
+        public async Task<IActionResult> ShareFile([FromBody] SharingDTO request)
         {
-            var result = await _sharingService.ShareResumeAsync(model.ResumefileID, model.SharedByUserID, model.SharedWithUserID);
-
-            if (result == null)
+            if (request.ShareAll)
             {
-                return BadRequest("Failed to share the resume.");
+                var result = await _sharingService.ShareFileWithAllAsync(request.UserId, request.ResumeFileId);
+                if (result == "Resume file not found.")
+                    return NotFound(result);
+
+                return Ok(new { message = result });
             }
 
-            return Ok(result);
+            if (request.SharedWithUserId.HasValue)
+            {
+                var result = await _sharingService.ShareFileAsync(request.ResumeFileId, request.UserId, request.SharedWithUserId.Value);
+
+                if (result == "Resume file not found.")
+                    return NotFound(result);
+
+                if (result == "כבר שותף עם המשתמש הזה.")
+                    return BadRequest(result);
+
+                return Ok(new { message = result });
+            }
+
+            return BadRequest("בקשת שיתוף לא חוקית.");
         }
 
-        [HttpGet("user/{userId}")]
-       
-
-
-        [HttpDelete("{sharingId}")]
-        public async Task<IActionResult> RemoveShare(int sharingId)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllSharings()
         {
-            var success = await _sharingService.RemoveShareAsync(sharingId);
-            if (!success)
-            {
-                return NotFound("Sharing not found.");
-            }
+            var sharings = await _sharingService.GetAllSharingsAsync();
+            return Ok(sharings);
+        }
 
+        [HttpGet("by-user/{userId}")]
+        public async Task<IActionResult> GetSharingsByUser(int userId)
+        {
+            var sharings = await _sharingService.GetAllSharingsByIdAsync(userId);
+            return Ok(sharings);
+        }
+
+        [HttpDelete("all")]
+        public async Task<IActionResult> DeleteAllSharings()
+        {
+            await _sharingService.DeleteAllSharingAsync();
             return NoContent();
         }
     }

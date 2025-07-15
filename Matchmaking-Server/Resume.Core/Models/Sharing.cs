@@ -8,16 +8,20 @@ namespace Resume.Core.Models
     public class Sharing
     {
         [Key]
-        public int ShareID { get; set; } // מזהה השיתוף
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ShareID { get; set; }
 
-        public int ResumefileID { get; set; } // מזהה הרזומה
+        [ForeignKey("Resumefile")]
+        public int ResumefileID { get; set; }
 
-        public int SharedWithUserID { get; set; } // עם מי שיתף
+        public int SharedByUserID { get; set; }
 
-        public DateTime SharedAt { get; set; } = DateTime.UtcNow; // תאריך השיתוף עם ערך ברירת מחדל
+        public int SharedWithUserID { get; set; }
 
-        public AIResponse Resumefile { get; set; } // קשר ל-ResumeFile
+        public DateTime SharedAt { get; set; } = DateTime.UtcNow;
 
-        public List<User> SharedWithUser { get; set; } = new List<User>(); // רשימה של משתמשים
+        public AIResponse Resumefile { get; set; }
+        public User SharedWithUser { get; set; }
+        public User SharedByUser { get; set; }
     }
 }
