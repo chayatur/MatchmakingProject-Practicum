@@ -7,12 +7,37 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Resume.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class createDB : Migration
+    public partial class Build : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "newUser",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Username = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PasswordHash = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Address = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_newUser", x => x.ID);
+                })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
@@ -36,89 +61,6 @@ namespace Resume.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ResumeFiles", x => x.ResumeFileID);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "Matches",
-                columns: table => new
-                {
-                    MatchID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ResumefileID1 = table.Column<int>(type: "int", nullable: false),
-                    ResumefileID2 = table.Column<int>(type: "int", nullable: false),
-                    MatchDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    Status = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Matches", x => x.MatchID);
-                    table.ForeignKey(
-                        name: "FK_Matches_ResumeFiles_ResumefileID1",
-                        column: x => x.ResumefileID1,
-                        principalTable: "ResumeFiles",
-                        principalColumn: "ResumeFileID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Matches_ResumeFiles_ResumefileID2",
-                        column: x => x.ResumefileID2,
-                        principalTable: "ResumeFiles",
-                        principalColumn: "ResumeFileID",
-                        onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "Sharings",
-                columns: table => new
-                {
-                    ShareID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ResumefileID = table.Column<int>(type: "int", nullable: false),
-                    SharedWithUserID = table.Column<int>(type: "int", nullable: false),
-                    SharedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sharings", x => x.ShareID);
-                    table.ForeignKey(
-                        name: "FK_Sharings_ResumeFiles_ResumefileID",
-                        column: x => x.ResumefileID,
-                        principalTable: "ResumeFiles",
-                        principalColumn: "ResumeFileID",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "newUser",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Username = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PasswordHash = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Email = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Address = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Phone = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    SharingShareID = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_newUser", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_newUser_Sharings_SharingShareID",
-                        column: x => x.SharingShareID,
-                        principalTable: "Sharings",
-                        principalColumn: "ShareID");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -163,6 +105,71 @@ namespace Resume.Data.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "Matches",
+                columns: table => new
+                {
+                    MatchID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ResumefileID1 = table.Column<int>(type: "int", nullable: false),
+                    ResumefileID2 = table.Column<int>(type: "int", nullable: false),
+                    MatchDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Matches", x => x.MatchID);
+                    table.ForeignKey(
+                        name: "FK_Matches_ResumeFiles_ResumefileID1",
+                        column: x => x.ResumefileID1,
+                        principalTable: "ResumeFiles",
+                        principalColumn: "ResumeFileID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Matches_ResumeFiles_ResumefileID2",
+                        column: x => x.ResumefileID2,
+                        principalTable: "ResumeFiles",
+                        principalColumn: "ResumeFileID",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Sharings",
+                columns: table => new
+                {
+                    ShareID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ResumefileID = table.Column<int>(type: "int", nullable: false),
+                    SharedByUserID = table.Column<int>(type: "int", nullable: false),
+                    SharedWithUserID = table.Column<int>(type: "int", nullable: false),
+                    SharedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sharings", x => x.ShareID);
+                    table.ForeignKey(
+                        name: "FK_Sharings_AIResponses_ResumefileID",
+                        column: x => x.ResumefileID,
+                        principalTable: "AIResponses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Sharings_newUser_SharedByUserID",
+                        column: x => x.SharedByUserID,
+                        principalTable: "newUser",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Sharings_newUser_SharedWithUserID",
+                        column: x => x.SharedWithUserID,
+                        principalTable: "newUser",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AIResponses_UserId",
                 table: "AIResponses",
@@ -179,33 +186,38 @@ namespace Resume.Data.Migrations
                 column: "ResumefileID2");
 
             migrationBuilder.CreateIndex(
-                name: "IX_newUser_SharingShareID",
-                table: "newUser",
-                column: "SharingShareID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Sharings_ResumefileID",
                 table: "Sharings",
                 column: "ResumefileID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sharings_SharedByUserID",
+                table: "Sharings",
+                column: "SharedByUserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sharings_SharedWithUserID",
+                table: "Sharings",
+                column: "SharedWithUserID");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AIResponses");
-
-            migrationBuilder.DropTable(
                 name: "Matches");
-
-            migrationBuilder.DropTable(
-                name: "newUser");
 
             migrationBuilder.DropTable(
                 name: "Sharings");
 
             migrationBuilder.DropTable(
                 name: "ResumeFiles");
+
+            migrationBuilder.DropTable(
+                name: "AIResponses");
+
+            migrationBuilder.DropTable(
+                name: "newUser");
         }
     }
 }

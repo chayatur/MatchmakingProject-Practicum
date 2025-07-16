@@ -12,8 +12,8 @@ using Resume.Data;
 namespace Resume.Data.Migrations
 {
     [DbContext(typeof(ResumeContext))]
-    [Migration("20250611132724_CreateDB")]
-    partial class CreateDB
+    [Migration("20250716080341_Build")]
+    partial class Build
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,12 +167,19 @@ namespace Resume.Data.Migrations
                     b.Property<DateTime>("SharedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("SharedByUserID")
+                        .HasColumnType("int");
+
                     b.Property<int>("SharedWithUserID")
                         .HasColumnType("int");
 
                     b.HasKey("ShareID");
 
                     b.HasIndex("ResumefileID");
+
+                    b.HasIndex("SharedByUserID");
+
+                    b.HasIndex("SharedWithUserID");
 
                     b.ToTable("Sharings");
                 });
@@ -204,9 +211,6 @@ namespace Resume.Data.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("SharingShareID")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -215,8 +219,6 @@ namespace Resume.Data.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("SharingShareID");
 
                     b.ToTable("newUser");
                 });
@@ -256,21 +258,25 @@ namespace Resume.Data.Migrations
                     b.HasOne("AIResponse", "Resumefile")
                         .WithMany()
                         .HasForeignKey("ResumefileID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Resume.Core.Models.User", "SharedByUser")
+                        .WithMany()
+                        .HasForeignKey("SharedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Resume.Core.Models.User", "SharedWithUser")
+                        .WithMany()
+                        .HasForeignKey("SharedWithUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Resumefile");
-                });
 
-            modelBuilder.Entity("Resume.Core.Models.User", b =>
-                {
-                    b.HasOne("Resume.Core.Models.Sharing", null)
-                        .WithMany("SharedWithUser")
-                        .HasForeignKey("SharingShareID");
-                });
+                    b.Navigation("SharedByUser");
 
-            modelBuilder.Entity("Resume.Core.Models.Sharing", b =>
-                {
                     b.Navigation("SharedWithUser");
                 });
 

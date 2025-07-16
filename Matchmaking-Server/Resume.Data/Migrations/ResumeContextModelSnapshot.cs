@@ -255,19 +255,19 @@ namespace Resume.Data.Migrations
                     b.HasOne("AIResponse", "Resumefile")
                         .WithMany()
                         .HasForeignKey("ResumefileID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Resume.Core.Models.User", "SharedByUser")
                         .WithMany()
                         .HasForeignKey("SharedByUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Resume.Core.Models.User", "SharedWithUser")
                         .WithMany()
                         .HasForeignKey("SharedWithUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Resumefile");

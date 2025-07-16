@@ -21,6 +21,7 @@ namespace Resume.Core.Models
         public DateTime SharedAt { get; set; } = DateTime.UtcNow;
 
         public AIResponse Resumefile { get; set; }
+
         public User SharedWithUser { get; set; }
         public User SharedByUser { get; set; }
     }

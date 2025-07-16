@@ -20,6 +20,24 @@ namespace Resume.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Sharing>()
+        .HasOne(s => s.SharedWithUser)
+        .WithMany() // אם אין רשימה ב-User
+        .HasForeignKey(s => s.SharedWithUserID)
+        .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Sharing>()
+                .HasOne(s => s.SharedByUser)
+                .WithMany() // אם אין רשימה ב-User
+                .HasForeignKey(s => s.SharedByUserID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Sharing>()
+                .HasOne(s => s.Resumefile)
+                .WithMany() // אם אין רשימה ב-AIResponse
+                .HasForeignKey(s => s.ResumefileID)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Match>()
                .HasKey(m => m.MatchID);
 
