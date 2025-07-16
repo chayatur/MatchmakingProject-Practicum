@@ -12,8 +12,8 @@ using Resume.Data;
 namespace Resume.Data.Migrations
 {
     [DbContext(typeof(ResumeContext))]
-    [Migration("20250716080341_Build")]
-    partial class Build
+    [Migration("20250716084508_createDB")]
+    partial class createDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
