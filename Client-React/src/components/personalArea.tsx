@@ -82,7 +82,7 @@ const PersonalArea = () => {
             const myResumes = files.filter((file) => file.userId === user.id)
             const sharedWithMe = files.filter((file) => {
                 console.log(file.sharedWith); 
-                return file.userId !== user.id && file.sharedWith?.some(shared => shared.sharedWithUserId === user.id);
+                return file.userId !== user.id && file.sharedWith?.some(shared => shared.sharedWithUserID === user.id);
             });
             
             
