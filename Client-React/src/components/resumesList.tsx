@@ -44,27 +44,25 @@ import {
   AccessTime as AccessTimeIcon,
   OpenInNew as OpenInNewIcon,
   Groups as GroupsIcon,
-  AccountCircle as AccountCircleIcon,
 } from "@mui/icons-material"
 import ShareIcon from "@mui/icons-material/Share"
 
 import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
 import type { AppDispatch, RootState } from "../store"
-import { clearError, deleteFile, downloadFile, viewOriginalFile, fetchFiles } from "../slices/fileSlice" // Import fetchFiles
+import { clearError, deleteFile, downloadFile, viewOriginalFile, fetchFiles } from "../slices/fileSlice"
 import ShareDialog from "./share"
 
 interface ResumeListProps {
   resumes: FileData[]
   isLoading: boolean
   error?: string
-  onDownload: (fileName: string) => void
 }
 
 const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) => {
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
-  const { userId } = useSelector((state: RootState) => state.user) // Get userId from user slice
+  const { userId } = useSelector((state: RootState) => state.user)
 
   const [selectedResume, setSelectedResume] = useState<FileData | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -106,7 +104,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
       try {
         const downloadUrl = await dispatch(downloadFile({ fileName: resume.fileName })).unwrap()
-        console.log(downloadUrl)
         const response = await fetch(downloadUrl.url)
         const blob = await response.blob()
         const link = document.createElement("a")
@@ -133,7 +130,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
       try {
         const response = await dispatch(viewOriginalFile({ fileName: resume.fileName })).unwrap()
         if (response.success && response.url) {
-          // Open the URL in a new tab instead of downloading
           window.open(response.url, "_blank")
           showSnackbar("הקובץ נפתח בהצלחה", "success")
         }
@@ -156,7 +152,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const handleShareClick = useCallback(() => {
     if (selectedResume) {
       setShareOpen(true)
-      handleMenuClose() // Close the menu after clicking share
+      handleMenuClose()
     }
   }, [selectedResume, handleMenuClose])
 
@@ -181,6 +177,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
     console.log(event);
+    
   }, [])
 
   const handleSnackbarClose = useCallback(() => {
@@ -205,31 +202,25 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
   const isOwner = useCallback(
     (resume: FileData) => {
-      return resume.userId === userId // Use userId from state
+      return resume.userId === userId
     },
     [userId],
   )
 
   const isSharedWithMe = useCallback(
     (resume: FileData) => {
-      // Now, resume.isSharedWithMe is directly populated by fetchFiles
       return resume.isSharedWithMe || false
     },
-    [], // No dependencies needed as it reads directly from resume object
+    [],
   )
 
-  // Fetch files when component mounts or userId changes
   useEffect(() => {
-    console.log("🔄 ResumeList: useEffect triggered. userId:", userId)
     if (userId) {
-      // Only fetch if userId is available
       dispatch(fetchFiles())
     }
   }, [dispatch, userId])
 
-  // Log resumes prop whenever it changes
   useEffect(() => {
-    console.log("📊 ResumeList: Resumes prop updated:", resumes)
     resumes.forEach((resume) => {
       console.log(`  Resume ID ${resume.id}: isOwner=${resume.isOwner}, isSharedWithMe=${resume.isSharedWithMe}`)
     })
@@ -311,7 +302,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                 >
                   <Box sx={{ flex: 1 }}>
                     {/* Primary content */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 1 }}>
                       <Typography
                         variant="h6"
                         sx={{
@@ -322,46 +313,36 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                       >
                         {resume.firstName} {resume.lastName}
                       </Typography>
-                      {isOwner(resume) && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                        <Typography variant="caption" color="text.secondary" component="span">
+                          הועלה: {formatDate(resume.createdAt)}
+                        </Typography>
+                        {/* Chips for owner and shared status */}
+                        {isOwner(resume) && (
                           <Chip
-                            icon={<AccountCircleIcon sx={{ color: "white !important", fontSize: "18px" }} />}
-                             label="הרזומה שלי" // Label is commented out in original, keeping it that way
+                          icon={<PersonIcon sx={{ color: "white !important", fontSize: "16px" }} />}
+                            label="הרזומה שלי"
                             size="small"
                             sx={{
                               backgroundColor: "#8B0000",
                               color: "white",
                               fontWeight: 600,
-                              fontSize: "0.75rem",
-                              "& .MuiChip-icon": {
-                                color: "white",
-                              },
                             }}
                           />
-                      )}
-                      {isSharedWithMe(resume) && (
-                        <Chip
-                          icon={<GroupsIcon sx={{ color: "white !important", fontSize: "18px" }} />}
-                          label="שותף איתי"
-                          size="small"
-                          sx={{
-                            backgroundColor: "#722F37",
-                            color: "white",
-                            fontWeight: 600,
-                            fontSize: "0.75rem",
-                            "& .MuiChip-icon": {
+                        )}
+                        {isSharedWithMe(resume) && (
+                          <Chip
+                            label="שותף איתי"
+                            icon={<GroupsIcon sx={{ color: "white !important", fontSize: "16px" }} />}
+                            size="small"
+                            sx={{
+                              backgroundColor: "#722F37",
                               color: "white",
-                            },
-                          }}
-                        />
-                      )}
-                    </Box>
-                    {/* Secondary content - using Box instead of ListItemText secondary */}
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, direction: "rtl" }}>
-                      <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                        <Typography variant="caption" color="text.secondary" component="span">
-                          הועלה: {formatDate(resume.createdAt)}
-                        </Typography>
+                              fontWeight: 600,
+                            }}
+                          />
+                        )}
                       </Box>
                     </Box>
                   </Box>
@@ -372,7 +353,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
-                    {isOwner(resume) && (
+                    {(isOwner(resume) || isSharedWithMe(resume)) && (
                       <Tooltip title="הורד רזומה">
                         <IconButton onClick={() => handleDownload(resume)} sx={{ color: "#8B0000" }} disabled={loading}>
                           <DownloadIcon />
@@ -491,9 +472,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         color: "white",
                         fontWeight: 600,
                         fontSize: "0.7rem",
-                        "& .MuiChip-icon": {
-                          color: "white",
-                        },
                       }}
                     />
                   )}
@@ -620,7 +598,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                 >
                   צפה ברזומה המקורי
                 </Button>
-                {isOwner(selectedResume) && (
+                {(isOwner(selectedResume) || isSharedWithMe(selectedResume)) && (
                   <Tooltip title="הורד רזומה">
                     <IconButton
                       onClick={() => handleDownload(selectedResume)}

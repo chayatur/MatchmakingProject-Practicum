@@ -36,7 +36,7 @@ import type { RootState, AppDispatch } from "../store"
 import { logoutUser } from "../slices/userSlice"
 import AppLogo from "./logo"
 
-const NavBar= () => {
+const NavBar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch<AppDispatch>()
@@ -49,11 +49,11 @@ const NavBar= () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const menuItems = [
-    { name: "דף הבית", path: "/", icon: <HomeIcon />, public: true },
-    { name: "האיזור האישי", path: "/personalArea", icon: <PersonIcon />, public: false },
-    { name: "רזומות", path: "/resumes", icon: <DescriptionIcon />, public: false },
-    { name: "העלאת רזומה", path: "/FileUploader", icon: <UploadIcon />, public: false },
     { name: "אודות", path: "/about", icon: <InfoIcon />, public: true },
+    { name: "העלאת רזומה", path: "/FileUploader", icon: <UploadIcon />, public: false },
+    { name: "רזומות", path: "/resumes", icon: <DescriptionIcon />, public: false },
+    { name: "האיזור האישי", path: "/personalArea", icon: <PersonIcon />, public: false },
+    { name: "דף הבית", path: "/", icon: <HomeIcon />, public: true },
   ]
 
   const handleDrawerToggle = () => {
@@ -107,9 +107,9 @@ const NavBar= () => {
                   borderRadius: 2,
                   py: 1.5,
                   backgroundColor: isActivePath(item.path) ? "rgba(139, 0, 0, 0.1)" : "transparent",
-                  color: isActivePath(item.path) ? "#8B0000" : "#333",
+                  color: isActivePath(item.path) ? "#8B0000" : "#666",
                   "&:hover": {
-                    backgroundColor: "rgba(139, 0, 0, 0.05)",
+                    backgroundColor: "rgba(139, 0, 0, 0.1)",
                   },
                 }}
               >
@@ -190,7 +190,7 @@ const NavBar= () => {
           color: "#333",
         }}
       >
-        <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
+        <Toolbar sx={{ px: { xs: 2, sm: 3 }, justifyContent: "space-between" }}>
           {/* Mobile menu button */}
           {isMobile && (
             <IconButton edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, color: "#8B0000" }}>
@@ -199,67 +199,59 @@ const NavBar= () => {
           )}
 
           {/* Logo */}
-          <Box sx={{ flexGrow: isMobile ? 1 : 0, display: "flex", justifyContent: isMobile ? "center" : "flex-start" }}>
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "flex-start" }}>
             <AppLogo size={isMobile ? "small" : "medium"} />
           </Box>
 
           {/* Desktop menu */}
-          {!isMobile && (
-            <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center", mx: 4 }}>
-              {menuItems
-                .filter((item) => item.public || isLoggedIn)
-                .map((item) => (
-                  <Button
-                    key={item.name}
-                    component={Link}
-                    to={item.path}
-                    startIcon={item.icon}
-                    sx={{
-                      mx: 1,
-                      px: 2,
-                      py: 1,
-                      color: isActivePath(item.path) ? "#8B0000" : "#666",
-                      fontWeight: isActivePath(item.path) ? 600 : 400,
-                      backgroundColor: isActivePath(item.path) ? "rgba(139, 0, 0, 0.05)" : "transparent",
-                      borderRadius: 2,
-                      "&:hover": {
-                        backgroundColor: "rgba(139, 0, 0, 0.05)",
-                        color: "#8B0000",
-                      },
-                      position: "relative",
-                      "&::after": isActivePath(item.path)
-                        ? {
-                            content: '""',
-                            position: "absolute",
-                            bottom: 0,
-                            left: "25%",
-                            width: "50%",
-                            height: 2,
-                            backgroundColor: "#8B0000",
-                            borderRadius: 1,
-                          }
-                        : {},
-                    }}
-                  >
-                    {item.name}
-                  </Button>
-                ))}
-            </Box>
-          )}
+{!isMobile && (
+  <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+    {menuItems
+      .filter((item) => item.public || isLoggedIn)
+      .map((item) => (
+        <Button
+          key={item.name}
+          component={Link}
+          to={item.path}
+          startIcon={item.icon}
+          sx={{
+            mx: 1,
+            px: 2,
+            py: 1,
+            color: isActivePath(item.path) ? "#8B0000" : "#666",
+            fontWeight: isActivePath(item.path) ? 600 : 400,
+            backgroundColor: isActivePath(item.path) ? "rgba(139, 0, 0, 0.05)" : "transparent",
+            borderRadius: 2,
+            "&:hover": {
+              backgroundColor: "rgba(139, 0, 0, 0.05)",
+              color: "#8B0000",
+            },
+            position: "relative",
+            "&::after": isActivePath(item.path)
+              ? {
+                  content: '""',
+                  position: "absolute",
+                  bottom: 0,
+                  left: "25%",
+                  width: "50%",
+                  height: 2,
+                  backgroundColor: "#8B0000",
+                  borderRadius: 1,
+                }
+              : {},
+          }}
+        >
+          {item.name}
+        </Button>
+      ))}
+  </Box>
+)}
+
 
           {/* Auth section */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {isLoggedIn ? (
               <>
-                <Chip
-                  label={`שלום, ${user.username || "משתמש"}`}
-                  variant="outlined"
-                  sx={{
-                    borderColor: "#8B0000",
-                    color: "#8B0000",
-                    display: { xs: "none", sm: "flex" },
-                  }}
-                />
                 <IconButton onClick={handleMenuClick} sx={{ p: 0.5 }}>
                   <Avatar
                     sx={{
@@ -272,6 +264,15 @@ const NavBar= () => {
                     {getInitials()}
                   </Avatar>
                 </IconButton>
+                <Chip
+                  label={`שלום, ${user.username || "משתמש"}`}
+                  variant="outlined"
+                  sx={{
+                    borderColor: "#8B0000",
+                    color: "#8B0000",
+                    display: { xs: "none", sm: "flex" },
+                  }}
+                />
               </>
             ) : (
               !isMobile && (
@@ -289,7 +290,6 @@ const NavBar= () => {
                     }}
                   >
                     כניסה
-                    
                   </Button>
                   <Button
                     variant="contained"

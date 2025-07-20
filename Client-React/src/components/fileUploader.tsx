@@ -15,7 +15,7 @@ import {
   Container
 } from "@mui/material"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useNavigate } from "react-router-dom"
 
 const FileUploader = () => {
@@ -111,7 +111,7 @@ const FileUploader = () => {
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <Tooltip title="חזור">
             <IconButton sx={{ color: "#8B0000" }} onClick={() => navigate(-1)}>
-              <ArrowBackIcon />
+          <  ArrowForwardIcon/>
             </IconButton>
           </Tooltip>
           <Typography variant="h5" sx={{ fontWeight: "bold", color: "#8B0000", ml: 1 }}>

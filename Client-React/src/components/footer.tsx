@@ -9,14 +9,15 @@ import {
   FaWhatsapp,
   FaPhone,
   FaEnvelope,
-  FaHeart,
 } from "react-icons/fa"
+
 import {
   IconButton,
   Collapse,
 } from "@mui/material"
 import { Email, ExpandMore, ExpandLess } from "@mui/icons-material"
 import "../styles/footer.css"
+import AppLogo from "./logo"
 
 const Footer = () => {
   const navigate = useNavigate()
@@ -40,10 +41,12 @@ const Footer = () => {
         <div className="footer-main">
           {/* Brand */}
           <div className="footer-brand">
-            <div className="footer-logo">
-              <div className="logo-icon"><FaHeart /></div>
-              <div className="logo-text">lechaim</div>
+            <div className="footer-logo" style={{ display: 'flex', alignItems: 'center', background: 'transparent' }}>
+              <AppLogo size="medium" />
+              <span style={{ marginLeft: '10px', fontSize: '1.5rem', color: '#8B0000' }}></span>
             </div>
+
+
             <p className="footer-description">
               אנו מתמחים ביצירת קשרים משמעותיים ובניית משפחות מאושרות. עם ניסיון של שנים רבות ומחויבות מלאה לכל לקוח,
               אנו כאן כדי לעזור לכם למצוא את השידוך המושלם.

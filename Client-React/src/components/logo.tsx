@@ -1,6 +1,6 @@
 import type React from "react"
 import { Box, Typography } from "@mui/material"
-
+import logo from '../logo/cups.jpg'
 interface AppLogoProps {
   size?: "small" | "medium" | "large"
   showText?: boolean
@@ -18,16 +18,7 @@ const AppLogo: React.FC<AppLogoProps> = ({ size = "medium", showText = true }) =
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Box
-        component="img"
-        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%D7%9C%D7%97%D7%99%D7%99%D7%9D.jpg-8mdWJd0R4S44AnIERwdrPPybeckoC8.jpeg"
-        alt="לחיים - מערכת שידוכים"
-        sx={{
-          height: logoHeight,
-          objectFit: "contain",
-        }}
-      />
-      {showText && (
+       {showText && (
         <Typography
           variant="h6"
           sx={{
@@ -40,6 +31,16 @@ const AppLogo: React.FC<AppLogoProps> = ({ size = "medium", showText = true }) =
           לחיים
         </Typography>
       )}
+      <Box
+        component="img"
+        src={logo}
+        alt="לחיים - מערכת שידוכים"
+        sx={{
+          height: logoHeight,
+          objectFit: "contain",
+        }}
+      />
+     
     </Box>
   )
 }

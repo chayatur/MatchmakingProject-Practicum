@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom"
 import { useSelector } from "react-redux"
 import type { RootState } from "../store"
+import logo from "../logo/cups.jpg"
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -82,8 +83,7 @@ const HomePage: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundImage:
-              'url("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%D7%9C%D7%97%D7%99%D7%99%D7%9D.jpg-8mdWJd0R4S44AnIERwdrPPybeckoC8.jpeg")',
+      backgroundImage: `url(${logo})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             opacity: 0.1,
@@ -101,7 +101,7 @@ const HomePage: React.FC = () => {
                     fontSize: { xs: "2.5rem", md: "3.5rem" },
                   }}
                 >
-                  לחיים! 
+                 לחיים !
                 </Typography>
                 <Typography
                   variant="h5"
@@ -201,7 +201,7 @@ const HomePage: React.FC = () => {
                 }}
               >
                 <img
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%D7%9C%D7%97%D7%99%D7%99%D7%9D.jpg-8mdWJd0R4S44AnIERwdrPPybeckoC8.jpeg"
+                  src={logo} 
                   alt="לחיים - מערכת שידוכים"
                   style={{
                     maxWidth: "300px",
@@ -435,7 +435,7 @@ const HomePage: React.FC = () => {
           textAlign: "center",
         }}
       >
-        <Container maxWidth="lg">
+        {/* <Container maxWidth="lg">
           <Grid container spacing={4} sx={{ textAlign: "center" }}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6" sx={{ mb: 2 }}>
@@ -454,7 +454,7 @@ const HomePage: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-        </Container>
+        </Container> */}
       </Box>
     </Box>
   )

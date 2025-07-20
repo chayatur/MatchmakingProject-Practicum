@@ -4,7 +4,19 @@
     position: relative;
     overflow: hidden;
   }
-  
+  .logo-container {
+    display: flex;
+    align-items: center; /* מרכז את הלוגו והכיתוב */
+}
+
+.logo-container img {
+    max-width: 100%; /* התמונה לא תצא מהקונטיינר שלה */
+    height: auto; /* שומר על הפרופורציה של התמונה */
+    width: 40px; /* גובה קבוע או רוחב קבוע, תוכל לשנות לפי הצורך */
+    object-fit: contain; /* שומר על הפרופורציה גם אם התמונה שונה במידותיה */
+    background: none; /* מסיר כל רקע לבן */
+}
+
   .footer-container::before {
     content: "";
     position: absolute;
@@ -14,6 +26,23 @@
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="footerPattern" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(139,0,0,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23footerPattern)"/></svg>');
   }
+  .footer-logo {
+    
+    display: flex;
+    align-items: center; /* מרכז את התמונה והטקסט */
+    gap: 10px; /* רווח בין התמונה לטקסט */
+}
+
+.footer-logo img {
+  
+    background: transparent; /* מסיר רקע */
+    display: block; /* מונע רווחים נוספים */
+    max-width: 100%; /* התמונה לא תצא מהקונטיינר שלה */
+    height: auto; /* שומר על הפרופורציה של התמונה */
+    width: 60px; /* גובה קבוע או רוחב קבוע */
+    object-fit: contain; /* שומר על הפרופורציה גם אם התמונה שונה במידותיה */
+}
+
   
   .footer-wave {
     position: absolute;
@@ -106,26 +135,26 @@
     color: white;
     text-decoration: none;
   }
-  
   .footer-section h3 {
     font-size: 1.4rem;
     font-weight: 700;
-    margin-bottom: 25px;
+    margin-bottom: 10px; /* המרחק בין הכותרת לקו */
     color: white;
     position: relative;
-  }
-  
-  .footer-section h3::after {
+}
+
+.footer-section h3::after {
     content: "";
     position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 40px;
-    height: 3px;
-    background: linear-gradient(90deg, #8b0000, #dc143c);
-    border-radius: 2px;
-  }
-  
+    bottom: -8px; /* המרחק מהכותרת, תוכל לשנות את הערך הזה */
+    right: 0; /* מיקום הקו */
+    width: 45px; /* רוחב הקו */
+    height: 3px; /* גובה הקו */
+    background: linear-gradient(90deg, #8b0000, #dc143c); /* צבע הקו */
+    border-radius: px;
+}
+
+
   .footer-links {
     list-style: none;
     padding: 0;

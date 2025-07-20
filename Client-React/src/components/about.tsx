@@ -143,7 +143,7 @@ const About = () => {
         {/* CTA Section */}
         <section className="cta-section">
           <div className="cta-content">
-            <h2>   ? רוצים להיות חלק </h2>
+            <h2>    רוצים להיות חלק ?</h2>
             <p>הצטרפו אלינו היום ותתחילו את המסע שלכם למציאת השידוך המושלם</p>
             <button className="cta-button" onClick={() => navigate("/register")}>
               הצטרפו עכשיו

@@ -471,7 +471,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
   )
 
   return (
-    <Box sx={{ mb: 4, display: "flex", justifyContent: "flex-end" }}>
+    <Box sx={{ mb: 4, display: "flex", justifyContent: "flex-start" }}>
       <Tooltip title="פתח חיפוש מתקדם">
         <Button
           variant="contained"
