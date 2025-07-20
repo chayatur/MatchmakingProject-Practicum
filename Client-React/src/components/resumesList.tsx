@@ -256,6 +256,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error, onDo
           {displayedResumes.map((resume, index) => (
             <Fade in={true} timeout={300 + index * 100} key={resume.id}>
               <Box>
+                {index > 0 && <Divider />} {/* הוסף Divider בין הרזומות */}
                 <ListItem
                   sx={{
                     py: 3,
