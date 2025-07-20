@@ -80,7 +80,12 @@ const PersonalArea = () => {
     useEffect(() => {
         if (files.length > 0 && user.id) {
             const myResumes = files.filter((file) => file.userId === user.id)
-            const sharedWithMe = files.filter((file) => file.userId !== user.id)
+            const sharedWithMe = files.filter((file) => {
+                console.log(file.sharedWith); 
+                return file.userId !== user.id && file.sharedWith?.some(shared => shared.sharedWithUserId === user.id);
+            });
+            
+            
             const recentUploads = files.filter((file) => {
                 const uploadDate = new Date(file.createdAt)
                 const weekAgo = new Date()

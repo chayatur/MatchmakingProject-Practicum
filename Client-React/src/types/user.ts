@@ -1,6 +1,6 @@
 // types/user.ts
 export type User = {
-  id: number 
+  id: number
   email: string
   passwordHash?: string
   username?: string
@@ -12,7 +12,7 @@ export type User = {
 
 // UserDTO type שמתאים לשרת
 export type UserDTO = {
-  ID: number 
+  ID: number
   Username: string
   Email: string
   Address: string

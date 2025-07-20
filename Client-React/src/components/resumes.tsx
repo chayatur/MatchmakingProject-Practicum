@@ -1,7 +1,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Container, Box, Typography, Paper, Button, Collapse } from "@mui/material"
+import { Container, Box, Typography, Paper, Button, Collapse, Link } from "@mui/material"
 import { Search as SearchIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from "@mui/icons-material"
 
 
@@ -154,18 +154,20 @@ const ResumesPage: React.FC = () => {
         />
       ) : (
         <Paper
-          elevation={3}
-          sx={{
-            p: 3,
-            textAlign: "center",
-            backgroundColor: "#f9f5f5",
-            border: "1px solid #e5d6d6",
-          }}
-        >
-          <Typography variant="h6" color="#8B0000">
-            יש להתחבר למערכת כדי לצפות ברזומות
-          </Typography>
-        </Paper>
+        elevation={3}
+        sx={{
+          p: 3,
+          textAlign: "center",
+          backgroundColor: "#f9f5f5",
+          border: "1px solid #e5d6d6",
+        }}
+      >
+        <Typography variant="h6" color="#8B0000">
+          <Link href="/login" color="#8B0000" underline="hover">
+          יש להתחבר למערכת כדי לצפות ברזומות.
+          </Link>
+        </Typography>
+      </Paper>
       )}
     </Container>
   )

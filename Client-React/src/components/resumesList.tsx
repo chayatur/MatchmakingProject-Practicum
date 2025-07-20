@@ -1,9 +1,36 @@
+"use client"
+
 import type React from "react"
-import { useState, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
-  Box,Typography,Paper,List,ListItem,Divider, Button, Dialog, DialogTitle, DialogContent,DialogActions,Grid,Chip,
-  IconButton,CircularProgress,Pagination,useMediaQuery,useTheme,Tooltip, Alert,Menu,
-  MenuItem,ListItemIcon,Snackbar,Fade,Zoom} from "@mui/material"
+  Box,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Chip,
+  IconButton,
+  CircularProgress,
+  Pagination,
+  useMediaQuery,
+  useTheme,
+  Tooltip,
+  Alert,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Snackbar,
+  Fade,
+  Zoom,
+} from "@mui/material"
+
 import {
   Download as DownloadIcon,
   Visibility as VisibilityIcon,
@@ -16,15 +43,16 @@ import {
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
   OpenInNew as OpenInNewIcon,
+  Groups as GroupsIcon,
+  AccountCircle as AccountCircleIcon,
 } from "@mui/icons-material"
+import ShareIcon from "@mui/icons-material/Share"
+
 import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
 import type { AppDispatch, RootState } from "../store"
-
-import{ Share2Icon } from "lucide-react"
+import { clearError, deleteFile, downloadFile, viewOriginalFile, fetchFiles } from "../slices/fileSlice" // Import fetchFiles
 import ShareDialog from "./share"
-import EditResumeDialog from "./editResume"
-import { clearError, deleteFile, downloadFile, viewOriginalFile } from "../slices/fileSlice"
 
 interface ResumeListProps {
   resumes: FileData[]
@@ -36,12 +64,11 @@ interface ResumeListProps {
 const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) => {
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
-  const { user } = useSelector((state: RootState) => state.user)
+  const { userId } = useSelector((state: RootState) => state.user) // Get userId from user slice
 
   const [selectedResume, setSelectedResume] = useState<FileData | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [page, setPage] = useState(1)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -75,7 +102,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
   const handleDownload = useCallback(
     async (resume: FileData) => {
-      if (!resume.fileName) return;
+      if (!resume.fileName) return
 
       try {
         const downloadUrl = await dispatch(downloadFile({ fileName: resume.fileName })).unwrap()
@@ -90,41 +117,33 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
         document.body.removeChild(link)
         window.URL.revokeObjectURL(link.href)
 
-        showSnackbar("הקובץ הורד בהצלחה");
+        showSnackbar("הקובץ הורד בהצלחה")
       } catch (error) {
-        console.error("Error downloading file:", error);
-        showSnackbar("שגיאה בהורדת הקובץ", "error");
-      }
-    },
-    [dispatch, showSnackbar]
-  );
-
-  const handleViewOriginal = useCallback(
-    async (resume: FileData) => {
-      if (!resume.fileName) return;
-  
-      try {
-        const response = await dispatch(viewOriginalFile({ fileName: resume.fileName })).unwrap();
-        if (response.success && response.url) {
-          const fileResponse = await fetch(response.url);
-          const blob = await fileResponse.blob();
-          const url = window.URL.createObjectURL(blob);
-          
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', resume.fileName);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url); 
-        }
-      } catch (error) {
-        showSnackbar("שגיאה בפתיחת הקובץ", "error");
+        console.error("Error downloading file:", error)
+        showSnackbar("שגיאה בהורדת הקובץ", "error")
       }
     },
     [dispatch, showSnackbar],
-  );
-  
+  )
+
+  const handleViewOriginal = useCallback(
+    async (resume: FileData) => {
+      if (!resume.fileName) return
+
+      try {
+        const response = await dispatch(viewOriginalFile({ fileName: resume.fileName })).unwrap()
+        if (response.success && response.url) {
+          // Open the URL in a new tab instead of downloading
+          window.open(response.url, "_blank")
+          showSnackbar("הקובץ נפתח בהצלחה", "success")
+        }
+      } catch (error) {
+        showSnackbar("שגיאה בפתיחת הקובץ", "error")
+      }
+    },
+    [dispatch, showSnackbar],
+  )
+
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, resume: FileData) => {
     setAnchorEl(event.currentTarget)
     setSelectedResume(resume)
@@ -133,15 +152,13 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const handleMenuClose = useCallback(() => {
     setAnchorEl(null)
   }, [])
-  // const handleEdit = useCallback(() => {
-  //   setEditOpen(true)
-  //   handleMenuClose()
-  // }, [handleMenuClose])
 
-  const handleShare = useCallback(() => {
-    setShareOpen(true)
-    handleMenuClose()
-  }, [handleMenuClose])
+  const handleShareClick = useCallback(() => {
+    if (selectedResume) {
+      setShareOpen(true)
+      handleMenuClose() // Close the menu after clicking share
+    }
+  }, [selectedResume, handleMenuClose])
 
   const handleDeleteConfirm = useCallback(() => {
     setDeleteOpen(true)
@@ -162,9 +179,8 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   }, [dispatch, selectedResume, showSnackbar])
 
   const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
-    console.log(event);
-    
     setPage(value)
+    console.log(event);
   }, [])
 
   const handleSnackbarClose = useCallback(() => {
@@ -189,10 +205,35 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
 
   const isOwner = useCallback(
     (resume: FileData) => {
-      return resume.userId === user.id
+      return resume.userId === userId // Use userId from state
     },
-    [user.id],
+    [userId],
   )
+
+  const isSharedWithMe = useCallback(
+    (resume: FileData) => {
+      // Now, resume.isSharedWithMe is directly populated by fetchFiles
+      return resume.isSharedWithMe || false
+    },
+    [], // No dependencies needed as it reads directly from resume object
+  )
+
+  // Fetch files when component mounts or userId changes
+  useEffect(() => {
+    console.log("🔄 ResumeList: useEffect triggered. userId:", userId)
+    if (userId) {
+      // Only fetch if userId is available
+      dispatch(fetchFiles())
+    }
+  }, [dispatch, userId])
+
+  // Log resumes prop whenever it changes
+  useEffect(() => {
+    console.log("📊 ResumeList: Resumes prop updated:", resumes)
+    resumes.forEach((resume) => {
+      console.log(`  Resume ID ${resume.id}: isOwner=${resume.isOwner}, isSharedWithMe=${resume.isSharedWithMe}`)
+    })
+  }, [resumes])
 
   if (isLoading) {
     return (
@@ -268,7 +309,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                     },
                   }}
                 >
-
                   <Box sx={{ flex: 1 }}>
                     {/* Primary content */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
@@ -283,19 +323,38 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         {resume.firstName} {resume.lastName}
                       </Typography>
                       {isOwner(resume) && (
+                          <Chip
+                            icon={<AccountCircleIcon sx={{ color: "white !important", fontSize: "18px" }} />}
+                             label="הרזומה שלי" // Label is commented out in original, keeping it that way
+                            size="small"
+                            sx={{
+                              backgroundColor: "#8B0000",
+                              color: "white",
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                              "& .MuiChip-icon": {
+                                color: "white",
+                              },
+                            }}
+                          />
+                      )}
+                      {isSharedWithMe(resume) && (
                         <Chip
-                          label="שלי"
+                          icon={<GroupsIcon sx={{ color: "white !important", fontSize: "18px" }} />}
+                          label="שותף איתי"
                           size="small"
                           sx={{
-                            backgroundColor: "#D4AF37",
+                            backgroundColor: "#722F37",
                             color: "white",
                             fontWeight: 600,
                             fontSize: "0.75rem",
+                            "& .MuiChip-icon": {
+                              color: "white",
+                            },
                           }}
                         />
                       )}
                     </Box>
-
                     {/* Secondary content - using Box instead of ListItemText secondary */}
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1, direction: "rtl" }}>
                       <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -313,13 +372,13 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
-
-                    <Tooltip title="הורד רזומה">
-                      <IconButton onClick={() => handleDownload(resume)} sx={{ color: "#8B0000" }} disabled={loading}>
-                        <DownloadIcon />
-                      </IconButton>
-                    </Tooltip>
-
+                    {isOwner(resume) && (
+                      <Tooltip title="הורד רזומה">
+                        <IconButton onClick={() => handleDownload(resume)} sx={{ color: "#8B0000" }} disabled={loading}>
+                          <DownloadIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <Tooltip title="צפה ברזומה המקורי">
                       <IconButton
                         onClick={() => handleViewOriginal(resume)}
@@ -329,8 +388,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         <OpenInNewIcon />
                       </IconButton>
                     </Tooltip>
-
-                    {(isOwner(resume)) && (
+                    {isOwner(resume) && (
                       <Tooltip title="אפשרויות נוספות">
                         <IconButton onClick={(e) => handleMenuOpen(e, resume)} sx={{ color: "#8B0000" }}>
                           <MoreVertIcon />
@@ -379,23 +437,14 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
           },
         }}
       >
-        {/* <MenuItem onClick={handleEdit}>
+        <MenuItem onClick={handleShareClick}>
           <ListItemIcon>
             <Box sx={{ color: "#8B0000" }}>
-              <Edit2Icon />
-            </Box>
-          </ListItemIcon>
-          עריכה
-        </MenuItem> */}
-        <MenuItem onClick={handleShare}>
-          <ListItemIcon>
-            <Box sx={{ color: "#8B0000" }}>
-              <Share2Icon />
+              <ShareIcon />
             </Box>
           </ListItemIcon>
           שיתוף
         </MenuItem>
-
         <Divider />
         <MenuItem onClick={handleDeleteConfirm} sx={{ color: "#F44336" }}>
           <ListItemIcon>
@@ -404,7 +453,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
           מחיקה
         </MenuItem>
       </Menu>
-
 
       {/* Resume Details Dialog */}
       <Dialog
@@ -421,11 +469,35 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
       >
         {selectedResume && (
           <>
-            <DialogTitle sx={{ background: "linear-gradient(135deg, #8B0000 0%, #DC143C 100%)", color: "white", p: 3 }}>
+            <DialogTitle
+              sx={{
+                background: "linear-gradient(135deg, #8B0000 0%, #722F37 100%)",
+                color: "white",
+                p: 3,
+              }}
+            >
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  פרטי רזומה: {selectedResume.firstName} {selectedResume.lastName}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    פרטי רזומה: {selectedResume.firstName} {selectedResume.lastName}
+                  </Typography>
+                  {isSharedWithMe(selectedResume) && (
+                    <Chip
+                      icon={<GroupsIcon sx={{ color: "white !important", fontSize: "16px" }} />}
+                      label="שותף איתי"
+                      size="small"
+                      sx={{
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: "0.7rem",
+                        "& .MuiChip-icon": {
+                          color: "white",
+                        },
+                      }}
+                    />
+                  )}
+                </Box>
                 <IconButton onClick={handleDetailsClose} sx={{ color: "white" }}>
                   <CloseIcon />
                 </IconButton>
@@ -459,7 +531,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                     </Box>
                   </Paper>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <Paper sx={{ p: 3, height: "100%", borderRadius: 2 }}>
                     <Typography
@@ -479,7 +550,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                     </Box>
                   </Paper>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <Paper sx={{ p: 3, height: "100%", borderRadius: 2 }}>
                     <Typography
@@ -496,7 +566,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                     </Box>
                   </Paper>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <Paper sx={{ p: 3, height: "100%", borderRadius: 2 }}>
                     <Typography
@@ -513,7 +582,6 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                     </Box>
                   </Paper>
                 </Grid>
-
                 <Grid item xs={12}>
                   <Paper sx={{ p: 3, backgroundColor: "rgba(139, 0, 0, 0.04)", borderRadius: 2 }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -552,25 +620,22 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                 >
                   צפה ברזומה המקורי
                 </Button>
-                <Tooltip title="הורד רזומה">
-                      <IconButton onClick={() => handleDownload(selectedResume)} sx={{ color: "#8B0000" }} disabled={loading}>
-                        <DownloadIcon />
-                      </IconButton>
-                    </Tooltip>
+                {isOwner(selectedResume) && (
+                  <Tooltip title="הורד רזומה">
+                    <IconButton
+                      onClick={() => handleDownload(selectedResume)}
+                      sx={{ color: "#8B0000" }}
+                      disabled={loading}
+                    >
+                      <DownloadIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </Box>
             </DialogActions>
           </>
         )}
       </Dialog>
-      {/* Edit Dialog */}
-      {selectedResume && (
-        <EditResumeDialog
-          open={editOpen}
-          onClose={() => setEditOpen(false)}
-          resume={selectedResume}
-          onSuccess={() => showSnackbar("הרזומה עודכנה בהצלחה")}
-        />
-      )}
 
       {/* Share Dialog */}
       {selectedResume && (
@@ -581,6 +646,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
           onSuccess={() => showSnackbar("הרזומה שותפה בהצלחה")}
         />
       )}
+
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteOpen}

@@ -1,3 +1,5 @@
+// This file is assumed to exist and correctly configure your user slice.
+// Content provided by the user, no changes needed here.
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
 import type { User, UserDTO, Login, Response } from "../types/user"
@@ -26,7 +28,7 @@ export const registerUser = createAsyncThunk<Response, User>("user/register", as
     const { user, token } = response.data
     sessionStorage.setItem("token", token)
     sessionStorage.setItem("userId", user.id.toString())
-    
+
     return { user, token }
   } catch (e: any) {
     return rejectWithValue(e.message)
@@ -45,7 +47,7 @@ export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
   async (userData, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem("token")
-      
+
       // המר את הנתונים ל-UserDTO format (עם שמות שדות גדולים)
       const userDTO: UserDTO = {
         ID: userData.id!,
@@ -57,13 +59,16 @@ export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
 
       console.log("Sending UserDTO to server:", userDTO)
 
-      const response = await axios.put<UserDTO>(`https://matchmakingproject-practicum.onrender.com/api/User/${userData.id}`, userDTO, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.put<UserDTO>(
+        `https://matchmakingproject-practicum.onrender.com/api/User/${userData.id}`,
+        userDTO,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      })
-      
-    
+      )
+
       const updatedUser: User = {
         id: response.data.ID,
         username: response.data.Username,
@@ -72,7 +77,7 @@ export const updateUserProfile = createAsyncThunk<User, Partial<User>>(
         phone: response.data.Phone,
         updatedAt: new Date().toISOString(),
       }
-      
+
       return updatedUser
     } catch (e: any) {
       return rejectWithValue(e.message)

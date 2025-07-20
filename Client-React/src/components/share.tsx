@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import {
@@ -35,6 +37,7 @@ interface ShareDialogProps {
 const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>()
   const { users, loading } = useSelector((state: RootState) => state.files)
+  const { userId } = useSelector((state: RootState) => state.user) // Get userId from user slice
 
   const [searchTerm, setSearchTerm] = useState("")
   const [sharingUserId, setSharingUserId] = useState<number | null>(null)
@@ -68,33 +71,60 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
   }, [])
 
   const handleShare = useCallback(
-    async (userId: number) => {
-      setSharingUserId(userId)
-
+    async (targetUserId: number) => {
+      // Renamed userId to targetUserId to avoid confusion
+      setSharingUserId(targetUserId)
       try {
-     const   currentUserId=Number(sessionStorage.getItem('userId'))
-     console.log(currentUserId,'current');
-     console.log(resume.id,'resumeId');
-     console.log(userId,'toShareWith');
-      
+        if (userId === null) {
+          console.error("ShareDialog: User not logged in, cannot share file.")
+          throw new Error("User not logged in.")
+        }
+        console.log(
+          `ShareDialog: Attempting to share resume ID ${resume.id} by user ${userId} with user ${targetUserId}`,
+        )
         await dispatch(
           shareFile({
             resumeFileId: resume.id,
-            sharedWithUserId:userId ,
-            sharedByUserId:currentUserId
+            sharedByUserId: userId, // Use userId from Redux state
+            sharedWithUserId: targetUserId,
           }),
         ).unwrap()
 
         onSuccess?.()
         onClose()
       } catch (error) {
-        console.error("Failed to share file:", error)
+        console.error("ShareDialog: Failed to share file:", error)
       } finally {
         setSharingUserId(null)
       }
     },
-    [dispatch, resume.id, onSuccess, onClose],
+    [dispatch, resume.id, userId, onSuccess, onClose], // Added userId to dependencies
   )
+
+  const handleShareWithAll = useCallback(async () => {
+    setSharingUserId(-1) // מצב שיתוף כללי
+    try {
+      if (userId === null) {
+        console.error("ShareDialog: User not logged in, cannot share file with all.")
+        throw new Error("User not logged in.")
+      }
+      console.log(`ShareDialog: Attempting to share resume ID ${resume.id} by user ${userId} with all users.`)
+      await dispatch(
+        shareFile({
+          resumeFileId: resume.id,
+          sharedByUserId: userId, // Use userId from Redux state
+          shareAll: true,
+        }),
+      ).unwrap()
+
+      onSuccess?.()
+      onClose()
+    } catch (error) {
+      console.error("ShareDialog: Failed to share with all users:", error)
+    } finally {
+      setSharingUserId(null)
+    }
+  }, [dispatch, resume.id, userId, onSuccess, onClose]) // Added userId to dependencies
 
   const handleClose = useCallback(() => {
     setSearchTerm("")
@@ -108,12 +138,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          overflow: "hidden",
-        },
-      }}
+      PaperProps={{ sx: { borderRadius: 3, overflow: "hidden" } }}
     >
       <DialogTitle className="header-gradient" sx={{ color: "white", p: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -197,10 +222,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
                         variant="contained"
                         size="small"
                         onClick={() => handleShare(user.id)}
-                        disabled={sharingUserId == user.id}
+                        disabled={sharingUserId === user.id}
                         className="btn-primary"
                         startIcon={
-                          sharingUserId == user.id ? <CircularProgress size={16} color="inherit" /> : <ShareIcon />
+                          sharingUserId === user.id ? <CircularProgress size={16} color="inherit" /> : <ShareIcon />
                         }
                         sx={{ minWidth: 100 }}
                       >
@@ -215,7 +240,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ open, onClose, resume, onSucc
         </DialogContent>
       </Fade>
 
-      <DialogActions sx={{ p: 3 }}>
+      <DialogActions sx={{ p: 3, justifyContent: "space-between" }}>
+        <Button onClick={handleShareWithAll} variant="outlined" sx={{ mr: 2 }}>
+          שתף עם כל המשתמשים
+        </Button>
         <Button onClick={handleClose} className="btn-secondary">
           סגור
         </Button>

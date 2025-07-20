@@ -1,3 +1,7 @@
+// types/share.ts
+import type { FileData } from "./file"
+import type { User } from "./user"
+
 export interface SharingPermission {
   id: number
   shareId: number
@@ -8,33 +12,19 @@ export interface SharingPermission {
 }
 
 export interface SharedResume {
-  shareId: number
-  resumeFileId: number
-  sharedWithUserId: number
-  sharedByUserId: number
+  shareID: number
+  resumefileID: number
+  sharedWithUserID: number
+  sharedByUserID: number
   permissions: SharingPermission[]
   sharedAt: string
   lastAccessedAt?: string
   accessCount: number
   isActive: boolean
   note?: string
-  resumeFile: {
-    id: number
-    firstName: string
-    lastName: string
-    fileName: string
-    createdAt: string
-  }
-  sharedByUser: {
-    id: number
-    username: string
-    email: string
-  }
-  sharedWithUser: {
-    id: number
-    username: string
-    email: string
-  }
+  resumefile?: FileData // Optional, as it might not always be populated by the backend
+  sharedWithUser?: User
+  sharedByUser?: User
 }
 
 export interface SharingStats {

@@ -1,7 +1,10 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
+import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
 import axios from "axios"
-import { FileData } from "../types/file"
-import { User } from "../types/user"
+import type { FileData } from "../types/file"
+import type { User } from "../types/user"
+import type { SharedResume } from "../types/share" // Import SharedResume type
+import type { RootState } from "../store" // Ensure RootState is correctly imported
+
 interface FilesState {
   files: FileData[]
   filteredFiles: FileData[]
@@ -10,7 +13,8 @@ interface FilesState {
   error: string | null
   currentFile: FileData | null
   uploadProgress: number
-  sharedFiles: FileData[] // הוספת sharedFiles
+  sharedFiles: FileData[] // This might become redundant if fetchFiles handles it
+  sharings: SharedResume[] // Add this to store raw sharing data (though not directly used in state after processing)
 }
 
 const initialState: FilesState = {
@@ -21,120 +25,132 @@ const initialState: FilesState = {
   error: null,
   currentFile: null,
   uploadProgress: 0,
-  sharedFiles: [], // הוספת sharedFiles
+  sharedFiles: [],
+  sharings: [], // Initialize
 }
 
 const API_BASE = "https://matchmakingproject-practicum.onrender.com/api"
 
-// Fetch all files
-// export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
-//   try {
-//     const state = getState() as any
-//     const currentUserId = state.user.userId
-
-//     const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
-
-//     const filesWithOwnership = response.data.map((file) => ({
-//       ...file,
-//       isOwner: file.userId === currentUserId,
-//     }))
-
-//     return filesWithOwnership.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-//   } catch (error: any) {
-//     return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים")
-//   }
-// })
+// Fetch all files and their sharing status for the current user
 export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
   try {
-    const state = getState() as any;
-    const currentUserId = state.user?.userId;
-    console.log("🚀 userId from state:", currentUserId);
+    const state = getState() as RootState
+    const currentUserId = state.user?.userId // Use optional chaining for safety
 
-    const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse`);
-    console.log("📦 response.data from server:", response.data);
+    console.log("🚀 fetchFiles: Current userId from state:", currentUserId)
 
-    const filesWithOwnership = response.data.map((file) => ({
-      ...file,
-      isOwner: file.userId === currentUserId,
-    }));
+    // 1. Fetch all resumes
+    const filesResponse = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
+    console.log("📦 fetchFiles: Raw files from /AIResponse:", filesResponse.data)
 
-    const sorted = filesWithOwnership.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    console.log("✅ Sorted files:", sorted);
+    let allFiles: FileData[] = filesResponse.data
 
-    return sorted;
+    // 2. If currentUserId exists, fetch shared resumes for this user
+    if (currentUserId) {
+      try {
+        const sharedResumesResponse = await axios.get<SharedResume[]>(`${API_BASE}/Sharing/by-user/${currentUserId}`)
+        // Log the raw response data to help debug backend issues
+        console.log(
+          "📦 fetchFiles: Raw shared resumes from /Sharing/by-user (for current user):",
+          sharedResumesResponse.data,
+        )
+
+        // Create a Set of resumeFileIds that are shared *with* the current user
+        const sharedResumeIds = new Set<number>()
+        sharedResumesResponse.data.forEach((sharing) => {
+          // *** זהו התיקון הממוקד: גישה ישירה ל-resumefileID במקום resumefile.id ***
+          if (sharing && typeof sharing.resumefileID === "number") {
+            sharedResumeIds.add(sharing.resumefileID)
+          } else {
+            // Log the malformed object for easier debugging
+            console.warn("⚠️ fetchFiles: Skipping malformed shared resume object:", sharing)
+          }
+        })
+        console.log("🎯 fetchFiles: Shared resume IDs for current user:", Array.from(sharedResumeIds))
+
+        // 3. Mark files as 'isSharedWithMe' and 'isOwner'
+        allFiles = allFiles.map((file) => {
+          const isOwner = file.userId === currentUserId
+          const isSharedWithMe = sharedResumeIds.has(file.id)
+          console.log(
+            `Processing file ID ${file.id}: isOwner=${isOwner}, isSharedWithMe=${isSharedWithMe} (sharedResumeIds.has(${file.id}) is ${sharedResumeIds.has(file.id)})`,
+          )
+          return {
+            ...file,
+            isOwner: isOwner,
+            isSharedWithMe: isSharedWithMe,
+          }
+        })
+      } catch (sharedError: any) {
+        console.warn(
+          "⚠️ fetchFiles: Could not fetch shared files for current user:",
+          sharedError.response?.data || sharedError.message,
+        )
+        // Continue without shared status if fetching shared files fails
+        allFiles = allFiles.map((file) => ({
+          ...file,
+          isOwner: file.userId === currentUserId,
+          isSharedWithMe: false, // Default to false if shared data cannot be fetched
+        }))
+      }
+    } else {
+      // If no currentUserId (user not logged in), no files are "shared with me" or owned
+      console.log("ℹ️ fetchFiles: No current user ID, setting isOwner and isSharedWithMe to false for all files.")
+      allFiles = allFiles.map((file) => ({
+        ...file,
+        isOwner: false,
+        isSharedWithMe: false,
+      }))
+    }
+
+    const sortedFiles = allFiles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    console.log("✅ fetchFiles: Final processed and sorted files:", sortedFiles)
+    return sortedFiles
   } catch (error: any) {
-    console.error("❌ Error fetching files:", error.response?.data || error.message);
-    return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים");
-  }
-});
-
-
-
-// Fetch shared files
-export const fetchSharedFiles = createAsyncThunk("files/fetchSharedFiles", async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get<FileData[]>(`${API_BASE}/sharedFiles`) // הנח שיש לך endpoint כזה
- 
-    console.log(response,'resEromShare');
-       return response.data
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים המשותפים")
+    console.error("❌ fetchFiles: Error fetching files:", error.response?.data || error.message)
+    return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים")
   }
 })
 
-// Download file
+// Download file (no changes needed)
 export const downloadFile = createAsyncThunk(
   "files/downloadFile",
   async ({ fileName }: { fileName: string }, { rejectWithValue }) => {
     try {
       const urlResponse = await axios.get(
-        `${API_BASE}/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`
-      );
-
-      console.log(urlResponse.data); // הדפסת התגובה מהשרת לבדיקה
-      return urlResponse.data;
+        `${API_BASE}/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`,
+      )
+      console.log(urlResponse.data)
       if (urlResponse.data?.url) {
-        const token = localStorage.getItem("authToken"); // קבלת הטוקן מה-localStorage
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-        const fileResponse = await axios.get(urlResponse.data.url, {
-          responseType: "blob",
-          headers, // הוספת ה-Headers לבקשה
-        });
-        const url = window.URL.createObjectURL(new Blob([fileResponse.data]));
-
-        // Instead of downloading here, just return the URL
-        return url; // Return the URL for further use
+        return urlResponse.data
       }
-      throw new Error("לא ניתן לקבל קישור להורדה");
+      throw new Error("לא ניתן לקבל קישור להורדה")
     } catch (error: any) {
-      console.error(error);
-      return rejectWithValue(error.response?.data?.message || "שגיאה בהורדת הקובץ");
+      console.error(error)
+      return rejectWithValue(error.response?.data?.message || "שגיאה בהורדת הקובץ")
     }
-  }
-);
+  },
+)
 
-
+// viewOriginalFile (no changes needed, adjusted to open in new tab)
 export const viewOriginalFile = createAsyncThunk(
   "files/viewOriginalFile",
   async ({ fileName }: { fileName: string }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${API_BASE}/Download_ShowFiles/download-url?fileName=${encodeURIComponent(fileName)}`,
-      );
-
+      )
       if (response.data?.url) {
-        return { fileName, url: response.data.url, success: true }; // מחזיר את ה-URL
+        return { fileName, url: response.data.url, success: true }
       }
-      throw new Error("לא ניתן לפתוח את הקובץ");
+      throw new Error("לא ניתן לפתוח את הקובץ")
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "שגיאה בפתיחת הקובץ");
+      return rejectWithValue(error.response?.data?.message || "שגיאה בפתיחת הקובץ")
     }
   },
-);
+)
 
-
-// Update file
+// Update file (no changes needed)
 export const updateFile = createAsyncThunk(
   "files/updateFile",
   async ({ id, data }: { id: number; data: Partial<FileData> }, { rejectWithValue }) => {
@@ -147,7 +163,7 @@ export const updateFile = createAsyncThunk(
   },
 )
 
-// Delete file
+// Delete file (no changes needed)
 export const deleteFile = createAsyncThunk("files/deleteFile", async (id: number, { rejectWithValue }) => {
   try {
     await axios.delete(`${API_BASE}/ResumeFile/${id}`)
@@ -157,7 +173,7 @@ export const deleteFile = createAsyncThunk("files/deleteFile", async (id: number
   }
 })
 
-// Fetch users for sharing
+// Fetch users for sharing (no changes needed)
 export const fetchUsers = createAsyncThunk("files/fetchUsers", async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get<User[]>(`${API_BASE}/User`)
@@ -167,7 +183,7 @@ export const fetchUsers = createAsyncThunk("files/fetchUsers", async (_, { rejec
   }
 })
 
-
+// shareFile thunk
 export const shareFile = createAsyncThunk(
   "files/shareFile",
   async (
@@ -175,25 +191,51 @@ export const shareFile = createAsyncThunk(
       resumeFileId,
       sharedByUserId,
       sharedWithUserId,
-    }: { resumeFileId: number; sharedByUserId: number; sharedWithUserId: number },
-    { rejectWithValue }
+      shareAll = false,
+    }: {
+      resumeFileId: number
+      sharedByUserId: number
+      sharedWithUserId?: number
+      shareAll?: boolean
+    },
+    { rejectWithValue, getState, dispatch }, // Add dispatch here
   ) => {
     try {
-      const response = await axios.post("https://matchmakingproject-practicum.onrender.com/api/Sharing", {
-        resumefileID: resumeFileId,
-        sharedByUserID: sharedByUserId,
-        sharedWithUserID: sharedWithUserId,
-        sharedAt: new Date().toISOString(),
-      });
-console.log(response,'resShare---------------');
+      const state = getState() as RootState
+      const user = state.user.user // Access user directly from state.user.user
 
-      return response.data;
+      if (!user || !user.id) {
+        // Check for user.id for sharing
+        throw new Error("User information is incomplete or not logged in.")
+      }
+
+      const payload: Record<string, any> = {
+        userId: sharedByUserId,
+        resumeFileId,
+        shareAll,
+      }
+
+      if (sharedWithUserId !== undefined && sharedWithUserId !== null) {
+        payload.sharedWithUserId = sharedWithUserId
+      }
+
+      console.log("🚀 shareFile: Sending payload to API:", payload)
+      const response = await axios.post(`${API_BASE}/Sharing`, payload)
+      console.log("✅ shareFile: API response:", response.data)
+
+      // After successful sharing, re-fetch all files to update their shared status.
+      // This is crucial because the backend doesn't return the full Sharing object
+      // and we need to update the `isSharedWithMe` flag for the relevant resume.
+      console.log("🔄 shareFile: Dispatching fetchFiles to refresh data...")
+      dispatch(fetchFiles())
+
+      return response.data
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || "שגיאה בשיתוף הקובץ");
+      console.error("❌ shareFile: Failed to share file:", error.response?.data || error.message)
+      return rejectWithValue(error.response?.data || "שגיאה בשיתוף הקובץ")
     }
-  }
-);
-
+  },
+)
 
 const filesSlice = createSlice({
   name: "files",
@@ -202,98 +244,69 @@ const filesSlice = createSlice({
     clearFilters: (state) => {
       state.filteredFiles = state.files
     },
-    setCurrentFile: (state, action) => {
+    setCurrentFile: (state, action: PayloadAction<FileData | null>) => {
       state.currentFile = action.payload
     },
     clearCurrentFile: (state) => {
       state.currentFile = null
     },
-    setLoading: (state, action) => {
+    setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload
     },
-    setError: (state, action) => {
+    setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload
     },
     clearError: (state) => {
       state.error = null
     },
-    setUploadProgress: (state, action) => {
+    setUploadProgress: (state, action: PayloadAction<number>) => {
       state.uploadProgress = action.payload
     },
-    filterFiles: (state, action) => {
-      const filters = action.payload;
-      console.log("🔍 filters received:", filters);
-      console.log("📄 state.files BEFORE filter:", state.files);
-    
+    filterFiles: (state, action: PayloadAction<any>) => {
+      // Use 'any' for filters if type is complex
+      const filters = action.payload
+      console.log("🔍 filters received:", filters)
+      console.log("📄 state.files BEFORE filter:", state.files)
+
       if (!filters || Object.keys(filters).length === 0) {
-        console.log("🔄 No filters applied, restoring all files");
-        state.filteredFiles = state.files;
-        return;
+        console.log("🔄 No filters applied, restoring all files")
+        state.filteredFiles = state.files
+        return
       }
 
-    
       state.filteredFiles = state.files.filter((file) => {
-       
-        let match = true;
+        let match = true
         if (filters.firstName && file.firstName) {
-          console.log("🔠 Comparing:", file.firstName, "vs", filters.firstName);
-         console.log( file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase()),"same");
-         
-
-          match = match &&  file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase())
-          console.log(match);
-          
+          match = match && file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase())
         }
         if (filters.lastName && file.lastName) {
-          console.log('2');
-          
-          match = match && file.lastName.toLowerCase().includes(filters.lastName.toLowerCase());
+          match = match && file.lastName.toLowerCase().includes(filters.lastName.toLowerCase())
         }
         if (filters.fatherName && file.fatherName) {
-          console.log('3');
-          match = match && file.fatherName.toLowerCase().includes(filters.fatherName.toLowerCase());
+          match = match && file.fatherName.toLowerCase().includes(filters.fatherName.toLowerCase())
         }
         if (filters.motherName && file.motherName) {
-          console.log('4');
-          match = match && file.motherName.toLowerCase().includes(filters.motherName.toLowerCase());
+          match = match && file.motherName.toLowerCase().includes(filters.motherName.toLowerCase())
         }
         if (filters.address && file.address) {
-          console.log('5');
-          match = match && file.address.toLowerCase().includes(filters.address.toLowerCase());
+          match = match && file.address.toLowerCase().includes(filters.address.toLowerCase())
         }
         if (filters.placeOfStudy && file.placeOfStudy) {
-          console.log('6');
-          match = match && file.placeOfStudy.toLowerCase().includes(filters.placeOfStudy.toLowerCase());
+          match = match && file.placeOfStudy.toLowerCase().includes(filters.placeOfStudy.toLowerCase())
         }
         if (filters.occupation && file.occupation) {
-          console.log('7');
-          match = match && file.occupation.toLowerCase().includes(filters.occupation.toLowerCase());
+          match = match && file.occupation.toLowerCase().includes(filters.occupation.toLowerCase())
         }
-        if (filters.minAge  && filters.maxAge  && file.age) {
-console.log(file.age,'age');
-console.log(filters.minAge,'minA');
-console.log(filters.maxAge,'maxA');
-
-
-          console.log('8');
-          console.log(typeof(file.age));
-          
-          console.log(file.age >= filters.minAge && file.age <= filters.maxAge,'compareA');
-          
-          match = match && file.age >= filters.minAge && file.age <= filters.maxAge;
+        if (filters.minAge && filters.maxAge && file.age) {
+          match = match && file.age >= filters.minAge && file.age <= filters.maxAge
         }
-        if (filters.minHeight && filters.maxHeight  && file.height) {
-          console.log('9');
-          match = match && file.height*100 >= filters.minHeight && file.height*100 <= filters.maxHeight;
+        if (filters.minHeight && filters.maxHeight && file.height) {
+          match = match && file.height * 100 >= filters.minHeight && file.height * 100 <= filters.maxHeight
         }
-        console.log(match,'file',file);
-        return match   
-      });
-      
-      console.log("🎯 Filtered files result:", state.filteredFiles);
-      //return match;
-    }
-    
+        return match
+      })
+      console.log("🎯 Filtered files result:", state.filteredFiles)
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -302,26 +315,12 @@ console.log(filters.maxAge,'maxA');
         state.loading = true
         state.error = null
       })
-      .addCase(fetchFiles.fulfilled, (state, action) => {
+      .addCase(fetchFiles.fulfilled, (state, action: PayloadAction<FileData[]>) => {
         state.loading = false
         state.files = action.payload
-        state.filteredFiles = action.payload
+        state.filteredFiles = action.payload // Update filteredFiles as well
       })
       .addCase(fetchFiles.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.payload as string
-      })
-
-      // fetchSharedFiles
-      .addCase(fetchSharedFiles.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(fetchSharedFiles.fulfilled, (state, action) => {
-        state.loading = false
-        state.sharedFiles = action.payload // עדכון sharedFiles
-      })
-      .addCase(fetchSharedFiles.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload as string
       })
@@ -357,12 +356,12 @@ console.log(filters.maxAge,'maxA');
         state.loading = true
         state.error = null
       })
-      .addCase(updateFile.fulfilled, (state, action) => {
+      .addCase(updateFile.fulfilled, (state, action: PayloadAction<FileData>) => {
         state.loading = false
         const index = state.files.findIndex((file) => file.id === action.payload.id)
         if (index !== -1) {
           state.files[index] = { ...state.files[index], ...action.payload }
-          state.filteredFiles = state.files
+          state.filteredFiles = state.files // Re-apply filters or re-set to all files
         }
       })
       .addCase(updateFile.rejected, (state, action) => {
@@ -375,7 +374,7 @@ console.log(filters.maxAge,'maxA');
         state.loading = true
         state.error = null
       })
-      .addCase(deleteFile.fulfilled, (state, action) => {
+      .addCase(deleteFile.fulfilled, (state, action: PayloadAction<number>) => {
         state.loading = false
         state.files = state.files.filter((file) => file.id !== action.payload)
         state.filteredFiles = state.filteredFiles.filter((file) => file.id !== action.payload)
@@ -386,7 +385,7 @@ console.log(filters.maxAge,'maxA');
       })
 
       // fetchUsers
-      .addCase(fetchUsers.fulfilled, (state, action) => {
+      .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
         state.users = action.payload
       })
 
@@ -396,7 +395,9 @@ console.log(filters.maxAge,'maxA');
         state.error = null
       })
       .addCase(shareFile.fulfilled, (state) => {
+        // No need for action.payload here, as we re-fetch files
         state.loading = false
+        // The re-fetch of files is handled by dispatch(fetchFiles()) inside the thunk
       })
       .addCase(shareFile.rejected, (state, action) => {
         state.loading = false
