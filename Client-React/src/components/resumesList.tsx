@@ -48,7 +48,7 @@ import ShareIcon from "@mui/icons-material/Share"
 import { useDispatch, useSelector } from "react-redux"
 import type { FileData } from "../types/file"
 import type { AppDispatch, RootState } from "../store"
-import { clearError, deleteFile, viewOriginalFile, fetchFiles } from "../slices/fileSlice"
+import { clearError, deleteFile, viewOriginalFile, fetchFiles, downloadFile } from "../slices/fileSlice"
 import ShareDialog from "./share"
 
 interface ResumeListProps {
@@ -58,7 +58,7 @@ interface ResumeListProps {
   onDownload: (fileName: string) => void; // הוסף את המאפיין הזה
 }
 
-const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error, onDownload }) => {
+const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) => {
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
   const { userId } = useSelector((state: RootState) => state.user)
@@ -194,6 +194,32 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error, onDo
     }
   }, [dispatch, userId])
 
+  // פונקציה להורדת הקובץ
+  const handleDownload = useCallback(
+    async (resume: FileData) => {
+      if (!resume.fileName) return;
+
+      try {
+        const downloadUrl = await dispatch(downloadFile({ fileName: resume.fileName })).unwrap();
+        const response = await fetch(downloadUrl.url);
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = resume.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+
+        showSnackbar("הקובץ הורד בהצלחה");
+      } catch (error) {
+        console.error("Error downloading file:", error);
+        showSnackbar("שגיאה בהורדת הקובץ", "error");
+      }
+    },
+    [dispatch, showSnackbar]
+  );
+
   if (isLoading) {
     return (
       <Zoom in={isLoading}>
@@ -321,7 +347,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error, onDo
                     </Tooltip>
                     {(isOwner(resume) || isSharedWithMe(resume)) && (
                       <Tooltip title="הורד רזומה">
-                        <IconButton onClick={() => onDownload(resume.fileName)} sx={{ color: "#8B0000" }} disabled={loading}>
+                        <IconButton onClick={() => handleDownload(resume)} sx={{ color: "#8B0000" }} disabled={loading}>
                           <DownloadIcon />
                         </IconButton>
                       </Tooltip>
@@ -567,7 +593,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error, onDo
                 {(isOwner(selectedResume) || isSharedWithMe(selectedResume)) && (
                   <Tooltip title="הורד רזומה">
                     <IconButton
-                      onClick={() => onDownload(selectedResume.fileName)}
+                      onClick={() => handleDownload(selectedResume)}
                       sx={{ color: "#8B0000" }}
                       disabled={loading}
                     >
