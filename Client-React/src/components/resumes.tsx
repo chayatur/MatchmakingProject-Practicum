@@ -1,5 +1,5 @@
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Container, Box, Typography, Paper, Button, Collapse, Link } from "@mui/material"
 import { Search as SearchIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from "@mui/icons-material"
@@ -58,11 +58,8 @@ const ResumesPage: React.FC = () => {
   //     dispatch(fetchFiles())
   //   }
   // }
-  const handleSearch = (filters: SearchFilters) => {
-    console.log(searchPerformed);
-    
+  const handleSearch = useCallback((filters: SearchFilters) => {
     setSearchPerformed(true)
-  
     const hasFilters = Object.entries(filters).some(([key, value]) => {
       if (typeof value === "string") return value.trim() !== ""
       if (key === "minAge") return value !== 18
@@ -71,14 +68,12 @@ const ResumesPage: React.FC = () => {
       if (key === "maxHeight") return value !== 200
       return false
     })
-  
     if (hasFilters) {
-      // זה יעבד מיד כי זה reducer רגיל, לא async
       dispatch(filterFiles(filters))
     } else {
-      dispatch(fetchFiles()) // זה נשאר async
+      dispatch(fetchFiles())
     }
-  }
+  }, [dispatch])
 
   const handleDownload = (fileName: string) => {
     dispatch(downloadFile({ fileName }))

@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import type { RootState } from "../store"
 import {
@@ -69,20 +69,26 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
     setFilters((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSearch = () => {
-    // Update active filters list
-    const newActiveFilters = Object.entries(filters)
-      .filter(([key, value]) => {
-        if (typeof value === "string") return value.trim() !== ""
-        if (key === "minAge") return value !== initialFilters.minAge
-        if (key === "maxAge") return value !== initialFilters.maxAge
-        if (key === "minHeight") return value !== initialFilters.minHeight
-        if (key === "maxHeight") return value !== initialFilters.maxHeight
-        return false
-      })
-      .map(([key]) => key)
+  // live search — מסנן אוטומטית 300ms אחרי כל הקלדה
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const newActiveFilters = Object.entries(filters)
+        .filter(([key, value]) => {
+          if (typeof value === "string") return value.trim() !== ""
+          if (key === "minAge") return value !== initialFilters.minAge
+          if (key === "maxAge") return value !== initialFilters.maxAge
+          if (key === "minHeight") return value !== initialFilters.minHeight
+          if (key === "maxHeight") return value !== initialFilters.maxHeight
+          return false
+        })
+        .map(([key]) => key)
+      setActiveFilters(newActiveFilters)
+      onSearch(filters)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [filters, onSearch])
 
-    setActiveFilters(newActiveFilters)
+  const handleSearch = () => {
     onSearch(filters)
     setDrawerOpen(false)
   }
@@ -90,6 +96,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false
   const handleClearFilters = () => {
     setFilters(initialFilters)
     setActiveFilters([])
+    onSearch(initialFilters)
   }
 
   const handleRemoveFilter = (filter: string) => {
