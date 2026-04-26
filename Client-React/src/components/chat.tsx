@@ -219,10 +219,13 @@ const AIChatBox = () => {
             bottom: isFullscreen ? 0 : 100,
             right: isFullscreen ? 0 : 24,
             width: isFullscreen ? "100vw" : isMinimized ? 320 : 420,
-            height: isFullscreen ? "100vh" : isMinimized ? 60 : 650,
-            zIndex: 1340, // z-index נמוך יותר מהכפתור אבל גבוה מהנאב-בר
+            height: isFullscreen ? "100vh" : isMinimized ? 60 : "auto",
+            maxHeight: isFullscreen ? "100vh" : isMinimized ? 60 : "calc(100vh - 120px)",
+            zIndex: 1340,
             borderRadius: isFullscreen ? 0 : 3,
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
             background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
             border: "1px solid rgba(139, 0, 0, 0.1)",
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -298,8 +301,8 @@ const AIChatBox = () => {
                 sx={{
                   flex: 1,
                   overflowY: "auto",
+                  minHeight: 300,
                   p: 2,
-                  height: isFullscreen ? "calc(100vh - 180px)" : "calc(100% - 180px)",
                   background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)",
                 }}
               >
@@ -451,7 +454,7 @@ const AIChatBox = () => {
 
               {/* שאלות מהירות */}
               {messages.length > 0 && (
-                <Box sx={{ px: 2, pb: 1 }}>
+                <Box sx={{ px: 2, pb: 1, flexShrink: 0 }}>
                   <Divider sx={{ mb: 1 }} />
                   <Typography variant="caption" sx={{ color: "text.secondary", mb: 1, display: "block" }}>
                     שאלות מהירות:
@@ -486,11 +489,12 @@ const AIChatBox = () => {
                   p: 2,
                   borderTop: "1px solid #e0e0e0",
                   background: "white",
+                  flexShrink: 0,
                 }}
               >
                 <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
                   <TextField
-                    ref={inputRef}
+                    inputRef={inputRef}
                     fullWidth
                     multiline
                     maxRows={3}
@@ -557,6 +561,7 @@ const AIChatBox = () => {
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
         onClose={() => setMenuAnchor(null)}
+        sx={{ zIndex: 1500 }}
         PaperProps={{
           sx: {
             borderRadius: 2,
