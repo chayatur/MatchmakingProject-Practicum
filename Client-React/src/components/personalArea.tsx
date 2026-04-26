@@ -80,14 +80,12 @@ const PersonalArea = () => {
     useEffect(() => {
         if (files.length > 0 && user.id) {
             const myResumes = files.filter((file) => file.userId === user.id)
-            const sharedWithMe = files.filter((file) => {
-                console.log(file.sharedWith); 
-                return file.userId !== user.id && file.sharedWith?.some(shared => shared.sharedWithUserID === user.id);
-            });
+            const sharedWithMe = files.filter((file) => file.isSharedWithMe === true)
             
             
             const recentUploads = files.filter((file) => {
-                const uploadDate = new Date(file.createdAt)
+                const raw = /Z|[+-]\d{2}:\d{2}$/.test(file.createdAt) ? file.createdAt : file.createdAt + "Z"
+                const uploadDate = new Date(raw)
                 const weekAgo = new Date()
                 weekAgo.setDate(weekAgo.getDate() - 7)
                 return uploadDate > weekAgo
@@ -141,23 +139,23 @@ const PersonalArea = () => {
     }
 
     const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return "תאריך לא חוקי"; 
-        }
+        // הוסף Z אם אין מידע על timezone — השרת שולח UTC ללא Z
+        const normalized = /Z|[+-]\d{2}:\d{2}$/.test(dateString) ? dateString : dateString + "Z"
+        const date = new Date(normalized)
+        if (isNaN(date.getTime())) return "תאריך לא זמין"
 
-        const now = new Date();
-        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        const now = new Date()
+        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
 
-        if (diffInHours < 1) return "לפני כמה דקות";
-        if (diffInHours < 24) return `לפני ${diffInHours} שעות`;
-        if (diffInHours < 48) return "אתמול";
+        if (diffInHours < 1) return "לפני כמה דקות"
+        if (diffInHours < 24) return `לפני ${diffInHours} שעות`
+        if (diffInHours < 48) return "אתמול"
 
         return date.toLocaleDateString("he-IL", {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        })
     }
 
     const getGreeting = () => {
