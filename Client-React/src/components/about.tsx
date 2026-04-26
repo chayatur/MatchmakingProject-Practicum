@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom"
-import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaShareAlt, FaFileUpload } from "react-icons/fa"
+import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaShareAlt, FaFileUpload, FaComments, FaTrashAlt } from "react-icons/fa"
 import '../styles/about.css'
 
 const About = () => {
@@ -15,7 +15,7 @@ const About = () => {
     {
       icon: <FaFileUpload />,
       title: "העלאת רזומות",
-      description: "העלאת קבצי PDF ו-DOCX בקלות, כולל גרירה ושחרור. המערכת מנתחת את הרזומה אוטומטית ושומרת את הפרטים",
+      description: "העלאת קבצי DOCX בקלות, כולל גרירה ושחרור. המערכת מנתחת את הרזומה אוטומטית ושומרת את הפרטים",
     },
     {
       icon: <FaRocket />,
@@ -31,6 +31,16 @@ const About = () => {
       icon: <FaShieldAlt />,
       title: "פרטיות מלאה",
       description: "אנו מתחייבים לשמור על פרטיותכם ולהגן על המידע האישי של כל מועמד ברמה הגבוהה ביותר",
+    },
+    {
+      icon: <FaComments />,
+      title: "עוזר AI בצ'אט",
+      description: "צ'אט חכם זמין בכל עמוד — שאל כל שאלה על המערכת, על שידוכים או על הרזומות ותקבל תשובה מיידית",
+    },
+    {
+      icon: <FaTrashAlt />,
+      title: "מחיקה וניהול",
+      description: "מחיקת רזומות שאינן רלוונטיות בלחיצת כפתור, עם אישור לפני הפעולה למניעת טעויות",
     },
     {
       icon: <FaUsers />,

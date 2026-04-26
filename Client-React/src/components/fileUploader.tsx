@@ -124,13 +124,13 @@ const FileUploader = () => {
             גרור קובץ לכאן או לחץ לבחירה
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            קבצים נתמכים: DOCX | PDF גודל מקסימלי: 10MB
+            קבצים נתמכים: DOCX בלבד | גודל מקסימלי: 10MB
           </Typography>
 
           <label htmlFor="resume-upload">
             <input
               type="file"
-              accept=".pdf,.doc,.docx"
+              accept=".doc,.docx"
               onChange={handleFileChange}
               hidden
               id="resume-upload"
