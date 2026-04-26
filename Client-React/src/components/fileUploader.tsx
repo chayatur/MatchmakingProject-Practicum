@@ -16,6 +16,7 @@ import {
 } from "@mui/material"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from "react-router-dom"
 
 const FileUploader = () => {
@@ -27,6 +28,7 @@ const FileUploader = () => {
     message: "",
     severity: "success",
   });
+  const [analyzing, setAnalyzing] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -47,61 +49,47 @@ const FileUploader = () => {
   }, []);
 
   const saveindb = async () => {
-    try {
-        if (!file) {
-            throw new Error("No file selected");
-        }
+    if (!file) throw new Error("No file selected");
 
-        const userId = sessionStorage.getItem("userId");
-        if (!userId) {
-            throw new Error("Missing userId in session storage");
-        }
+    const userId = sessionStorage.getItem("userId");
+    if (!userId) throw new Error("Missing userId in session storage");
 
-        const formData = new FormData();
-        formData.append("ResumeFile", file);
-        formData.append("UserId", userId);
+    const formData = new FormData();
+    formData.append("ResumeFile", file);
+    formData.append("UserId", userId);
 
-        const response = await axios.post("https://matchmakingproject-practicum.onrender.com/api/AIResponse", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
-
-        console.log("Response from DB save:", response.data);
-    } catch (error: any) {
-        if (error.response) {
-            console.error("Error saving file data:", error.response.data);
-        } else {
-            console.error("Error saving file data:", error.message);
-        }
-    }
+    await axios.post("https://matchmakingproject-practicum.onrender.com/api/AIResponse", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   }
 
   const handleUpload = async () => {
     if (!file) return;
 
     try {
-        const encodedFileName = encodeURIComponent(file.name);
-        const response = await axios.get(`https://matchmakingproject-practicum.onrender.com/api/upload/presigned-url?fileName=${encodedFileName}`);
+      const encodedFileName = encodeURIComponent(file.name);
+      const response = await axios.get(`https://matchmakingproject-practicum.onrender.com/api/upload/presigned-url?fileName=${encodedFileName}`);
+      const presignedUrl = response.data.url;
 
-        const presignedUrl = response.data.url;
-        console.log(presignedUrl);
+      await axios.put(presignedUrl, file, {
+        headers: { "Content-Type": file.type },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          setProgress(percent);
+        },
+      });
 
-        await axios.put(presignedUrl, file, {
-            headers: {
-                "Content-Type": file.type,
-            },
-            onUploadProgress: (progressEvent) => {
-                const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-                setProgress(percent);
-            },
-        });
+      setAnalyzing(true);
+      setSnackbar({ open: true, message: "הקובץ עלה — ה-AI מנתח את הרזומה...", severity: "success" });
 
-        alert("File uploaded successfully!");
-        await saveindb();
+      await saveindb();
+
+      setSnackbar({ open: true, message: "הרזומה הועלתה ונותחה בהצלחה!", severity: "success" });
+      setTimeout(() => navigate("/resumes"), 1500);
     } catch (error) {
-        console.error("Upload error:", error);
-        setSnackbar({ open: true, message: "שגיאה בהעלאה", severity: "error" });
+      setSnackbar({ open: true, message: "שגיאה בהעלאה, נסי שנית", severity: "error" });
+    } finally {
+      setAnalyzing(false);
     }
   }
 
@@ -163,7 +151,8 @@ const FileUploader = () => {
           onClick={handleUpload}
           variant="contained"
           fullWidth
-          disabled={!file}
+          disabled={!file || analyzing}
+          startIcon={analyzing ? <CircularProgress size={18} color="inherit" /> : null}
           sx={{
             mt: 3,
             backgroundColor: "#8B0000",
@@ -171,16 +160,11 @@ const FileUploader = () => {
             borderRadius: 2,
             textTransform: "none",
             fontWeight: "bold",
-            "&:hover": {
-              backgroundColor: "#5c0000",
-            },
-            "&.Mui-disabled": {
-              backgroundColor: "#ffcccc",
-              color: "#990000",
-            },
+            "&:hover": { backgroundColor: "#5c0000" },
+            "&.Mui-disabled": { backgroundColor: "#ffcccc", color: "#990000" },
           }}
         >
-          העלה קובץ
+          {analyzing ? "ה-AI מנתח את הרזומה..." : "העלה קובץ"}
         </Button>
 
         {progress > 0 && (

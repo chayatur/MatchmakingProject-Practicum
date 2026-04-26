@@ -62,12 +62,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
   const { userId } = useSelector((state: RootState) => state.user)
-  useEffect(() => {
-    if (userId) {
-      dispatch(fetchFiles());
-    }
-  }, [dispatch, userId]);
-  
+
   const [selectedResume, setSelectedResume] = useState<FileData | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -174,7 +169,8 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const totalPages = Math.ceil(resumes.length / itemsPerPage)
 
   const formatDate = useCallback((dateString: string) => {
-    return new Date(dateString).toLocaleDateString("he-IL", {
+    const normalized = /Z|[+-]\d{2}:\d{2}$/.test(dateString) ? dateString : dateString + "Z"
+    return new Date(normalized).toLocaleDateString("he-IL", {
       year: "numeric",
       month: "long",
       day: "numeric",
