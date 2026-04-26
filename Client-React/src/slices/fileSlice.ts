@@ -2,8 +2,8 @@ import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/tool
 import axios from "axios"
 import type { FileData } from "../types/file"
 import type { User } from "../types/user"
-import type { SharedResume } from "../types/share" // Import SharedResume type
-import type { RootState } from "../store" // Ensure RootState is correctly imported
+import type { SharedResume } from "../types/share"
+import type { RootState } from "../store"
 
 interface FilesState {
   files: FileData[]
@@ -13,8 +13,8 @@ interface FilesState {
   error: string | null
   currentFile: FileData | null
   uploadProgress: number
-  sharedFiles: FileData[] // This might become redundant if fetchFiles handles it
-  sharings: SharedResume[] // Add this to store raw sharing data (though not directly used in state after processing)
+  sharedFiles: FileData[]
+  sharings: SharedResume[]
 }
 
 const initialState: FilesState = {
@@ -26,7 +26,7 @@ const initialState: FilesState = {
   currentFile: null,
   uploadProgress: 0,
   sharedFiles: [],
-  sharings: [], // Initialize
+  sharings: [],
 }
 
 const API_BASE = "https://matchmakingproject-practicum.onrender.com/api"
@@ -35,46 +35,34 @@ const API_BASE = "https://matchmakingproject-practicum.onrender.com/api"
 export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
   try {
     const state = getState() as RootState
-    const currentUserId = state.user?.userId // Use optional chaining for safety
+    const currentUserId = state.user?.userId
 
     console.log("🚀 fetchFiles: Current userId from state:", currentUserId)
 
-    // 1. Fetch all resumes
     const filesResponse = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
     console.log("📦 fetchFiles: Raw files from /AIResponse:", filesResponse.data)
 
     let allFiles: FileData[] = filesResponse.data
 
-    // 2. If currentUserId exists, fetch shared resumes for this user
     if (currentUserId) {
       try {
         const sharedResumesResponse = await axios.get<SharedResume[]>(`${API_BASE}/Sharing/by-user/${currentUserId}`)
-        // Log the raw response data to help debug backend issues
-        console.log(
-          "📦 fetchFiles: Raw shared resumes from /Sharing/by-user (for current user):",
-          sharedResumesResponse.data,
-        )
+        console.log("📦 fetchFiles: Raw shared resumes from /Sharing/by-user (for current user):", sharedResumesResponse.data)
 
-        // Create a Set of resumeFileIds that are shared *with* the current user
         const sharedResumeIds = new Set<number>()
         sharedResumesResponse.data.forEach((sharing) => {
-          // *** זהו התיקון הממוקד: גישה ישירה ל-resumefileID במקום resumefile.id ***
           if (sharing && typeof sharing.resumefileID === "number") {
             sharedResumeIds.add(sharing.resumefileID)
           } else {
-            // Log the malformed object for easier debugging
             console.warn("⚠️ fetchFiles: Skipping malformed shared resume object:", sharing)
           }
         })
         console.log("🎯 fetchFiles: Shared resume IDs for current user:", Array.from(sharedResumeIds))
 
-        // 3. Mark files as 'isSharedWithMe' and 'isOwner'
         allFiles = allFiles.map((file) => {
           const isOwner = file.userId === currentUserId
           const isSharedWithMe = sharedResumeIds.has(file.id)
-          console.log(
-            `Processing file ID ${file.id}: isOwner=${isOwner}, isSharedWithMe=${isSharedWithMe} (sharedResumeIds.has(${file.id}) is ${sharedResumeIds.has(file.id)})`,
-          )
+          console.log(`Processing file ID ${file.id}: isOwner=${isOwner}, isSharedWithMe=${isSharedWithMe}`)
           return {
             ...file,
             isOwner: isOwner,
@@ -82,19 +70,14 @@ export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejec
           }
         })
       } catch (sharedError: any) {
-        console.warn(
-          "⚠️ fetchFiles: Could not fetch shared files for current user:",
-          sharedError.response?.data || sharedError.message,
-        )
-        // Continue without shared status if fetching shared files fails
+        console.warn("⚠️ fetchFiles: Could not fetch shared files for current user:", sharedError.response?.data || sharedError.message)
         allFiles = allFiles.map((file) => ({
           ...file,
           isOwner: file.userId === currentUserId,
-          isSharedWithMe: false, // Default to false if shared data cannot be fetched
+          isSharedWithMe: false,
         }))
       }
     } else {
-      // If no currentUserId (user not logged in), no files are "shared with me" or owned
       console.log("ℹ️ fetchFiles: No current user ID, setting isOwner and isSharedWithMe to false for all files.")
       allFiles = allFiles.map((file) => ({
         ...file,
@@ -112,7 +95,7 @@ export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejec
   }
 })
 
-// Download file (no changes needed)
+// Download file
 export const downloadFile = createAsyncThunk(
   "files/downloadFile",
   async ({ fileName }: { fileName: string }, { rejectWithValue }) => {
@@ -132,7 +115,7 @@ export const downloadFile = createAsyncThunk(
   },
 )
 
-// viewOriginalFile (no changes needed, adjusted to open in new tab)
+// viewOriginalFile
 export const viewOriginalFile = createAsyncThunk(
   "files/viewOriginalFile",
   async ({ fileName }: { fileName: string }, { rejectWithValue }) => {
@@ -150,7 +133,7 @@ export const viewOriginalFile = createAsyncThunk(
   },
 )
 
-// Update file (no changes needed)
+// Update file
 export const updateFile = createAsyncThunk(
   "files/updateFile",
   async ({ id, data }: { id: number; data: Partial<FileData> }, { rejectWithValue }) => {
@@ -163,17 +146,17 @@ export const updateFile = createAsyncThunk(
   },
 )
 
-// Delete file (no changes needed)
+// Delete file
 export const deleteFile = createAsyncThunk("files/deleteFile", async (id: number, { rejectWithValue }) => {
   try {
-    await axios.delete(`${API_BASE}/ResumeFile/${id}`)
+    await axios.delete(`${API_BASE}/AIResponse/${id}`)
     return id
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || "שגיאה במחיקת הקובץ")
   }
 })
 
-// Fetch users for sharing (no changes needed)
+// Fetch users for sharing
 export const fetchUsers = createAsyncThunk("files/fetchUsers", async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get<User[]>(`${API_BASE}/User`)
@@ -198,14 +181,13 @@ export const shareFile = createAsyncThunk(
       sharedWithUserId?: number
       shareAll?: boolean
     },
-    { rejectWithValue, getState, dispatch }, // Add dispatch here
+    { rejectWithValue, getState, dispatch },
   ) => {
     try {
       const state = getState() as RootState
-      const user = state.user.user // Access user directly from state.user.user
+      const user = state.user.user
 
       if (!user || !user.id) {
-        // Check for user.id for sharing
         throw new Error("User information is incomplete or not logged in.")
       }
 
@@ -223,9 +205,6 @@ export const shareFile = createAsyncThunk(
       const response = await axios.post(`${API_BASE}/Sharing`, payload)
       console.log("✅ shareFile: API response:", response.data)
 
-      // After successful sharing, re-fetch all files to update their shared status.
-      // This is crucial because the backend doesn't return the full Sharing object
-      // and we need to update the `isSharedWithMe` flag for the relevant resume.
       console.log("🔄 shareFile: Dispatching fetchFiles to refresh data...")
       dispatch(fetchFiles())
 
@@ -263,7 +242,6 @@ const filesSlice = createSlice({
       state.uploadProgress = action.payload
     },
     filterFiles: (state, action: PayloadAction<any>) => {
-      // Use 'any' for filters if type is complex
       const filters = action.payload
       console.log("🔍 filters received:", filters)
       console.log("📄 state.files BEFORE filter:", state.files)
@@ -318,7 +296,7 @@ const filesSlice = createSlice({
       .addCase(fetchFiles.fulfilled, (state, action: PayloadAction<FileData[]>) => {
         state.loading = false
         state.files = action.payload
-        state.filteredFiles = action.payload // Update filteredFiles as well
+        state.filteredFiles = action.payload
       })
       .addCase(fetchFiles.rejected, (state, action) => {
         state.loading = false
@@ -361,7 +339,7 @@ const filesSlice = createSlice({
         const index = state.files.findIndex((file) => file.id === action.payload.id)
         if (index !== -1) {
           state.files[index] = { ...state.files[index], ...action.payload }
-          state.filteredFiles = state.files // Re-apply filters or re-set to all files
+          state.filteredFiles = state.files
         }
       })
       .addCase(updateFile.rejected, (state, action) => {
@@ -395,9 +373,7 @@ const filesSlice = createSlice({
         state.error = null
       })
       .addCase(shareFile.fulfilled, (state) => {
-        // No need for action.payload here, as we re-fetch files
         state.loading = false
-        // The re-fetch of files is handled by dispatch(fetchFiles()) inside the thunk
       })
       .addCase(shareFile.rejected, (state, action) => {
         state.loading = false
