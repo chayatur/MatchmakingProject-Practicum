@@ -162,28 +162,26 @@
   content: "";
   position: absolute;
   bottom: 8px;
-  right: -8px;
+  left: -8px;
   width: 0;
   height: 0;
   border: 8px solid transparent;
-  border-left-color: #dc143c;
-  border-right: 0;
+  border-right-color: #dc143c;
+  border-left: 0;
   margin-top: -8px;
-  margin-right: 0;
 }
 
 .message-bubble.assistant::after {
   content: "";
   position: absolute;
   bottom: 8px;
-  left: -8px;
+  right: -8px;
   width: 0;
   height: 0;
   border: 8px solid transparent;
-  border-right-color: #f8f9fa;
-  border-left: 0;
+  border-left-color: #f8f9fa;
+  border-right: 0;
   margin-top: -8px;
-  margin-left: 0;
 }
 
 .typing-indicator {
@@ -258,13 +256,15 @@
 @media (max-width: 768px) {
   .chat-container:not(.fullscreen) {
     width: calc(100vw - 32px) !important;
-    left: 16px !important;
+    right: 16px !important;
+    left: auto !important;
     max-width: 400px;
   }
 
   .chat-fab {
     bottom: 16px !important;
-    left: 16px !important;
+    right: 16px !important;
+    left: auto !important;
   }
 }
 
@@ -294,15 +294,15 @@
   animation: fadeInUp 0.4s ease-out;
 }
 
-/* תיקון למיקום בצד שמאל */
+/* מיקום בצד ימין לאתר עברית */
 .chat-container {
-  left: 24px !important;
-  right: auto !important;
+  right: 24px !important;
+  left: auto !important;
 }
 
 .chat-fab {
-  left: 24px !important;
-  right: auto !important;
+  right: 24px !important;
+  left: auto !important;
 }
 
 /* הבטחת z-index נכון - תיקון חשוב! */

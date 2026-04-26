@@ -193,8 +193,8 @@ const AIChatBox = () => {
         sx={{
           position: "fixed",
           bottom: 24,
-          left: 24,
-          zIndex: 1350, // z-index גבוה יותר מהנאב-בר
+          right: 24,
+          zIndex: 1350,
           background: "linear-gradient(135deg, #8B0000 0%, #DC143C 100%)",
           color: "white",
           width: 64,
@@ -217,7 +217,7 @@ const AIChatBox = () => {
           sx={{
             position: "fixed",
             bottom: isFullscreen ? 0 : 100,
-            left: isFullscreen ? 0 : 24,
+            right: isFullscreen ? 0 : 24,
             width: isFullscreen ? "100vw" : isMinimized ? 320 : 420,
             height: isFullscreen ? "100vh" : isMinimized ? 60 : 650,
             zIndex: 1340, // z-index נמוך יותר מהכפתור אבל גבוה מהנאב-בר
@@ -362,7 +362,8 @@ const AIChatBox = () => {
                             sx={{
                               width: 32,
                               height: 32,
-                              bgcolor: message.role === "user" ? "#8B0000" : "#4CAF50",
+                              bgcolor: message.role === "user" ? "#8B0000" : "rgba(139,0,0,0.12)",
+                              color: message.role === "user" ? "white" : "#8B0000",
                             }}
                           >
                             {message.role === "user" ? <PersonIcon /> : <AIIcon />}
@@ -423,7 +424,7 @@ const AIChatBox = () => {
                 {isTyping && (
                   <Fade in={isTyping}>
                     <Box className="typing-indicator" sx={{ display: "flex", mb: 2, direction: "rtl" }}>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: "#4CAF50", mr: 1 }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: "rgba(139,0,0,0.12)", color: "#8B0000", mr: 1 }}>
                         <AIIcon />
                       </Avatar>
                       <Paper
@@ -495,7 +496,7 @@ const AIChatBox = () => {
                     maxRows={3}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder="הקלד את השאלה שלך..."
                     disabled={isLoading}
                     dir="rtl"
