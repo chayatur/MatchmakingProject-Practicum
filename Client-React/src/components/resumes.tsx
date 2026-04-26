@@ -28,7 +28,6 @@ const ResumesPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { filteredFiles, loading, error } = useSelector((state: RootState) => state.files)
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn)
-  const [searchPerformed, setSearchPerformed] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
 
   useEffect(() => {
@@ -59,7 +58,6 @@ const ResumesPage: React.FC = () => {
   //   }
   // }
   const handleSearch = useCallback((filters: SearchFilters) => {
-    setSearchPerformed(true)
     const hasFilters = Object.entries(filters).some(([key, value]) => {
       if (typeof value === "string") return value.trim() !== ""
       if (key === "minAge") return value !== 18

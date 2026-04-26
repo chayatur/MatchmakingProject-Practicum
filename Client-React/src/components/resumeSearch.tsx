@@ -14,7 +14,6 @@ import {
   Slider,
   Divider,
   Collapse,
-  IconButton,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -64,7 +63,7 @@ const fieldStyle = {
   "& .MuiInputLabel-root.Mui-focused": { color: "#8B0000" },
 }
 
-const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch, isLoading = false }) => {
+const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch }) => {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([])
