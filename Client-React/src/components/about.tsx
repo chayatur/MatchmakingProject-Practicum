@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom"
-import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaHandshake, FaClock } from "react-icons/fa"
+import { FaSearch, FaShieldAlt, FaRobot, FaShareAlt, FaFileUpload, FaUsersCog } from "react-icons/fa"
 import '../styles/about.css'
 
 const About = () => {
@@ -8,63 +8,44 @@ const About = () => {
 
   const features = [
     {
+      icon: <FaFileUpload />,
+      title: "העלאת רזומות",
+      description: "העלאת קבצי PDF ו-DOCX בגרירה ושחרור, עם מעקב התקדמות בזמן אמת",
+    },
+    {
+      icon: <FaRobot />,
+      title: "ניתוח AI חכם",
+      description: "המערכת מנתחת את הרזומה אוטומטית באמצעות GPT-4o ומחלצת שם, גיל, גובה, עיסוק, מקום לימודים ועוד",
+    },
+    {
       icon: <FaSearch />,
-      title: "חיפוש מתקדם",
-      description: "מערכת חיפוש חכמה ומתקדמת המאפשרת למצוא את השידוך המושלם בקלות ובמהירות",
+      title: "חיפוש וסינון מתקדם",
+      description: "סינון רזומות לפי שם, כתובת, גיל, גובה, עיסוק ומקום לימודים — עם עדכון תוצאות חי תוך כדי הקלדה",
+    },
+    {
+      icon: <FaShareAlt />,
+      title: "שיתוף בין שדכנים",
+      description: "שדכן יכול לשתף רזומות עם שדכנים אחרים במערכת, לצפות ולהוריד בקלות",
+    },
+    {
+      icon: <FaUsersCog />,
+      title: "ממשק ניהול",
+      description: "ממשק Angular נפרד למנהלים לניהול משתמשים, רזומות והרשאות במערכת",
     },
     {
       icon: <FaShieldAlt />,
-      title: "פרטיות מלאה",
-      description: "אנו מתחייבים לשמור על פרטיותכם ולהגן על המידע האישי שלכם ברמה הגבוהה ביותר",
-    },
-    {
-      icon: <FaUsers />,
-      title: "קהילה תומכת",
-      description: "קהילה חמה ותומכת של משפחות ורווקים המחפשים את השידוך הנכון",
-    },
-    {
-      icon: <FaHandshake />,
-      title: "ליווי אישי",
-      description: "צוות מקצועי ומנוסה המלווה אתכם לאורך כל הדרך עד למציאת השידוך המושלם",
-    },
-    {
-      icon: <FaRocket />,
-      title: "טכנולוגיה מתקדמת",
-      description: "שימוש בטכנולוגיות החדישות ביותר להתאמה מדויקת ויעילה",
-    },
-    {
-      icon: <FaClock />,
-      title: "זמינות 24/6",
-      description: "המערכת זמינה 24 שעות ביממה, 6 ימים בשבוע לשירותכם",
+      title: "אבטחה ופרטיות",
+      description: "אימות JWT, אחסון מוצפן ב-AWS S3 ובקרת גישה מלאה לפי משתמש",
     },
   ]
 
-  const stats = [
-    { number: "10,000+", label: "משפחות מרוצות" },
-    { number: "5,000+", label: "שידוכים מוצלחים" },
-    { number: "15+", label: "שנות ניסיון" },
-    { number: "98%", label: "שביעות רצון" },
-  ]
-
-  const team = [
-    {
-      name: "רבקה כהן",
-      role: "מנהלת השידוכים הראשית",
-      description: "בעלת ניסיון של 20 שנה בתחום השידוכים, מתמחה בהתאמות מדויקות ומקצועיות",
-      avatar: "ר",
-    },
-    {
-      name: "שרה לוי",
-      role: "יועצת שידוכים בכירה",
-      description: "מומחית בליווי זוגות צעירים ובהכנה לחתונה, בעלת תואר בפסיכולוגיה",
-      avatar: "ש",
-    },
-    {
-      name: "מרים גולדברג",
-      role: "רכזת קהילה",
-      description: "אחראית על הקהילה והאירועים, יוצרת חיבורים משמעותיים בין המשפחות",
-      avatar: "מ",
-    },
+  const techStack = [
+    { label: "צד לקוח", value: "React + Redux Toolkit + MUI" },
+    { label: "ממשק ניהול", value: "Angular" },
+    { label: "שרת", value: ".NET ASP.NET Core" },
+    { label: "בסיס נתונים", value: "SQL Server + Entity Framework" },
+    { label: "אחסון קבצים", value: "AWS S3" },
+    { label: "בינה מלאכותית", value: "OpenAI GPT-4o-mini" },
   ]
 
   return (
@@ -74,9 +55,9 @@ const About = () => {
         <div className="container">
           <h1>אודות הפרויקט</h1>
           <p>
-            מערכת ניהול שידוכים מתקדמת המיועדת לשדכנים מקצועיים
+            מערכת ניהול שידוכים מתקדמת — פרויקט פרקטיקום
             <br />
-            לניהול יעיל ובטוח של רזומות ומידע אישי
+            כלי מקצועי לשדכנים לניהול רזומות בעזרת בינה מלאכותית
           </p>
         </div>
       </section>
@@ -87,9 +68,9 @@ const About = () => {
           <div className="section-header">
             <h2>מטרת הפרויקט</h2>
             <p>
-              הפרויקט נועד לספק פתרון טכנולוגי מתקדם לשדכנים מקצועיים לניהול רזומות ומידע אישי של לקוחותיהם. המערכת
-              מאפשרת העלאה, עיבוד, חיפוש ושיתוף של רזומות בצורה יעילה ובטוחה, תוך שמירה על פרטיות המידע והקפדה על
-              סטנדרטים גבוהים של אבטחת מידע. המערכת פועלת 24/6 ומספקת כלים מתקדמים לשיפור תהליך השידוכים.
+              הפרויקט פותח כפרויקט גמר לתואר מהנדס תוכנה. המטרה היא לספק לשדכנים מקצועיים כלי דיגיטלי מלא לניהול
+              רזומות של מועמדים לשידוכים. המערכת מאפשרת העלאת קבצים, ניתוח אוטומטי בעזרת AI, חיפוש מהיר, שיתוף בין
+              שדכנים וממשק ניהול נפרד — הכל תחת גג אחד, בצורה מאובטחת ויעילה.
             </p>
           </div>
 
@@ -104,47 +85,57 @@ const About = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Tech Stack Section */}
         <section className="about-section stats-section">
           <div className="section-header">
-            <h2>המספרים מדברים בעד עצמם</h2>
-            <p>אנו גאים בהישגים שלנו ובאמון שמשפחות רבות נותנות בנו</p>
+            <h2>ערימת הטכנולוגיה</h2>
+            <p>הפרויקט בנוי בארכיטקטורת שלוש שכבות עם טכנולוגיות מובילות בתעשייה</p>
           </div>
 
           <div className="stats-grid">
-            {stats.map((stat, index) => (
+            {techStack.map((item, index) => (
               <div key={index} className="stat-item">
-                <div className="stat-number">{stat.number}</div>
-                <div className="stat-label">{stat.label}</div>
+                <div className="stat-number" style={{ fontSize: "1rem", lineHeight: 1.4 }}>{item.value}</div>
+                <div className="stat-label">{item.label}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Team Section */}
+        {/* Architecture Section */}
         <section className="about-section team-section">
           <div className="section-header">
-            <h2>הצוות שלנו</h2>
-            <p>צוות מקצועי ומנוסה של יועצות שידוכים המתמחות בהתאמות מדויקות ובליווי אישי</p>
+            <h2>איך המערכת עובדת?</h2>
+            <p>תהליך פשוט ויעיל מקצה לקצה</p>
           </div>
 
           <div className="team-grid">
-            {team.map((member, index) => (
-              <div key={index} className="team-member">
-                <div className="member-avatar">{member.avatar}</div>
-                <div className="member-name">{member.name}</div>
-                <div className="member-role">{member.role}</div>
-                <div className="member-description">{member.description}</div>
-              </div>
-            ))}
+            <div className="team-member">
+              <div className="member-avatar">1</div>
+              <div className="member-name">העלאת רזומה</div>
+              <div className="member-role">PDF או DOCX</div>
+              <div className="member-description">השדכן מעלה קובץ רזומה של מועמד. הקובץ נשמר ב-AWS S3 באופן מאובטח.</div>
+            </div>
+            <div className="team-member">
+              <div className="member-avatar">2</div>
+              <div className="member-name">ניתוח AI</div>
+              <div className="member-role">GPT-4o-mini</div>
+              <div className="member-description">המערכת שולחת את תוכן הרזומה ל-AI שמחלץ אוטומטית את כל הפרטים לתוך מסד הנתונים.</div>
+            </div>
+            <div className="team-member">
+              <div className="member-avatar">3</div>
+              <div className="member-name">חיפוש ושיתוף</div>
+              <div className="member-role">בין שדכנים</div>
+              <div className="member-description">השדכן מחפש רזומות לפי פרמטרים ויכול לשתף רזומות עם עמיתים לצורך התאמה.</div>
+            </div>
           </div>
         </section>
 
         {/* CTA Section */}
         <section className="cta-section">
           <div className="cta-content">
-            <h2>    רוצים להיות חלק ?</h2>
-            <p>הצטרפו אלינו היום ותתחילו את המסע שלכם למציאת השידוך המושלם</p>
+            <h2>רוצים להתחיל?</h2>
+            <p>הירשמו למערכת והתחילו לנהל רזומות בצורה חכמה ומהירה</p>
             <button className="cta-button" onClick={() => navigate("/register")}>
               הצטרפו עכשיו
             </button>
