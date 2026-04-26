@@ -62,7 +62,12 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
   const { userId } = useSelector((state: RootState) => state.user)
-
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchFiles());
+    }
+  }, [dispatch, userId]);
+  
   const [selectedResume, setSelectedResume] = useState<FileData | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -136,19 +141,23 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   }, [handleMenuClose])
 
   const handleDelete = useCallback(async () => {
-    if (!selectedResume) return
-
+    if (!selectedResume) return;
+  
     try {
-      await dispatch(deleteFile(selectedResume.id)).unwrap()
-      showSnackbar("הרזומה נמחקה בהצלחה")
-      setDeleteOpen(false)
-      setSelectedResume(null)
+      await dispatch(deleteFile(selectedResume.id)).unwrap(); // ודא שה-ID נכון
+      showSnackbar("הרזומה נמחקה בהצלחה");
+      setDeleteOpen(false);
+      setSelectedResume(null);
+      
+      // לאחר המחיקה, קרא מחדש את הקבצים כדי לעדכן את המצב
+      await dispatch(fetchFiles()).unwrap();
     } catch (error) {
-      showSnackbar("שגיאה במחיקת הרזומה", "error")
+      console.error("שגיאה במחיקת הרזומה:", error);
+      showSnackbar("שגיאה במחיקת הרזומה", "error");
     }
-  }, [dispatch, selectedResume, showSnackbar])
-
-  const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
+  }, [dispatch, selectedResume, showSnackbar]);
+   
+      const handlePageChange = useCallback((event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
     console.log(event);
     
@@ -352,15 +361,17 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                         </IconButton>
                       </Tooltip>
                     )}
-                    <Tooltip title="צפה ברזומה המקורי">
-                      <IconButton
-                        onClick={() => handleViewOriginal(resume)}
-                        sx={{ color: "#8B0000" }}
-                        disabled={loading}
-                      >
-                        <OpenInNewIcon />
-                      </IconButton>
-                    </Tooltip>
+                    {(isOwner(resume) || isSharedWithMe(resume)) && (
+                      <Tooltip title="צפה ברזומה המקורי">
+                        <IconButton
+                          onClick={() => handleViewOriginal(resume)}
+                          sx={{ color: "#8B0000" }}
+                          disabled={loading}
+                        >
+                          <OpenInNewIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {isOwner(resume) && (
                       <Tooltip title="אפשרויות נוספות">
                         <IconButton onClick={(e) => handleMenuOpen(e, resume)} sx={{ color: "#8B0000" }}>
@@ -578,28 +589,30 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
                 סגור
               </Button>
               <Box sx={{ display: "flex", gap: 2 }}>
-                <Button
-                  onClick={() => handleViewOriginal(selectedResume)}
-                  variant="contained"
-                  startIcon={<OpenInNewIcon />}
-                  disabled={loading}
-                  sx={{
-                    backgroundColor: "#8B0000",
-                    "&:hover": { backgroundColor: "#5c0000" },
-                  }}
-                >
-                  צפה ברזומה המקורי
-                </Button>
                 {(isOwner(selectedResume) || isSharedWithMe(selectedResume)) && (
-                  <Tooltip title="הורד רזומה">
-                    <IconButton
-                      onClick={() => handleDownload(selectedResume)}
-                      sx={{ color: "#8B0000" }}
+                  <>
+                    <Button
+                      onClick={() => handleViewOriginal(selectedResume)}
+                      variant="contained"
+                      startIcon={<OpenInNewIcon />}
                       disabled={loading}
+                      sx={{
+                        backgroundColor: "#8B0000",
+                        "&:hover": { backgroundColor: "#5c0000" },
+                      }}
                     >
-                      <DownloadIcon />
-                    </IconButton>
-                  </Tooltip>
+                      צפה ברזומה המקורי
+                    </Button>
+                    <Tooltip title="הורד רזומה">
+                      <IconButton
+                        onClick={() => handleDownload(selectedResume)}
+                        sx={{ color: "#8B0000" }}
+                        disabled={loading}
+                      >
+                        <DownloadIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </>
                 )}
               </Box>
             </DialogActions>
