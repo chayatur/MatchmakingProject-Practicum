@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom"
-import { FaSearch, FaShieldAlt, FaRobot, FaShareAlt, FaFileUpload, FaUsersCog } from "react-icons/fa"
+import { FaUsers, FaShieldAlt, FaRocket, FaSearch, FaShareAlt, FaFileUpload } from "react-icons/fa"
 import '../styles/about.css'
 
 const About = () => {
@@ -8,44 +8,63 @@ const About = () => {
 
   const features = [
     {
+      icon: <FaSearch />,
+      title: "חיפוש מתקדם",
+      description: "מערכת חיפוש חכמה המאפשרת לסנן רזומות לפי שם, גיל, גובה, כתובת, עיסוק ומקום לימודים — התוצאות מתעדכנות תוך כדי הקלדה",
+    },
+    {
       icon: <FaFileUpload />,
       title: "העלאת רזומות",
-      description: "העלאת קבצי PDF ו-DOCX בגרירה ושחרור, עם מעקב התקדמות בזמן אמת",
+      description: "העלאת קבצי PDF ו-DOCX בקלות, כולל גרירה ושחרור. המערכת מנתחת את הרזומה אוטומטית ושומרת את הפרטים",
     },
     {
-      icon: <FaRobot />,
-      title: "ניתוח AI חכם",
-      description: "המערכת מנתחת את הרזומה אוטומטית באמצעות GPT-4o ומחלצת שם, גיל, גובה, עיסוק, מקום לימודים ועוד",
-    },
-    {
-      icon: <FaSearch />,
-      title: "חיפוש וסינון מתקדם",
-      description: "סינון רזומות לפי שם, כתובת, גיל, גובה, עיסוק ומקום לימודים — עם עדכון תוצאות חי תוך כדי הקלדה",
+      icon: <FaRocket />,
+      title: "ניתוח חכם בבינה מלאכותית",
+      description: "טכנולוגיית AI מתקדמת מחלצת אוטומטית את כל הפרטים מהרזומה — שם, גיל, גובה, עיסוק ועוד — ללא צורך בהקלדה ידנית",
     },
     {
       icon: <FaShareAlt />,
       title: "שיתוף בין שדכנים",
-      description: "שדכן יכול לשתף רזומות עם שדכנים אחרים במערכת, לצפות ולהוריד בקלות",
-    },
-    {
-      icon: <FaUsersCog />,
-      title: "ממשק ניהול",
-      description: "ממשק Angular נפרד למנהלים לניהול משתמשים, רזומות והרשאות במערכת",
+      description: "שתף רזומות עם שדכנים אחרים במערכת בלחיצת כפתור, לצפייה והורדה — לשיתוף פעולה יעיל",
     },
     {
       icon: <FaShieldAlt />,
-      title: "אבטחה ופרטיות",
-      description: "אימות JWT, אחסון מוצפן ב-AWS S3 ובקרת גישה מלאה לפי משתמש",
+      title: "פרטיות מלאה",
+      description: "אנו מתחייבים לשמור על פרטיותכם ולהגן על המידע האישי של כל מועמד ברמה הגבוהה ביותר",
+    },
+    {
+      icon: <FaUsers />,
+      title: "ניהול מרכזי",
+      description: "כל הרזומות, ההרשאות והמשתמשים מנוהלים ממקום אחד — נוח, מסודר ומאובטח",
     },
   ]
 
-  const techStack = [
-    { label: "צד לקוח", value: "React + Redux Toolkit + MUI" },
-    { label: "ממשק ניהול", value: "Angular" },
-    { label: "שרת", value: ".NET ASP.NET Core" },
-    { label: "בסיס נתונים", value: "SQL Server + Entity Framework" },
-    { label: "אחסון קבצים", value: "AWS S3" },
-    { label: "בינה מלאכותית", value: "OpenAI GPT-4o-mini" },
+  const stats = [
+    { number: "10,000+", label: "משפחות מרוצות" },
+    { number: "5,000+", label: "שידוכים מוצלחים" },
+    { number: "15+", label: "שנות ניסיון" },
+    { number: "98%", label: "שביעות רצון" },
+  ]
+
+  const team = [
+    {
+      name: "רבקה כהן",
+      role: "מנהלת השידוכים הראשית",
+      description: "בעלת ניסיון של 20 שנה בתחום השידוכים, מתמחה בהתאמות מדויקות ומקצועיות",
+      avatar: "ר",
+    },
+    {
+      name: "שרה לוי",
+      role: "יועצת שידוכים בכירה",
+      description: "מומחית בליווי זוגות צעירים ובהכנה לחתונה, בעלת תואר בפסיכולוגיה",
+      avatar: "ש",
+    },
+    {
+      name: "מרים גולדברג",
+      role: "רכזת קהילה",
+      description: "אחראית על הקהילה והאירועים, יוצרת חיבורים משמעותיים בין המשפחות",
+      avatar: "מ",
+    },
   ]
 
   return (
@@ -55,9 +74,9 @@ const About = () => {
         <div className="container">
           <h1>אודות הפרויקט</h1>
           <p>
-            מערכת ניהול שידוכים מתקדמת — פרויקט פרקטיקום
+            מערכת ניהול שידוכים מתקדמת המיועדת לשדכנים מקצועיים
             <br />
-            כלי מקצועי לשדכנים לניהול רזומות בעזרת בינה מלאכותית
+            לניהול יעיל ובטוח של רזומות ומידע אישי
           </p>
         </div>
       </section>
@@ -68,9 +87,9 @@ const About = () => {
           <div className="section-header">
             <h2>מטרת הפרויקט</h2>
             <p>
-              הפרויקט פותח כפרויקט גמר לתואר מהנדס תוכנה. המטרה היא לספק לשדכנים מקצועיים כלי דיגיטלי מלא לניהול
-              רזומות של מועמדים לשידוכים. המערכת מאפשרת העלאת קבצים, ניתוח אוטומטי בעזרת AI, חיפוש מהיר, שיתוף בין
-              שדכנים וממשק ניהול נפרד — הכל תחת גג אחד, בצורה מאובטחת ויעילה.
+              הפרויקט נועד לספק פתרון טכנולוגי מתקדם לשדכנים מקצועיים לניהול רזומות ומידע אישי של לקוחותיהם. המערכת
+              מאפשרת העלאה, עיבוד אוטומטי בבינה מלאכותית, חיפוש ושיתוף של רזומות בצורה יעילה ובטוחה, תוך שמירה על
+              פרטיות המידע והקפדה על סטנדרטים גבוהים של אבטחת מידע.
             </p>
           </div>
 
@@ -85,57 +104,47 @@ const About = () => {
           </div>
         </section>
 
-        {/* Tech Stack Section */}
+        {/* Stats Section */}
         <section className="about-section stats-section">
           <div className="section-header">
-            <h2>ערימת הטכנולוגיה</h2>
-            <p>הפרויקט בנוי בארכיטקטורת שלוש שכבות עם טכנולוגיות מובילות בתעשייה</p>
+            <h2>המספרים מדברים בעד עצמם</h2>
+            <p>אנו גאים בהישגים שלנו ובאמון שמשפחות רבות נותנות בנו</p>
           </div>
 
           <div className="stats-grid">
-            {techStack.map((item, index) => (
+            {stats.map((stat, index) => (
               <div key={index} className="stat-item">
-                <div className="stat-number" style={{ fontSize: "1rem", lineHeight: 1.4 }}>{item.value}</div>
-                <div className="stat-label">{item.label}</div>
+                <div className="stat-number">{stat.number}</div>
+                <div className="stat-label">{stat.label}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Architecture Section */}
+        {/* Team Section */}
         <section className="about-section team-section">
           <div className="section-header">
-            <h2>איך המערכת עובדת?</h2>
-            <p>תהליך פשוט ויעיל מקצה לקצה</p>
+            <h2>הצוות שלנו</h2>
+            <p>צוות מקצועי ומנוסה של יועצות שידוכים המתמחות בהתאמות מדויקות ובליווי אישי</p>
           </div>
 
           <div className="team-grid">
-            <div className="team-member">
-              <div className="member-avatar">1</div>
-              <div className="member-name">העלאת רזומה</div>
-              <div className="member-role">PDF או DOCX</div>
-              <div className="member-description">השדכן מעלה קובץ רזומה של מועמד. הקובץ נשמר ב-AWS S3 באופן מאובטח.</div>
-            </div>
-            <div className="team-member">
-              <div className="member-avatar">2</div>
-              <div className="member-name">ניתוח AI</div>
-              <div className="member-role">GPT-4o-mini</div>
-              <div className="member-description">המערכת שולחת את תוכן הרזומה ל-AI שמחלץ אוטומטית את כל הפרטים לתוך מסד הנתונים.</div>
-            </div>
-            <div className="team-member">
-              <div className="member-avatar">3</div>
-              <div className="member-name">חיפוש ושיתוף</div>
-              <div className="member-role">בין שדכנים</div>
-              <div className="member-description">השדכן מחפש רזומות לפי פרמטרים ויכול לשתף רזומות עם עמיתים לצורך התאמה.</div>
-            </div>
+            {team.map((member, index) => (
+              <div key={index} className="team-member">
+                <div className="member-avatar">{member.avatar}</div>
+                <div className="member-name">{member.name}</div>
+                <div className="member-role">{member.role}</div>
+                <div className="member-description">{member.description}</div>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* CTA Section */}
         <section className="cta-section">
           <div className="cta-content">
-            <h2>רוצים להתחיל?</h2>
-            <p>הירשמו למערכת והתחילו לנהל רזומות בצורה חכמה ומהירה</p>
+            <h2>רוצים להיות חלק?</h2>
+            <p>הצטרפו אלינו היום ותתחילו את המסע שלכם למציאת השידוך המושלם</p>
             <button className="cta-button" onClick={() => navigate("/register")}>
               הצטרפו עכשיו
             </button>
