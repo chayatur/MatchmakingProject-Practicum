@@ -252,36 +252,25 @@ const filesSlice = createSlice({
         return
       }
 
+      const contains = (field: string | null | undefined, term: string) =>
+        !!field && field.trim().toLowerCase().includes(term.trim().toLowerCase())
+
       state.filteredFiles = state.files.filter((file) => {
-        let match = true
-        if (filters.firstName && file.firstName) {
-          match = match && file.firstName.trim().toLowerCase().includes(filters.firstName.trim().toLowerCase())
+        if (filters.firstName && !contains(file.firstName, filters.firstName)) return false
+        if (filters.lastName && !contains(file.lastName, filters.lastName)) return false
+        if (filters.fatherName && !contains(file.fatherName, filters.fatherName)) return false
+        if (filters.motherName && !contains(file.motherName, filters.motherName)) return false
+        if (filters.address && !contains(file.address, filters.address)) return false
+        if (filters.placeOfStudy && !contains(file.placeOfStudy, filters.placeOfStudy)) return false
+        if (filters.occupation && !contains(file.occupation, filters.occupation)) return false
+        if (filters.minAge !== 18 || filters.maxAge !== 50) {
+          if (!file.age || file.age < filters.minAge || file.age > filters.maxAge) return false
         }
-        if (filters.lastName && file.lastName) {
-          match = match && file.lastName.toLowerCase().includes(filters.lastName.toLowerCase())
+        if (filters.minHeight !== 150 || filters.maxHeight !== 200) {
+          const heightCm = file.height ? file.height * 100 : null
+          if (!heightCm || heightCm < filters.minHeight || heightCm > filters.maxHeight) return false
         }
-        if (filters.fatherName && file.fatherName) {
-          match = match && file.fatherName.toLowerCase().includes(filters.fatherName.toLowerCase())
-        }
-        if (filters.motherName && file.motherName) {
-          match = match && file.motherName.toLowerCase().includes(filters.motherName.toLowerCase())
-        }
-        if (filters.address && file.address) {
-          match = match && file.address.toLowerCase().includes(filters.address.toLowerCase())
-        }
-        if (filters.placeOfStudy && file.placeOfStudy) {
-          match = match && file.placeOfStudy.toLowerCase().includes(filters.placeOfStudy.toLowerCase())
-        }
-        if (filters.occupation && file.occupation) {
-          match = match && file.occupation.toLowerCase().includes(filters.occupation.toLowerCase())
-        }
-        if (filters.minAge && filters.maxAge && file.age) {
-          match = match && file.age >= filters.minAge && file.age <= filters.maxAge
-        }
-        if (filters.minHeight && filters.maxHeight && file.height) {
-          match = match && file.height * 100 >= filters.minHeight && file.height * 100 <= filters.maxHeight
-        }
-        return match
+        return true
       })
       console.log("🎯 Filtered files result:", state.filteredFiles)
     },
