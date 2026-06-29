@@ -119,7 +119,7 @@ namespace Resume.Service.Services
             var requestBody = JsonSerializer.Serialize(request);
             var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_myApiKey}";
+            var url = $"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={_myApiKey}";
             var response = await _httpClient.PostAsync(url, content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
