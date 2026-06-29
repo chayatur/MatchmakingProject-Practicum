@@ -48,8 +48,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IResumeFileService, ResumeFileService>();
-builder.Services.AddScoped<IResumefileRepository, ResumeFileRepository>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<IAIRepository, AIRepository>();
 builder.Services.AddScoped<ISharingService, SharingService>(); // הוסף שורה זו

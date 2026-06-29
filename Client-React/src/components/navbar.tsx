@@ -28,7 +28,6 @@ import {
   Info as InfoIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
-  Settings as SettingsIcon,
 } from "@mui/icons-material"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
@@ -353,17 +352,6 @@ const NavBar = () => {
             <PersonIcon sx={{ color: "#8B0000" }} />
           </ListItemIcon>
           הפרופיל שלי
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            navigate("/settings")
-            handleMenuClose()
-          }}
-        >
-          <ListItemIcon>
-            <SettingsIcon sx={{ color: "#8B0000" }} />
-          </ListItemIcon>
-          הגדרות
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleLogout} sx={{ color: "#F44336" }}>

@@ -18,7 +18,6 @@ import {
 import { Person, Email, Phone, LocationOn, Edit, Save, Cancel } from "@mui/icons-material";
 import type { RootState, AppDispatch } from '../store';
 import { updateUserProfile } from "../slices/userSlice";
-import BackToSettingsButton from "./backToSettings";
 const UserProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.user);
@@ -150,8 +149,7 @@ const UserProfile = () => {
         border: "1px solid #e5d6d6",
       }}
     >
-      <BackToSettingsButton />
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
+<Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
         <Avatar
           sx={{
             width: 100,

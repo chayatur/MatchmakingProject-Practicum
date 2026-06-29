@@ -8,7 +8,6 @@ import ResumesPage from "./components/resumes"
 import UserProfile from "./components/profile"
 import HomePage from "./components/home"
 import RegisterForm from "./components/Auth/registerForm"
-import SettingsPage from "./components/settings"
 import PersonalArea from "./components/personalArea"
 
 const router = createBrowserRouter([
@@ -24,8 +23,6 @@ const router = createBrowserRouter([
       { path: "register", element: <RegisterForm /> },
       { path: "personalArea", element: <PersonalArea /> },
       { path: "profile", element: <UserProfile /> },
-      { path: "settings", element: <SettingsPage /> },
-
       // נתיבים חדשים לשיתוף מתקדם
       
     ],

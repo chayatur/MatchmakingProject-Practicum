@@ -32,7 +32,6 @@ import {
     TrendingUp as TrendingUpIcon,
     AccessTime as AccessTimeIcon,
     Visibility as VisibilityIcon,
-    Settings as SettingsIcon,
     Add as AddIcon,
     Search as SearchIcon,
 } from "@mui/icons-material"
@@ -121,13 +120,6 @@ const PersonalArea = () => {
             icon: <PersonIcon />,
             path: "/profile",
             color: "#4CAF50",
-        },
-        {
-            title: "הגדרות",
-            description: "נהל את הגדרות החשבון",
-            icon: <SettingsIcon />,
-            path: "/SettingsPage",
-            color: "#FF9800",
         },
     ]
 

@@ -1,5 +1,3 @@
-import type React from "react"
-import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   FaFacebook,
@@ -11,25 +9,11 @@ import {
   FaEnvelope,
 } from "react-icons/fa"
 
-import {
-  IconButton,
-  Collapse,
-} from "@mui/material"
-import { Email, ExpandMore, ExpandLess } from "@mui/icons-material"
 import "../styles/footer.css"
 import AppLogo from "./logo"
 
 const Footer = () => {
   const navigate = useNavigate()
-  const [email, setEmail] = useState("")
-  const [newsletterOpen, setNewsletterOpen] = useState(false)
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Newsletter subscription:", email)
-    setEmail("")
-    alert("תודה על ההרשמה לניוזלטר!")
-  }
 
   const currentYear = new Date().getFullYear()
 
@@ -72,18 +56,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Services */}
-          <div className="footer-section">
-            <h3>השירותים שלנו</h3>
-            <ul className="footer-links">
-              <li><a href="#">שידוכים אישיים</a></li>
-              <li><a href="#">ייעוץ זוגי</a></li>
-              <li><a href="#">אירועי היכרות</a></li>
-              <li><a href="#">הכנה לחתונה</a></li>
-              {/* <li><a href="#">ליווי משפחתי</a></li> */}
-            </ul>
-          </div>
-
           {/* Contact + Newsletter */}
           <div className="footer-section">
             <h3>יצירת קשר</h3>
@@ -94,32 +66,6 @@ const Footer = () => {
               {/* <li><FaMapMarkerAlt /><span>תל אביב, ישראל</span></li> */}
             </ul>
 
-            {/* Newsletter Toggle */}
-            <div className="newsletter">
-              <IconButton onClick={() => setNewsletterOpen(!newsletterOpen)} sx={{ color: "#8B0000", fontSize: "1rem" }}>
-                <Email /> &nbsp;
-                {newsletterOpen ? <ExpandLess /> : <ExpandMore />} Subscribe to the newsletter
-              </IconButton>
-
-              <Collapse in={newsletterOpen}>
-                <div className="newsletter-form-area">
-                  <p>קבלו עדכונים על אירועים חדשים וטיפים לשידוכים</p>
-                  <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
-                    <input
-                      type="email"
-                      className="newsletter-input"
-                      placeholder="הכניסו את כתובת המייל"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                    <button type="submit" className="newsletter-button">
-                      הירשמו עכשיו
-                    </button>
-                  </form>
-                </div>
-              </Collapse>
-            </div>
           </div>
         </div>
 
