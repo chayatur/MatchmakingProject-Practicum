@@ -31,66 +31,23 @@ const initialState: FilesState = {
 
 const API_BASE = "https://matchmakingproject-practicum.onrender.com/api"
 
-// Fetch all files and their sharing status for the current user
 export const fetchFiles = createAsyncThunk("files/fetchFiles", async (_, { rejectWithValue, getState }) => {
   try {
     const state = getState() as RootState
     const currentUserId = state.user?.userId
 
-    console.log("🚀 fetchFiles: Current userId from state:", currentUserId)
+    if (!currentUserId) return []
 
-    const filesResponse = await axios.get<FileData[]>(`${API_BASE}/AIResponse`)
-    console.log("📦 fetchFiles: Raw files from /AIResponse:", filesResponse.data)
+    const response = await axios.get<FileData[]>(`${API_BASE}/AIResponse/${currentUserId}/permitted`)
 
-    let allFiles: FileData[] = filesResponse.data
+    const files = response.data.map((file) => ({
+      ...file,
+      isOwner: file.userId === currentUserId,
+      isSharedWithMe: file.userId !== currentUserId,
+    }))
 
-    if (currentUserId) {
-      try {
-        const sharedResumesResponse = await axios.get<SharedResume[]>(`${API_BASE}/Sharing/by-user/${currentUserId}`)
-        console.log("📦 fetchFiles: Raw shared resumes from /Sharing/by-user (for current user):", sharedResumesResponse.data)
-
-        const sharedResumeIds = new Set<number>()
-        sharedResumesResponse.data.forEach((sharing) => {
-          if (sharing && typeof sharing.resumefileID === "number") {
-            sharedResumeIds.add(sharing.resumefileID)
-          } else {
-            console.warn("⚠️ fetchFiles: Skipping malformed shared resume object:", sharing)
-          }
-        })
-        console.log("🎯 fetchFiles: Shared resume IDs for current user:", Array.from(sharedResumeIds))
-
-        allFiles = allFiles.map((file) => {
-          const isOwner = file.userId === currentUserId
-          const isSharedWithMe = sharedResumeIds.has(file.id)
-          console.log(`Processing file ID ${file.id}: isOwner=${isOwner}, isSharedWithMe=${isSharedWithMe}`)
-          return {
-            ...file,
-            isOwner: isOwner,
-            isSharedWithMe: isSharedWithMe,
-          }
-        })
-      } catch (sharedError: any) {
-        console.warn("⚠️ fetchFiles: Could not fetch shared files for current user:", sharedError.response?.data || sharedError.message)
-        allFiles = allFiles.map((file) => ({
-          ...file,
-          isOwner: file.userId === currentUserId,
-          isSharedWithMe: false,
-        }))
-      }
-    } else {
-      console.log("ℹ️ fetchFiles: No current user ID, setting isOwner and isSharedWithMe to false for all files.")
-      allFiles = allFiles.map((file) => ({
-        ...file,
-        isOwner: false,
-        isSharedWithMe: false,
-      }))
-    }
-
-    const sortedFiles = allFiles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    console.log("✅ fetchFiles: Final processed and sorted files:", sortedFiles)
-    return sortedFiles
+    return files
   } catch (error: any) {
-    console.error("❌ fetchFiles: Error fetching files:", error.response?.data || error.message)
     return rejectWithValue(error.response?.data?.message || "שגיאה בטעינת הקבצים")
   }
 })
@@ -284,9 +241,8 @@ const filesSlice = createSlice({
       })
       .addCase(fetchFiles.fulfilled, (state, action: PayloadAction<FileData[]>) => {
         state.loading = false
-        const permitted = action.payload.filter(f => f.isOwner || f.isSharedWithMe)
-        state.files = permitted
-        state.filteredFiles = permitted
+        state.files = action.payload
+        state.filteredFiles = action.payload
       })
       .addCase(fetchFiles.rejected, (state, action) => {
         state.loading = false

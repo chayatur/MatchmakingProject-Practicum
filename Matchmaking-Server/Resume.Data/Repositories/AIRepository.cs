@@ -61,6 +61,20 @@ public class AIRepository : IAIRepository
          .ToListAsync();
     }
 
+    public async Task<IEnumerable<AIResponse>> GetPermittedFilesForUserAsync(int userId)
+    {
+        var sharedIds = await _context.Sharings
+            .Where(s => s.SharedWithUserID == userId)
+            .Select(s => s.ResumefileID)
+            .ToListAsync();
+
+        return await _context.AIResponses
+            .Where(r => r.User != null && (r.UserId == userId || sharedIds.Contains(r.Id)))
+            .Include(r => r.User)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task DeleteAllAIResponsesAsync()
     {
         var invalidResponses = await GetAllAIResponsesAsync();

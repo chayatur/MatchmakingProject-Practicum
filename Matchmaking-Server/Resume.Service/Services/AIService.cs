@@ -178,6 +178,9 @@ namespace Resume.Service.Services
         public Task<IEnumerable<AIResponse>> GetFilesByUserIdAsync(int userId) =>
             _IaIRepository.GetFilesByUserIdAsync(userId);
 
+        public Task<IEnumerable<AIResponse>> GetPermittedFilesForUserAsync(int userId) =>
+            _IaIRepository.GetPermittedFilesForUserAsync(userId);
+
         public async Task DeleteAllAIResponsesAsync() =>
             await _IaIRepository.DeleteAllAIResponsesAsync();
 

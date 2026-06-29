@@ -45,6 +45,12 @@ namespace Resume.API.Controllers
             return await _aiService.GetFilesByUserIdAsync(userId);
         }
 
+        [HttpGet("{userId}/permitted")]
+        public async Task<IEnumerable<AIResponse>> GetPermittedFilesForUser(int userId)
+        {
+            return await _aiService.GetPermittedFilesForUserAsync(userId);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddAIResponse([FromForm] AIResponseRequestDto request)
