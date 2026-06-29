@@ -84,6 +84,13 @@ public class AIRepository : IAIRepository
         if (resume == null)
             throw new Exception($"AIResponse with ID {aiResponseId} not found.");
 
+        var sharings = await _context.Sharings
+            .Where(s => s.ResumefileID == aiResponseId)
+            .ToListAsync();
+
+        if (sharings.Any())
+            _context.Sharings.RemoveRange(sharings);
+
         _context.AIResponses.Remove(resume);
         await _context.SaveChangesAsync();
     }

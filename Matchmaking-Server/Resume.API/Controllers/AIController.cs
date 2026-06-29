@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Resume.Core.DTOs;
 
+
 namespace Resume.API.Controllers
 {
     [Route("api/[controller]")]
@@ -22,14 +23,12 @@ namespace Resume.API.Controllers
             _aiService = aiService;
             _mapper = mapper;
         }
-
         [HttpGet]
-        public async Task<IActionResult> GetAllAIResponses()
+        public async Task<IEnumerable<AIResponse>> GetAll()
         {
-            var responses = await _aiService.GetAllAIResponsesAsync();
-            return Ok(responses);
-        }
+            return await _aiService.GetAllAIResponsesAsync();
 
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAIResponseById(int id)
         {
@@ -40,6 +39,12 @@ namespace Resume.API.Controllers
             }
             return Ok(response);
         }
+        [HttpGet("{userId}/userId")]
+        public async Task<IEnumerable<AIResponse>> GetFilesByUserIdAsync(int userId)
+        {
+            return await _aiService.GetFilesByUserIdAsync(userId);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddAIResponse([FromForm] AIResponseRequestDto request)
@@ -51,94 +56,45 @@ namespace Resume.API.Controllers
 
             try
             {
-                Console.WriteLine("ai");
                 await _aiService.AddAiResponseAsync(request.ResumeFile, request.UserId);
-                Console.WriteLine("ai");
                 return Ok("Resume successfully analyzed and saved.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ai in catch");
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAIResponse(int id, [FromBody] AIResponse aiResponse)
-        {
-            var existingResponse = await _aiService.GetAIResponseById(id);
-            if (existingResponse == null)
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                await _aiService.UpdateAIResponseAsync(id, aiResponse);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-        // הוסף ל-AIResponseController.cs
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateAIResponse(int id, [FromBody] AIResponse updatedResponse)
-        //{
-        //    try
-        //    {
-        //        var existingResponse = await _aiService.GetAIResponseById(id);
-        //        if (existingResponse == null)
-        //        {
-        //            return NotFound($"AIResponse with ID {id} not found.");
-        //        }
-
-        //        existingResponse.FirstName = updatedResponse.FirstName;
-        //        existingResponse.LastName = updatedResponse.LastName;
-        //        existingResponse.FatherName = updatedResponse.FatherName;
-        //        existingResponse.MotherName = updatedResponse.MotherName;
-        //        existingResponse.Address = updatedResponse.Address;
-        //        existingResponse.Age = updatedResponse.Age;
-        //        existingResponse.Height = updatedResponse.Height;
-        //        existingResponse.Occupation = updatedResponse.Occupation;
-        //        existingResponse.PlaceOfStudy = updatedResponse.PlaceOfStudy;
-        //        existingResponse.UpdatedAt = DateTime.UtcNow;
-
-        //        await _aiService.UpdateAIResponseAsync(existingResponse);
-        //        return Ok(existingResponse);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"An error occurred: {ex.Message}");
-        //    }
-        //}
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAIResponse(int id)
-        {
-            try
-            {
-                var existingResponse = await _aiService.GetAIResponseById(id);
-                if (existingResponse == null)
-                {
-                    return NotFound($"AIResponse with ID {id} not found.");
-                }
-
-                await _aiService.DeleteAIResponseAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-        [HttpDelete]
-        [Route("all")]
+        [HttpDelete("all")]
         public async Task<IActionResult> DeleteAllAIResponses()
         {
             await _aiService.DeleteAllAIResponsesAsync();
-            return NoContent();
+            return NoContent(); // 204 No Content
         }
+        [HttpDelete("{aiResponseId}")]
+        public async Task<IActionResult> DeleteAiResponseById(int aiResponseId)
+        {
+            try
+            {
+                await _aiService.DeleteAiResponseById(aiResponseId);
+                return NoContent();
+            }
+            catch (Exception ex) when (ex.Message.Contains("not found"))
+            {
+                return NotFound($"AIResponse with ID {aiResponseId} not found.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error deleting: {ex.Message}");
+            }
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateAIResponseDTO dto)
+        {
+            var result = await _aiService.UpdateAIResponseAsync(id, dto);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
     }
 }
