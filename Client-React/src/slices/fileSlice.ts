@@ -284,8 +284,9 @@ const filesSlice = createSlice({
       })
       .addCase(fetchFiles.fulfilled, (state, action: PayloadAction<FileData[]>) => {
         state.loading = false
-        state.files = action.payload
-        state.filteredFiles = action.payload
+        const permitted = action.payload.filter(f => f.isOwner || f.isSharedWithMe)
+        state.files = permitted
+        state.filteredFiles = permitted
       })
       .addCase(fetchFiles.rejected, (state, action) => {
         state.loading = false
