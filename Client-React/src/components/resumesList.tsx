@@ -58,6 +58,7 @@ interface ResumeListProps {
   onDownload: (fileName: string) => void; // הוסף את המאפיין הזה
 }
 
+// רשימת הרזומות — מציגה כרטיסי רזומה עם אפשרויות צפייה, הורדה, שיתוף ומחיקה
 const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) => {
   const dispatch = useDispatch<AppDispatch>()
   const { loading } = useSelector((state: RootState) => state.files)
@@ -83,20 +84,24 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
   const itemsPerPage = 10
 
+  // מציג הודעת Snackbar עם הודעה וסוג חומרה
   const showSnackbar = useCallback((message: string, severity: "success" | "error" | "info" = "success") => {
     setSnackbar({ open: true, message, severity })
   }, [])
 
+  // פותח דיאלוג פרטי הרזומה הנבחרת
   const handleDetailsOpen = useCallback((resume: FileData) => {
     setSelectedResume(resume)
     setDetailsOpen(true)
   }, [])
 
+  // סוגר את דיאלוג הפרטים ומנקה את הבחירה
   const handleDetailsClose = useCallback(() => {
     setDetailsOpen(false)
     setSelectedResume(null)
   }, [])
 
+  // מקבל URL חתום מהשרת ופותח את קובץ הרזומה המקורי בלשונית חדשה
   const handleViewOriginal = useCallback(
     async (resume: FileData) => {
       if (!resume.fileName) return
@@ -114,6 +119,7 @@ const ResumeList: React.FC<ResumeListProps> = ({ resumes, isLoading, error }) =>
     [dispatch, showSnackbar],
   )
 
+  // פותח תפריט האפשרויות הנוספות עבור הרזומה שנלחצה
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, resume: FileData) => {
     setAnchorEl(event.currentTarget)
     setSelectedResume(resume)

@@ -24,15 +24,17 @@ interface SearchFilters {
   maxHeight: number
 }
 
+// דף ניהול הרזומות — שולף את כל הרזומות מהסטור, מציג חיפוש ורשימה
 const ResumesPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
   const { filteredFiles, loading, error } = useSelector((state: RootState) => state.files)
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn)
   const [showSearch, setShowSearch] = useState(false)
 
+  // שולף את כל הקבצים מהשרת בכל פעם שמצב ההתחברות משתנה
   useEffect(() => {
     console.log(isLoggedIn,'isLogin');
-    
+
     if (isLoggedIn) {
       dispatch(fetchFiles())
     }
@@ -57,6 +59,7 @@ const ResumesPage: React.FC = () => {
   //     dispatch(fetchFiles())
   //   }
   // }
+  // מטפל בחיפוש: אם יש פילטרים פעילים — מסנן, אחרת מחזיר את כל הרזומות
   const handleSearch = useCallback((filters: SearchFilters) => {
     const hasFilters = Object.entries(filters).some(([key, value]) => {
       if (typeof value === "string") return value.trim() !== ""
@@ -73,12 +76,13 @@ const ResumesPage: React.FC = () => {
     }
   }, [dispatch])
 
+  // מפעיל הורדת קובץ רזומה לפי שם הקובץ
   const handleDownload = (fileName: string) => {
     dispatch(downloadFile({ fileName }))
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Box sx={{ mb: 4, textAlign: "center" }}>
         <Typography
           variant="h4"

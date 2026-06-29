@@ -63,17 +63,19 @@ const fieldStyle = {
   "& .MuiInputLabel-root.Mui-focused": { color: "#8B0000" },
 }
 
+// קומפוננטת חיפוש וסינון רזומות — מאפשרת לסנן לפי שם, כתובת, גיל, גובה ועוד
 const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch }) => {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([])
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn)
 
+  // מעדכן שדה בודד בתוך אובייקט הפילטרים לפי שם השדה והערך החדש
   const handleFilterChange = (field: keyof SearchFilters, value: string | number) => {
     setFilters((prev) => ({ ...prev, [field]: value }))
   }
 
-  // live search — מסנן אוטומטית 300ms אחרי כל הקלדה
+  // מפעיל את החיפוש אוטומטית 300ms אחרי כל שינוי בפילטרים (debounce) ומעדכן את רשימת הסינונים הפעילים
   useEffect(() => {
     const timer = setTimeout(() => {
       const newActiveFilters = Object.entries(filters)
@@ -92,12 +94,14 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch }) => {
     return () => clearTimeout(timer)
   }, [filters, onSearch])
 
+  // מאפס את כל הפילטרים לערכי ברירת המחדל ומחזיר את כל הרזומות
   const handleClearFilters = () => {
     setFilters(initialFilters)
     setActiveFilters([])
     onSearch(initialFilters)
   }
 
+  // מסיר סינון בודד לפי שם השדה ומחזיר את ערכו לברירת המחדל
   const handleRemoveFilter = (filter: string) => {
     const updated = {
       ...filters,
@@ -110,6 +114,7 @@ const ResumeSearch: React.FC<ResumeSearchProps> = ({ onSearch }) => {
     setActiveFilters((prev) => prev.filter((f) => f !== filter))
   }
 
+  // ממיר שם שדה באנגלית לתווית עברית להצגה בתגיות הסינון הפעיל
   const getFilterLabel = (key: string): string => {
     const labels: Record<string, string> = {
       firstName: "שם פרטי",
