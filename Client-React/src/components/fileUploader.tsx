@@ -86,8 +86,10 @@ const FileUploader = () => {
 
       setSnackbar({ open: true, message: "הרזומה הועלתה ונותחה בהצלחה!", severity: "success" });
       setTimeout(() => navigate("/resumes"), 1500);
-    } catch (error) {
-      setSnackbar({ open: true, message: "שגיאה בהעלאה, נסי שנית", severity: "error" });
+    } catch (error: any) {
+      const serverMsg = error?.response?.data || error?.message || "שגיאה לא ידועה";
+      console.error("Upload error details:", serverMsg);
+      setSnackbar({ open: true, message: `שגיאה בהעלאה: ${serverMsg}`, severity: "error" });
     } finally {
       setAnalyzing(false);
     }
