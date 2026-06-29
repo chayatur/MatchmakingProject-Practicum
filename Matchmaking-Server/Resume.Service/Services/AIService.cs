@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using OpenAI;
 using Resume.Core.IServices;
 using Resume.Core.Models;
 using Resume.Data;
@@ -28,10 +27,10 @@ namespace Resume.Service.Services
         private readonly IMapper _mapper;
         private readonly string _myApiKey;
 
-        public AIService(IConfiguration config, OpenAIClient openAI, IAIRepository aIRepository, IMapper mapper)
+        public AIService(IConfiguration config, IAIRepository aIRepository, IMapper mapper)
         {
             _httpClient = new HttpClient();
-            _myApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            _myApiKey = config["OpenAI:ApiKey"] ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             _IaIRepository = aIRepository;
             _mapper = mapper;
         }

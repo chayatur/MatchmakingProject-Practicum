@@ -9,7 +9,6 @@ using Resume.Service.Services;
 using Data.Repositories;
 using Resume.Data;
 using Resume.Core;
-using OpenAI;
 using Resume.Data.Repositories;
 using Resume.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -81,16 +80,6 @@ builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
     return new AmazonS3Client(credentials, region);
 });
 
-// OpenAI client from appsettings.json
-builder.Services.AddScoped<OpenAIClient>(provider =>
-{
-    var apiKey = builder.Configuration["OpenAI:ApiKey"];
-    if (string.IsNullOrEmpty(apiKey))
-    {
-        throw new Exception("OpenAI API key is not configured in appsettings.json.");
-    }
-    return new OpenAIClient(apiKey);
-});
 
 var app = builder.Build();
 
