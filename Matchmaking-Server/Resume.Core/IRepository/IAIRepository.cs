@@ -11,9 +11,8 @@ namespace Resume.Core.IRepository
         Task AddAiResponseAsync(AIResponse aiResponse, int userId, string fileName);
         Task<IEnumerable<AIResponse>> GetAllAIResponsesAsync();
         Task<IEnumerable<AIResponse>> GetFilesByUserIdAsync(int userId);
-        Task UpdateAIResponseAsync(int id, AIResponse aiResponse); // עדכון המתודה עם שני פרמטרים
-        //Task UpdateAIResponseAsync(AIResponse aiResponse);
-        Task DeleteAIResponseAsync(int id);
         Task DeleteAllAIResponsesAsync();
+        Task DeleteAiResponseById(int aiResponseId);
+        Task<AIResponse?> UpdateAIResponseAsync(AIResponse dto);
     }
 }

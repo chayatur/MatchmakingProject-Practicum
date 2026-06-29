@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Resume.Core.DTOs;
 using Resume.Core.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,10 +12,10 @@ namespace Resume.Core.IServices
         Task AddAiResponseAsync(IFormFile resumeFile, int userId);
         Task<IEnumerable<AIResponse>> GetAllAIResponsesAsync();
         Task<IEnumerable<AIResponse>> GetFilesByUserIdAsync(int userId);
-        Task UpdateAIResponseAsync(int id, AIResponse aiResponse);
-        Task DeleteAIResponseAsync(int id);
 
         Task DeleteAllAIResponsesAsync();
-        //Task DeleteAIResponseAsync(int id);
+        Task DeleteAiResponseById(int aiResponseId);
+
+        Task<AIResponse?> UpdateAIResponseAsync(int id, UpdateAIResponseDTO dto);
     }
 }
