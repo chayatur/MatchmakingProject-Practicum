@@ -104,20 +104,23 @@ namespace Resume.Service.Services
 
             var request = new
             {
-                model = "gpt-4o-mini",
-                messages = new[]
+                contents = new[]
                 {
-            new { role = "system", content = "אתה עוזר חכם לפענוח קורות חיים." },
-            new { role = "user", content = prompt }
-        },
-                temperature = 0.2
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
+                }
             };
 
             var requestBody = JsonSerializer.Serialize(request);
             var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _myApiKey);
 
-            var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_myApiKey}";
+            var response = await _httpClient.PostAsync(url, content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -125,9 +128,10 @@ namespace Resume.Service.Services
 
             var json = JsonDocument.Parse(responseBody);
             var rawContent = json.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
+                .GetProperty("candidates")[0]
                 .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
                 .GetString();
 
             if (string.IsNullOrWhiteSpace(rawContent))
