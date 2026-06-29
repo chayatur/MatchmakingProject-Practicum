@@ -35,7 +35,7 @@ const Layout = () => {
       <CssBaseline />
       <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <NavBar />
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1 }}>
           <Outlet />
         </Box>
         <AIChatBox />
